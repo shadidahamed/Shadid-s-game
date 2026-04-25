@@ -4,6 +4,7 @@ import { Player } from "./player.js";
 import { ZombieSystem } from "./zombies.js";
 import { ShootingSystem } from "./shooting.js";
 import { UI } from "./ui.js";
+import { FXSystem } from "./fx.js";
 
 class Game {
   constructor() {
