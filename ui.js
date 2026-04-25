@@ -3,9 +3,9 @@ export class UI {
     this.score = 0;
     this.health = 100;
     this.gameOver = false;
-
-    this.el = document.getElementById("hud");
-    this.render();
+    this.hud = document.getElementById('hud');
+    this.gameOverScreen = document.getElementById('gameOver');
+    this.finalScoreEl = document.getElementById('finalScore');
   }
 
   addScore(v) {
@@ -14,21 +14,17 @@ export class UI {
   }
 
   damage(v) {
-    this.health -= v;
-
-    if (this.health <= 0) {
-      this.health = 0;
+    this.health = Math.max(0, this.health - v);
+    if (this.health <= 0 && !this.gameOver) {
       this.gameOver = true;
-
-      this.el.innerHTML = "SYSTEM FAILURE // ENTITY LOST";
+      this.finalScoreEl.textContent = this.score;
+      this.gameOverScreen.style.display = 'block';
     }
-
     this.render();
   }
 
   render() {
-    if (!this.gameOver) {
-      this.el.innerHTML = `SCORE:${this.score} | HP:${this.health}`;
-    }
+    if (this.gameOver) return;
+    this.hud.textContent = `SCORE: ${this.score} | HP: ${this.health}`;
   }
 }
