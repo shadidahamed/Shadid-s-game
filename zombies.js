@@ -40,6 +40,42 @@ export class ZombieSystem {
   }
 
   update() {
+
+for (let i = 0; i < this.bullets.length; i++) {
+  const b = this.bullets[i];
+
+  b.position.z -= this.bulletSpeed;
+
+  for (let j = 0; j < this.zombies.zombies.length; j++) {
+    const z = this.zombies.zombies[j];
+
+    const dx = b.position.x - z.position.x;
+    const dz = b.position.z - z.position.z;
+
+    const distance = Math.sqrt(dx * dx + dz * dz);
+
+    if (distance < 0.8) {
+      // HIT DETECTED
+
+      this.scene.remove(b);
+      this.bullets.splice(i, 1);
+      i--;
+
+      this.zombies.takeHit(j);
+
+      this.ui.addScore(10);
+
+      break;
+    }
+  }
+
+  if (b.position.z < this.player.position.z - 100) {
+    this.scene.remove(b);
+    this.bullets.splice(i, 1);
+    i--;
+  }
+}
+    
     this.frameCounter++;
 
     // Spawn logic (controlled pressure system)
