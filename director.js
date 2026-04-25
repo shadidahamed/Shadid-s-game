@@ -5,16 +5,16 @@ export class Director {
   }
 
   spawnRate() {
-    return Math.max(0.35, 1.1 - this.wave * 0.04);
+    return Math.max(0.28, 1.05 - this.wave * 0.045);
   }
 
   zombieSpeed() {
-    return 220 + this.wave * 18;
+    return 210 + this.wave * 22;
   }
 
   update(dt) {
     this.timer += dt;
-    if (this.timer > 12) {
+    if (this.timer > 10) {
       this.wave++;
       this.timer = 0;
     }
