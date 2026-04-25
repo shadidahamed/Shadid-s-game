@@ -1,15 +1,17 @@
 body {
   margin: 0;
   overflow: hidden;
-  background: black;
-  font-family: Arial;
+  background: #050505;
+  font-family: system-ui, Arial;
 }
 
-#ui {
+#hud {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  color: red;
-  text-shadow: 0 0 10px red;
+  top: 12px;
+  left: 12px;
+  color: #00f0ff;
+  font-size: 14px;
+  letter-spacing: 1px;
   z-index: 10;
+  text-shadow: 0 0 8px #00f0ff;
 }
