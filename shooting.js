@@ -1,29 +1,27 @@
 export class ShootingSystem {
-  constructor(character, zombies, ui, audio, fx, particles) {
-    this.character = character;
-    this.zombies = zombies;
+  constructor(player, enemies, ui, fx, particles) {
+    this.player = player;
+    this.enemies = enemies;
     this.ui = ui;
-    this.audio = audio;
     this.fx = fx;
     this.particles = particles;
     this.bullets = [];
+    this.fireRate = 0.12;
+    this.lastShot = 0;
   }
 
   shoot() {
-    const data = this.character.shoot();
-    if (!data) return;
+    const now = performance.now();
+    if (now - this.lastShot < this.fireRate * 1000) return;
 
-    this.audio.playShot();
-    this.fx.burst(4);
-
-    this.particles.muzzleFlash(this.character.x, this.character.y - 45, data.level);
+    this.lastShot = now;
+    this.fx.burst(2);
+    this.particles.muzzle(this.player.x, this.player.y - 30);
 
     this.bullets.push({
-      x: data.x,
-      y: data.y,
-      speed: data.speed,
-      power: data.power,
-      radius: 7 + data.level * 1.5
+      x: this.player.x,
+      y: this.player.y - 25,
+      speed: 850
     });
   }
 
@@ -32,19 +30,17 @@ export class ShootingSystem {
       const b = this.bullets[i];
       b.y -= b.speed * dt;
 
-      if (b.y < -30) {
+      if (b.y < -20) {
         this.bullets.splice(i, 1);
         continue;
       }
 
-      for (let j = this.zombies.zombies.length - 1; j >= 0; j--) {
-        const z = this.zombies.zombies[j];
-        if (Math.hypot(b.x - z.x, b.y - z.y) < 30) {
-          this.zombies.hit(j, b.power);
-          this.particles.sparkBurst(b.x, b.y);
+      for (let j = this.enemies.enemies.length - 1; j >= 0; j--) {
+        const e = this.enemies.enemies[j];
+        if (Math.hypot(b.x - e.x, b.y - e.y) < 24) {
+          this.enemies.hit(j, 1);
+          this.particles.spark(b.x, b.y);
           this.bullets.splice(i, 1);
-          this.audio.playHit();
-          this.fx.hit();
           break;
         }
       }
@@ -52,19 +48,11 @@ export class ShootingSystem {
   }
 
   draw(ctx) {
-    ctx.shadowBlur = 12;
-    ctx.shadowColor = '#ff5555';
-    ctx.fillStyle = '#ff2a2a';
-
+    ctx.fillStyle = '#0f0';
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#0f0';
     for (const b of this.bullets) {
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Trail
-      ctx.globalAlpha = 0.5;
-      ctx.fillRect(b.x - 4, b.y + 10, 8, 25);
-      ctx.globalAlpha = 1;
+      ctx.fillRect(b.x - 3, b.y - 12, 6, 22);
     }
     ctx.shadowBlur = 0;
   }
