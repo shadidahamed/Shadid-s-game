@@ -1,4 +1,4 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js';
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js";
 
 export class Player {
   constructor(camera) {
@@ -6,31 +6,34 @@ export class Player {
 
     this.position = new THREE.Vector3(0, 2, 5);
 
-    this.speed = 0.12;
     this.lane = 0;
     this.laneWidth = 2;
 
-    this.setupControls();
+    this.speed = 6;
+
+    this._initControls();
   }
 
-  setupControls() {
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') this.lane = Math.max(this.lane - 1, -1);
-      if (e.key === 'ArrowRight') this.lane = Math.min(this.lane + 1, 1);
+  _initControls() {
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") this.lane = Math.max(this.lane - 1, -1);
+      if (e.key === "ArrowRight") this.lane = Math.min(this.lane + 1, 1);
     });
   }
 
-  update() {
-    this.position.z -= this.speed;
+  update(dt) {
+    this.position.z -= this.speed * dt;
 
     const targetX = this.lane * this.laneWidth;
-    this.position.x += (targetX - this.position.x) * 0.12;
+    this.position.x += (targetX - this.position.x) * 10 * dt;
 
-    this.camera.position.set(
+    const camTarget = new THREE.Vector3(
       this.position.x,
       this.position.y + 2,
       this.position.z + 6
     );
+
+    this.camera.position.lerp(camTarget, 8 * dt);
 
     this.camera.lookAt(
       this.position.x,
