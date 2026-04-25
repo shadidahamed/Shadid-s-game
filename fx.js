@@ -1,31 +1,22 @@
 export class FXSystem {
   constructor() {
     this.shake = 0;
-    this.shakeTime = 0;
   }
 
-  burst() {
-    this.shake = 3;
+  burst(amount = 3) {
+    this.shake = Math.max(this.shake, amount);
   }
 
   hit() {
-    this.shake = 6;
+    this.shake = Math.max(this.shake, 7);
   }
 
   update(dt) {
-    if (this.shake > 0) {
-      this.shake *= 0.82;
-    }
+    this.shake *= 0.84;
+    if (this.shake < 0.2) this.shake = 0;
   }
 
   draw(ctx) {
-    if (this.shake > 0.5) {
-      ctx.save();
-      ctx.translate(
-        (Math.random() - 0.5) * this.shake,
-        (Math.random() - 0.5) * this.shake
-      );
-      ctx.restore(); // actually applied in main loop by translating whole context if you want, but simple version is fine
-    }
+    // Shake is applied in main.js loop
   }
 }
