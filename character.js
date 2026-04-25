@@ -2,9 +2,9 @@ export class Character {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.lane = 1;
+    this.lane = 1;           // 0, 1, 2
     this.laneWidth = 170;
-    this.weaponLevel = 0; // 0, 1, 2
+    this.weaponLevel = 0;
     this.cooldown = 0;
     this.size = 30;
   }
@@ -14,11 +14,18 @@ export class Character {
   }
 
   update(keys, dt) {
-    if (keys['arrowleft'] || keys['a']) this.lane = Math.max(0, this.lane - 1);
-    if (keys['arrowright'] || keys['d']) this.lane = Math.min(2, this.lane + 1);
+    // Lane movement only (no free dragging)
+    if (keys['arrowleft'] || keys['a']) {
+      this.lane = Math.max(0, this.lane - 1);
+      keys['arrowleft'] = keys['a'] = false; // prevent holding to spam
+    }
+    if (keys['arrowright'] || keys['d']) {
+      this.lane = Math.min(2, this.lane + 1);
+      keys['arrowright'] = keys['d'] = false;
+    }
 
-    const targetX = this.canvas ? 100 + this.lane * this.laneWidth : 120 + this.lane * this.laneWidth;
-    this.x += (targetX - this.x) * 18 * dt;
+    const targetX = 115 + this.lane * this.laneWidth;
+    this.x += (targetX - this.x) * 22 * dt;   // smooth lerp to lane
 
     this.cooldown = Math.max(0, this.cooldown - dt);
   }
@@ -30,43 +37,42 @@ export class Character {
   shoot() {
     if (!this.canShoot()) return null;
 
-    this.cooldown = 0.09 - this.weaponLevel * 0.025;
+    this.cooldown = 0.085 - this.weaponLevel * 0.022;
 
     return {
       x: this.x,
-      y: this.y - 25,
-      power: 18 + this.weaponLevel * 14,
-      speed: 720,
+      y: this.y - 28,
+      power: 18 + this.weaponLevel * 15,
+      speed: 740,
       level: this.weaponLevel
     };
   }
 
   draw(ctx) {
     // Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
     ctx.beginPath();
-    ctx.ellipse(this.x + 4, this.y + 18, 22, 8, 0, 0, Math.PI * 2);
+    ctx.ellipse(this.x + 3, this.y + 20, 24, 9, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Body
-    ctx.fillStyle = '#111111';
-    ctx.fillRect(this.x - 18, this.y - 35, 36, 55);
+    ctx.fillStyle = '#0f0f0f';
+    ctx.fillRect(this.x - 17, this.y - 38, 34, 58);
 
     // Head
-    ctx.fillStyle = '#00ddff';
+    ctx.fillStyle = '#00eeff';
     ctx.beginPath();
-    ctx.arc(this.x, this.y - 28, 14, 0, Math.PI * 2);
+    ctx.arc(this.x, this.y - 30, 13.5, 0, Math.PI * 2);
     ctx.fill();
 
     // Weapon
-    const colors = ['#00ffaa', '#ffee00', '#ff2a2a'];
-    ctx.fillStyle = colors[this.weaponLevel];
-    ctx.fillRect(this.x - 7, this.y - 52, 14, 28);
+    const weaponColors = ['#00ffaa', '#ffee33', '#ff3366'];
+    ctx.fillStyle = weaponColors[this.weaponLevel];
+    ctx.fillRect(this.x - 6, this.y - 55, 12, 32);
 
-    // Glow
-    ctx.shadowColor = colors[this.weaponLevel];
-    ctx.shadowBlur = 15;
-    ctx.fillRect(this.x - 7, this.y - 52, 14, 28);
+    ctx.shadowColor = weaponColors[this.weaponLevel];
+    ctx.shadowBlur = 18;
+    ctx.fillRect(this.x - 6, this.y - 55, 12, 32);
     ctx.shadowBlur = 0;
   }
 }
