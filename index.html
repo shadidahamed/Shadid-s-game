@@ -2,30 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>VOID SURVIVAL</title>
+  <title>VOID DEFENDER</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background: #050505;
+      background: #000;
       font-family: 'Courier New', monospace;
-      color: #00f0ff;
+      color: #0ff;
     }
     canvas {
       display: block;
       margin: 0 auto;
-      image-rendering: pixelated;
     }
     #hud {
       position: absolute;
       top: 15px;
       left: 20px;
       font-size: 20px;
-      letter-spacing: 3px;
-      text-shadow: 0 0 12px #00f0ff;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px #0ff;
       z-index: 100;
-      pointer-events: none;
     }
     #gameOver {
       position: absolute;
@@ -37,26 +35,21 @@
       z-index: 200;
     }
     #gameOver h1 {
-      font-size: 62px;
+      font-size: 60px;
+      color: #f33;
+      text-shadow: 0 0 20px #f33;
       margin: 0;
-      color: #ff2a2a;
-      text-shadow: 0 0 30px #ff2a2a;
-    }
-    #finalScore {
-      font-size: 28px;
-      margin: 20px 0;
     }
   </style>
 </head>
 <body>
-  <div id="hud">SCORE: 00000 | HP: 100</div>
-  
+  <div id="hud">SCORE: 00000 | LIVES: 3</div>
   <canvas id="game" width="800" height="600"></canvas>
 
   <div id="gameOver">
-    <h1>SYSTEM FAILURE</h1>
-    <div id="finalScore">FINAL SCORE: 00000</div>
-    <p style="font-size:18px; margin:15px 0;">Press <strong>R</strong> to Restart</p>
+    <h1>GAME OVER</h1>
+    <p id="finalScore" style="font-size:28px; margin:20px 0;">FINAL SCORE: 00000</p>
+    <p>Press R to Restart</p>
   </div>
 
   <script type="module" src="main.js"></script>
