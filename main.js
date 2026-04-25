@@ -1,78 +1,105 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js";
 
-import { Player } from "./player.js";
+import { Character } from "./character.js";
 import { ZombieSystem } from "./zombies.js";
 import { ShootingSystem } from "./shooting.js";
 import { UI } from "./ui.js";
 import { FXSystem } from "./fx.js";
+import { Director } from "./director.js";
+import { RecoilSystem } from "./recoil.js";
+import { AudioEngine } from "./audio.js";
+import { AnimationSystem } from "./animation.js";
 
 class Game {
   constructor() {
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.Fog(0x000000, 10, 60);
+    this.scene.fog = new THREE.FogExp2(0x000000, 0.03);
+
+    this.camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
+
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setSize(innerWidth, innerHeight);
+    document.body.appendChild(this.renderer.domElement);
 
     this.clock = new THREE.Clock();
 
-    this.camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
-
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(this.renderer.domElement);
-
+    // SYSTEMS
     this.ui = new UI();
 
-    this.player = new Player(this.camera);
-    this.zombies = new ZombieSystem(this.scene, this.player, this.ui);
-    this.shooting = new ShootingSystem(this.scene, this.player, this.zombies, this.ui);
+    this.character = new Character(this.scene);
 
-    this._setupWorld();
-    this._setupLights();
-    this._setupResize();
+    this.director = new Director();
 
-    this.animate();
+    this.zombies = new ZombieSystem(this.scene, this.character, this.ui, this.director);
+
+    this.fx = new FXSystem(this.scene, this.camera);
+
+    this.recoil = new RecoilSystem(this.camera);
+
+    this.audio = new AudioEngine();
+    this.audio.init(this.camera);
+
+    this.anim = new AnimationSystem(this.character);
+
+    this.shooting = new ShootingSystem(
+      this.scene,
+      this.character,
+      this.zombies,
+      this.ui,
+      this.audio,
+      this.recoil
+    );
+
+    this._world();
+    this._light();
+    this._resize();
+
+    this.loop();
   }
 
-  _setupWorld() {
+  _world() {
     const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(100, 2000),
-      new THREE.MeshStandardMaterial({ color: 0x111111 })
+      new THREE.PlaneGeometry(100, 3000),
+      new THREE.MeshStandardMaterial({ color: 0x0a0a0a })
     );
 
     ground.rotation.x = -Math.PI / 2;
     this.scene.add(ground);
   }
 
-  _setupLights() {
-    this.scene.add(new THREE.AmbientLight(0x222222));
+  _light() {
+    this.scene.add(new THREE.AmbientLight(0x111111));
 
-    const dir = new THREE.DirectionalLight(0xff0000, 1);
-    dir.position.set(5, 10, 5);
-    this.scene.add(dir);
+    const d = new THREE.DirectionalLight(0xff0000, 1);
+    d.position.set(5, 10, 5);
+    this.scene.add(d);
   }
 
-  _setupResize() {
+  _resize() {
     window.addEventListener("resize", () => {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.aspect = innerWidth / innerHeight;
       this.camera.updateProjectionMatrix();
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setSize(innerWidth, innerHeight);
     });
   }
 
-  animate() {
-    requestAnimationFrame(() => this.animate());
+  loop() {
+    requestAnimationFrame(() => this.loop());
 
     const dt = this.clock.getDelta();
 
+    this.director.update(dt, this.ui);
+
     if (!this.ui.gameOver) {
-      this.player.update(dt);
+      this.character.update(dt);
       this.zombies.update(dt);
       this.shooting.update(dt);
+
+      this.anim.update(this.character);
     }
+
+    this.recoil.update(dt);
+    this.fx.update(dt, this.character, this.ui);
 
     this.renderer.render(this.scene, this.camera);
   }
