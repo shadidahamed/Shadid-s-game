@@ -2,95 +2,53 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>VOID DEFENDER</title>
+  <title>VOID BLAST</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #000;
-      touch-action: none;
-      font-family: 'Courier New', monospace;
-    }
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-    #hud {
-      position: absolute;
-      top: 12px;
-      left: 15px;
-      font-size: 18px;
-      color: #0ff;
-      text-shadow: 0 0 12px #0ff;
-      z-index: 100;
-      pointer-events: none;
-    }
+    body { margin:0; padding:0; overflow:hidden; background:#000; touch-action:none; font-family:'Courier New',monospace; }
+    canvas { display:block; width:100%; height:100%; }
+    #hud { position:absolute; top:12px; left:15px; font-size:19px; color:#0ff; text-shadow:0 0 12px #0ff; z-index:100; pointer-events:none; }
+    #highScore { position:absolute; top:12px; right:15px; font-size:16px; color:#ff0; text-shadow:0 0 8px #ff0; z-index:100; }
     .overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 200;
-      flex-direction: column;
-      color: #0ff;
-      text-align: center;
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      background:rgba(0,4,20,0.92); z-index:200; flex-direction:column; color:#0ff; text-align:center;
     }
     button {
-      background: #000;
-      color: #0ff;
-      border: 3px solid #0ff;
-      padding: 15px 40px;
-      font-size: 24px;
-      margin: 12px;
-      cursor: pointer;
-      text-shadow: 0 0 10px #0ff;
-      box-shadow: 0 0 20px #0ff;
-      touch-action: manipulation;
+      background:#000; color:#0ff; border:4px solid #0ff; padding:16px 48px; font-size:26px;
+      margin:12px; cursor:pointer; text-shadow:0 0 12px #0ff; box-shadow:0 0 25px #0ff;
+      touch-action:manipulation;
     }
-    button:active {
-      background: #0ff;
-      color: #000;
-    }
-    #pauseBtn {
-      position: absolute;
-      top: 12px;
-      right: 15px;
-      padding: 8px 16px;
-      font-size: 16px;
-      z-index: 150;
-    }
+    button:active { background:#0ff; color:#000; }
+    #pauseBtn { position:absolute; top:12px; right:15px; padding:8px 20px; font-size:16px; z-index:150; }
   </style>
 </head>
 <body>
   <div id="hud">SCORE: 00000 | LIVES: 10</div>
+  <div id="highScore">HI: 00000</div>
   <button id="pauseBtn" style="display:none;">PAUSE</button>
   <canvas id="game"></canvas>
 
-  <!-- Start Screen -->
+  <!-- Start -->
   <div id="startScreen" class="overlay">
-    <h1 style="font-size:52px; margin:0 0 30px 0; color:#0ff;">VOID DEFENDER</h1>
-    <button id="startBtn">START MISSION</button>
-    <p style="margin-top:40px; font-size:16px; opacity:0.8;">DRAG LEFT to MOVE<br>TAP RIGHT to FIRE</p>
+    <h1 style="font-size:58px; margin:0 0 10px 0; color:#0ff; text-shadow:0 0 20px #0ff;">VOID BLAST</h1>
+    <div id="startHighScore" style="font-size:22px; margin:20px 0; color:#ff0;">HIGH SCORE: 00000</div>
+    <button id="startBtn">PLAY NOW</button>
+    <p style="margin-top:50px; font-size:15px; opacity:0.85;">DRAG LEFT = MOVE<br>HOLD RIGHT = FIRE</p>
   </div>
 
-  <!-- Pause Screen -->
+  <!-- Pause -->
   <div id="pauseScreen" class="overlay" style="display:none;">
     <h1>PAUSED</h1>
     <button id="resumeBtn">RESUME</button>
     <button id="restartFromPauseBtn">RESTART</button>
   </div>
 
-  <!-- Game Over Screen -->
+  <!-- Game Over -->
   <div id="gameOverScreen" class="overlay" style="display:none;">
-    <h1 style="color:#f33;">MISSION FAILED</h1>
-    <p id="finalScore" style="font-size:28px; margin:20px 0;">FINAL SCORE: 00000</p>
-    <button id="restartBtn">RESTART MISSION</button>
+    <h1 style="color:#f33; font-size:52px;">GAME OVER</h1>
+    <p id="finalScore" style="font-size:28px; margin:20px 0; color:#ff0;">FINAL SCORE: 00000</p>
+    <p id="newHighScore" style="color:#0f0; font-size:20px; display:none;">★ NEW HIGH SCORE! ★</p>
+    <button id="restartBtn">PLAY AGAIN</button>
   </div>
 
   <script type="module" src="main.js"></script>
