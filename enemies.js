@@ -9,29 +9,38 @@ export class EnemySystem {
   }
 
   spawn() {
-    const count = 3 + Math.floor(this.wave / 2);
+    // Fewer enemies per spawn for better balance
+    const count = 2 + Math.floor(this.wave / 4); // starts with 2, grows slowly
     for (let i = 0; i < count; i++) {
       this.enemies.push({
-        x: 80 + Math.random() * 640,
-        y: -40 - i * 60,
-        speed: 140 + this.wave * 18,
-        size: 32,
-        health: 1 + Math.floor(this.wave / 4)
+        x: 60 + Math.random() * 680,
+        y: -50 - i * 70,
+        speed: 140 + this.wave * 12,   // slower ramp
+        size: 34,
+        health: 1 + Math.floor(this.wave / 5),
+        phase: Math.random() * Math.PI * 2
       });
     }
   }
 
   update(dt) {
     this.spawnTimer += dt;
-    if (this.spawnTimer > 1.8 - this.wave * 0.08) {
+
+    // Slower spawn rate early on (more breathing room)
+    const spawnInterval = Math.max(1.1, 2.2 - this.wave * 0.08);
+
+    if (this.spawnTimer > spawnInterval) {
       this.spawn();
       this.spawnTimer = 0;
-      if (Math.random() < 0.3) this.wave++;
+
+      // Gradual wave increase
+      if (Math.random() < 0.35) this.wave++;
     }
 
     for (let i = this.enemies.length - 1; i >= 0; i--) {
       const e = this.enemies[i];
       e.y += e.speed * dt;
+      e.phase += dt * 8;
 
       if (e.y > 650) {
         this.enemies.splice(i, 1);
@@ -39,8 +48,8 @@ export class EnemySystem {
         continue;
       }
 
-      // collision with player
-      if (Math.hypot(e.x - this.player.x, e.y - this.player.y) < 38) {
+      // Collision with player
+      if (Math.hypot(e.x - this.player.x, e.y - this.player.y) < 40) {
         this.ui.loseLife();
         this.particles.explosion(e.x, e.y);
         this.enemies.splice(i, 1);
@@ -50,22 +59,29 @@ export class EnemySystem {
 
   hit(index, damage) {
     const e = this.enemies[index];
+    if (!e) return;
     e.health -= damage;
     if (e.health <= 0) {
-      this.particles.explosion(e.x, e.y, 30);
-      this.ui.addScore(100 + this.wave * 20);
+      this.particles.explosion(e.x, e.y, 35);
+      this.ui.addScore(120 + this.wave * 25);
       this.enemies.splice(index, 1);
     }
   }
 
   draw(ctx) {
-    ctx.fillStyle = '#f44';
     for (const e of this.enemies) {
-      ctx.fillRect(e.x - e.size/2, e.y - e.size/2, e.size, e.size);
+      const pulse = Math.sin(e.phase) * 3;
+
+      ctx.fillStyle = '#f33';
+      ctx.fillRect(e.x - e.size/2, e.y - e.size/2 + pulse, e.size, e.size);
+
+      // Glowing eyes
       ctx.fillStyle = '#ff0';
-      ctx.fillRect(e.x - 8, e.y - 12, 6, 8);
-      ctx.fillRect(e.x + 4, e.y - 12, 6, 8);
-      ctx.fillStyle = '#f44';
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = '#ff0';
+      ctx.fillRect(e.x - 11, e.y - 10, 7, 9);
+      ctx.fillRect(e.x + 6, e.y - 10, 7, 9);
+      ctx.shadowBlur = 0;
     }
   }
 }
