@@ -1,4 +1,4 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js';
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js";
 
 export class ZombieSystem {
   constructor(scene, player, ui) {
@@ -7,16 +7,15 @@ export class ZombieSystem {
     this.ui = ui;
 
     this.zombies = [];
-    this.frame = 0;
+    this.timer = 0;
 
-    this.spawnRate = 100;
-    this.speed = 0.05;
+    this.spawnRate = 2.0; // seconds
+    this.speed = 3;
 
     this.lanes = [-2, 0, 2];
 
     this.material = new THREE.MeshStandardMaterial({
-      color: 0x2b0000,
-      roughness: 1
+      color: 0x2b0000
     });
   }
 
@@ -26,51 +25,45 @@ export class ZombieSystem {
       this.material
     );
 
-    const lane = this.lanes[Math.floor(Math.random() * this.lanes.length)];
-
     z.position.set(
-      lane,
+      this.lanes[Math.floor(Math.random() * this.lanes.length)],
       1,
-      this.player.position.z - 40 - Math.random() * 20
+      this.player.position.z - 40
     );
 
     this.scene.add(z);
     this.zombies.push(z);
   }
 
-  removeZombie(index) {
+  remove(index) {
     this.scene.remove(this.zombies[index]);
     this.zombies.splice(index, 1);
   }
 
-  update() {
-    this.frame++;
+  update(dt) {
+    this.timer += dt;
 
-    if (this.frame % this.spawnRate === 0) {
+    if (this.timer > this.spawnRate) {
       this.spawn();
+      this.timer = 0;
     }
 
-    for (let i = 0; i < this.zombies.length; i++) {
+    for (let i = this.zombies.length - 1; i >= 0; i--) {
       const z = this.zombies[i];
 
-      z.position.z += this.speed;
+      z.position.z += this.speed * dt;
 
-      const dx = this.player.position.x - z.position.x;
-      z.position.x += dx * 0.01;
+      const dx = Math.abs(z.position.x - this.player.position.x);
+      const dz = Math.abs(z.position.z - this.player.position.z);
 
-      // player collision damage
-      const dist = z.position.distanceTo(this.player.position);
-
-      if (dist < 1.2) {
+      if (dx < 1 && dz < 1.2) {
         this.ui.damage(10);
-        this.removeZombie(i);
-        i--;
+        this.remove(i);
         continue;
       }
 
       if (z.position.z > this.player.position.z + 10) {
-        this.removeZombie(i);
-        i--;
+        this.remove(i);
       }
     }
   }
