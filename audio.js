@@ -1,7 +1,7 @@
 export class AudioEngine {
   playShot() {
     console.log("🔫 SHOT");
-    // You can add real Web Audio API beeps later
+    // TODO: Add Web Audio API later for real gun sounds
   }
 
   playHit() {
