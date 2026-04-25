@@ -2,14 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>VOID SURVIVAL</title>
+  <title>VOID SURVIVAL 2D</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #050505;
+      font-family: system-ui, Arial, sans-serif;
+      color: #00f0ff;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+    }
+    #hud {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 18px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px #00f0ff;
+      pointer-events: none;
+      z-index: 10;
+    }
+    #gameOver {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      text-align: center;
+      display: none;
+      text-shadow: 0 0 20px #ff2a2a;
+    }
+  </style>
 </head>
-
 <body>
-  <div id="hud">VOID SURVIVAL // SYSTEM ONLINE</div>
+  <div id="hud">SCORE: 0 | HP: 100</div>
+  <canvas id="game"></canvas>
+  <div id="gameOver">
+    SYSTEM FAILURE<br>
+    <span style="font-size:24px">Final Score: <span id="finalScore">0</span></span><br><br>
+    Press R to Restart
+  </div>
 
-  <script type="module" src="./js/main.js"></script>
+  <script src="main.js" type="module"></script>
 </body>
 </html>
