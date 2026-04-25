@@ -1,68 +1,80 @@
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js";
 
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js';
+import { Player } from "./player.js";
+import { ZombieSystem } from "./zombies.js";
+import { ShootingSystem } from "./shooting.js";
+import { UI } from "./ui.js";
 
-import { Player } from './player.js';
-import { ZombieSystem } from './zombies.js';
-import { ShootingSystem } from './shooting.js';
-import { UI } from './ui.js';
+class Game {
+  constructor() {
+    this.scene = new THREE.Scene();
+    this.scene.fog = new THREE.Fog(0x000000, 10, 60);
 
-// Scene
-const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x000000, 10, 60);
+    this.clock = new THREE.Clock();
 
-// Camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
 
-// Renderer
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(this.renderer.domElement);
 
-// Lights
-scene.add(new THREE.AmbientLight(0x222222));
+    this.ui = new UI();
 
-const light = new THREE.DirectionalLight(0xff0000, 1);
-light.position.set(5, 10, 5);
-scene.add(light);
+    this.player = new Player(this.camera);
+    this.zombies = new ZombieSystem(this.scene, this.player, this.ui);
+    this.shooting = new ShootingSystem(this.scene, this.player, this.zombies, this.ui);
 
-// Ground
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(100, 2000),
-  new THREE.MeshStandardMaterial({ color: 0x111111 })
-);
+    this._setupWorld();
+    this._setupLights();
+    this._setupResize();
 
-ground.rotation.x = -Math.PI / 2;
-scene.add(ground);
-
-// Core systems
-const ui = new UI();
-const player = new Player(camera);
-const zombies = new ZombieSystem(scene, player, ui);
-const shooting = new ShootingSystem(scene, player, zombies, ui);
-
-// Resize
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// Game loop
-function animate() {
-  requestAnimationFrame(animate);
-
-  if (!ui.gameOver) {
-    player.update();
-    zombies.update();
-    shooting.update();
+    this.animate();
   }
 
-  renderer.render(scene, camera);
+  _setupWorld() {
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(100, 2000),
+      new THREE.MeshStandardMaterial({ color: 0x111111 })
+    );
+
+    ground.rotation.x = -Math.PI / 2;
+    this.scene.add(ground);
+  }
+
+  _setupLights() {
+    this.scene.add(new THREE.AmbientLight(0x222222));
+
+    const dir = new THREE.DirectionalLight(0xff0000, 1);
+    dir.position.set(5, 10, 5);
+    this.scene.add(dir);
+  }
+
+  _setupResize() {
+    window.addEventListener("resize", () => {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  }
+
+  animate() {
+    requestAnimationFrame(() => this.animate());
+
+    const dt = this.clock.getDelta();
+
+    if (!this.ui.gameOver) {
+      this.player.update(dt);
+      this.zombies.update(dt);
+      this.shooting.update(dt);
+    }
+
+    this.renderer.render(this.scene, this.camera);
+  }
 }
 
-animate();
+new Game();
