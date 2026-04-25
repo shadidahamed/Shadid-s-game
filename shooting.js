@@ -1,5 +1,4 @@
-
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js';
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js";
 
 export class ShootingSystem {
   constructor(scene, player, zombies, ui) {
@@ -9,61 +8,51 @@ export class ShootingSystem {
     this.ui = ui;
 
     this.bullets = [];
-    this.speed = 0.9;
+    this.speed = 20;
 
     this.cooldown = 0;
-    this.cooldownMax = 10;
 
     this.material = new THREE.MeshStandardMaterial({
       color: 0xff0000,
       emissive: 0x550000
     });
 
-    this.initInput();
-  }
-
-  initInput() {
-    window.addEventListener('click', () => this.shoot());
-    window.addEventListener('touchstart', () => this.shoot());
+    window.addEventListener("click", () => this.shoot());
   }
 
   shoot() {
     if (this.cooldown > 0) return;
 
-    const bullet = new THREE.Mesh(
-      new THREE.SphereGeometry(0.15, 8, 8),
+    const b = new THREE.Mesh(
+      new THREE.SphereGeometry(0.15),
       this.material
     );
 
-    bullet.position.copy(this.player.position);
-    bullet.position.z -= 2;
+    b.position.copy(this.player.position);
+    b.position.z -= 2;
 
-    this.scene.add(bullet);
-    this.bullets.push(bullet);
+    this.scene.add(b);
+    this.bullets.push(b);
 
-    this.cooldown = this.cooldownMax;
+    this.cooldown = 0.15;
   }
 
-  update() {
-    if (this.cooldown > 0) this.cooldown--;
+  update(dt) {
+    this.cooldown -= dt;
 
-    for (let i = 0; i < this.bullets.length; i++) {
+    for (let i = this.bullets.length - 1; i >= 0; i--) {
       const b = this.bullets[i];
-      b.position.z -= this.speed;
 
-      // collision with zombies
-      for (let j = 0; j < this.zombies.zombies.length; j++) {
+      b.position.z -= this.speed * dt;
+
+      for (let j = this.zombies.zombies.length - 1; j >= 0; j--) {
         const z = this.zombies.zombies[j];
 
-        const dx = b.position.x - z.position.x;
-        const dz = b.position.z - z.position.z;
-
-        if (Math.sqrt(dx * dx + dz * dz) < 0.9) {
+        if (b.position.distanceTo(z.position) < 1) {
           this.scene.remove(b);
           this.bullets.splice(i, 1);
-          i--;
 
-          this.zombies.removeZombie(j);
+          this.zombies.remove(j);
           this.ui.addScore(10);
           break;
         }
@@ -72,7 +61,6 @@ export class ShootingSystem {
       if (b.position.z < this.player.position.z - 100) {
         this.scene.remove(b);
         this.bullets.splice(i, 1);
-        i--;
       }
     }
   }
