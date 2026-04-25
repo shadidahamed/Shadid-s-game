@@ -1,9 +1,11 @@
 
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js';
 import { Player } from './player.js';
+import { ZombieSystem } from './zombies.js';
 
 // Scene
 const scene = new THREE.Scene();
+const zombies = new ZombieSystem(scene, player);
 scene.fog = new THREE.Fog(0x000000, 10, 50);
 
 // Camera
