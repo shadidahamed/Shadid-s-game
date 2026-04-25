@@ -1,11 +1,10 @@
 export class AudioEngine {
-  init(camera) {}
-
   playShot() {
-    console.log("SHOT");
+    console.log("🔫 SHOT");
+    // You can add real Web Audio API beeps later
   }
 
   playHit() {
-    console.log("HIT");
+    console.log("💥 HIT");
   }
 }
