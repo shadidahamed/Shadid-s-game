@@ -1,3 +1,4 @@
+
 export class UI {
   constructor() {
     this.score = 0;
@@ -5,9 +6,6 @@ export class UI {
     this.gameOver = false;
 
     this.el = document.createElement("div");
-    this.el.style.position = "absolute";
-    this.el.style.top = "10px";
-    this.el.style.right = "10px";
     this.el.style.color = "red";
     document.body.appendChild(this.el);
 
@@ -15,36 +13,30 @@ export class UI {
   }
 
   addScore(v) {
-    if (this.gameOver) return;
     this.score += v;
     this.render();
   }
 
   damage(v) {
-    if (this.gameOver) return;
-
     this.health -= v;
 
     if (this.health <= 0) {
-      this.health = 0;
       this.gameOver = true;
-      this._gameOver();
+      this.health = 0;
+
+      const g = document.createElement("div");
+      g.innerText = "SYSTEM FAILURE";
+      g.style.position = "absolute";
+      g.style.top = "50%";
+      g.style.left = "50%";
+      g.style.transform = "translate(-50%,-50%)";
+      g.style.color = "red";
+      g.style.fontSize = "40px";
+
+      document.body.appendChild(g);
     }
 
     this.render();
-  }
-
-  _gameOver() {
-    const g = document.createElement("div");
-    g.innerText = "GAME OVER";
-    g.style.position = "absolute";
-    g.style.top = "50%";
-    g.style.left = "50%";
-    g.style.transform = "translate(-50%,-50%)";
-    g.style.color = "red";
-    g.style.fontSize = "50px";
-
-    document.body.appendChild(g);
   }
 
   render() {
