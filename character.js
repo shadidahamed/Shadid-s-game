@@ -16,7 +16,7 @@ export class Character {
 
     this.model = new THREE.Mesh(
       new THREE.CapsuleGeometry(0.5, 1),
-      new THREE.MeshStandardMaterial({ color: 0x222222 })
+      new THREE.MeshStandardMaterial({ color: 0x1a1a1a })
     );
 
     this.scene.add(this.model);
@@ -32,7 +32,7 @@ export class Character {
     this.position.z -= this.speed * dt;
 
     const tx = this.lane * this.laneWidth;
-    this.position.x += (tx - this.position.x) * 10 * dt;
+    this.position.x += (tx - this.position.x) * 12 * dt;
 
     this.model.position.copy(this.position);
 
