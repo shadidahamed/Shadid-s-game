@@ -2,10 +2,12 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js';
 import { Player } from './player.js';
 import { ZombieSystem } from './zombies.js';
+import { ShootingSystem } from './shooting.js';
 
 // Scene
 const scene = new THREE.Scene();
 const zombies = new ZombieSystem(scene, player);
+const shooting = new ShootingSystem(scene, player);
 scene.fog = new THREE.Fog(0x000000, 10, 50);
 
 // Camera
@@ -50,11 +52,15 @@ window.addEventListener('resize', () => {
 // Animate
 function animate() {
   requestAnimationFrame(animate);
-zombies.update();
+
   // Update player movement
   player.update();
 
   renderer.render(scene, camera);
+
+  zombies.update();
+
+  shooting.update();
 }
 
 animate();
