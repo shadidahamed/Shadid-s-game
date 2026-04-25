@@ -1,14 +1,14 @@
 
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js';
+
 import { Player } from './player.js';
 import { ZombieSystem } from './zombies.js';
 import { ShootingSystem } from './shooting.js';
+import { UI } from './ui.js';
 
 // Scene
 const scene = new THREE.Scene();
-const zombies = new ZombieSystem(scene, player);
-const shooting = new ShootingSystem(scene, player);
-scene.fog = new THREE.Fog(0x000000, 10, 50);
+scene.fog = new THREE.Fog(0x000000, 10, 60);
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
@@ -21,26 +21,29 @@ const camera = new THREE.PerspectiveCamera(
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000);
 document.body.appendChild(renderer.domElement);
 
 // Lights
-const ambientLight = new THREE.AmbientLight(0x222222);
-scene.add(ambientLight);
+scene.add(new THREE.AmbientLight(0x222222));
 
-const directionalLight = new THREE.DirectionalLight(0xff0000, 1);
-directionalLight.position.set(5, 10, 5);
-scene.add(directionalLight);
+const light = new THREE.DirectionalLight(0xff0000, 1);
+light.position.set(5, 10, 5);
+scene.add(light);
 
 // Ground
-const geometry = new THREE.PlaneGeometry(100, 1000);
-const material = new THREE.MeshStandardMaterial({ color: 0x111111 });
-const ground = new THREE.Mesh(geometry, material);
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(100, 2000),
+  new THREE.MeshStandardMaterial({ color: 0x111111 })
+);
+
 ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
-// Player
+// Core systems
+const ui = new UI();
 const player = new Player(camera);
+const zombies = new ZombieSystem(scene, player, ui);
+const shooting = new ShootingSystem(scene, player, zombies, ui);
 
 // Resize
 window.addEventListener('resize', () => {
@@ -49,18 +52,17 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Animate
+// Game loop
 function animate() {
   requestAnimationFrame(animate);
 
-  // Update player movement
-  player.update();
+  if (!ui.gameOver) {
+    player.update();
+    zombies.update();
+    shooting.update();
+  }
 
   renderer.render(scene, camera);
-
-  zombies.update();
-
-  shooting.update();
 }
 
 animate();
