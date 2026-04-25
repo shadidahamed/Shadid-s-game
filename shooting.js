@@ -1,45 +1,42 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js";
 
 export class ShootingSystem {
-  constructor(scene, player, zombies, ui) {
+  constructor(scene, character, zombies, ui, audio, recoil) {
     this.scene = scene;
-    this.player = player;
+    this.character = character;
     this.zombies = zombies;
     this.ui = ui;
+    this.audio = audio;
+    this.recoil = recoil;
 
     this.bullets = [];
-    this.speed = 20;
+    this.speed = 25;
 
-    this.cooldown = 0;
-
-    this.material = new THREE.MeshStandardMaterial({
-      color: 0xff0000,
-      emissive: 0x550000
-    });
+    this.mat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
 
     window.addEventListener("click", () => this.shoot());
   }
 
   shoot() {
-    if (this.cooldown > 0) return;
+    if (!this.character.canShoot()) return;
+
+    const data = this.character.shoot();
+
+    this.audio.playShot();
+    this.recoil.kick(0.2);
 
     const b = new THREE.Mesh(
       new THREE.SphereGeometry(0.15),
-      this.material
+      this.mat
     );
 
-    b.position.copy(this.player.position);
-    b.position.z -= 2;
+    b.position.copy(data.position);
 
     this.scene.add(b);
     this.bullets.push(b);
-
-    this.cooldown = 0.15;
   }
 
   update(dt) {
-    this.cooldown -= dt;
-
     for (let i = this.bullets.length - 1; i >= 0; i--) {
       const b = this.bullets[i];
 
@@ -54,13 +51,10 @@ export class ShootingSystem {
 
           this.zombies.remove(j);
           this.ui.addScore(10);
+
+          this.audio.playHit();
           break;
         }
-      }
-
-      if (b.position.z < this.player.position.z - 100) {
-        this.scene.remove(b);
-        this.bullets.splice(i, 1);
       }
     }
   }
