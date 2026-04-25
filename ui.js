@@ -1,7 +1,7 @@
 export class UI {
   constructor() {
     this.score = 0;
-    this.health = 100;
+    this.lives = 3;
     this.gameOver = false;
     this.hud = document.getElementById('hud');
     this.gameOverScreen = document.getElementById('gameOver');
@@ -13,11 +13,11 @@ export class UI {
     this.render();
   }
 
-  damage(v) {
-    this.health = Math.max(0, this.health - v);
-    if (this.health <= 0 && !this.gameOver) {
+  loseLife() {
+    this.lives--;
+    if (this.lives <= 0) {
       this.gameOver = true;
-      this.finalScoreEl.textContent = `FINAL SCORE: ${this.score.toString().padStart(5, '0')}`;
+      this.finalScoreEl.textContent = `FINAL SCORE: ${this.score}`;
       this.gameOverScreen.style.display = 'block';
     }
     this.render();
@@ -25,6 +25,6 @@ export class UI {
 
   render() {
     if (this.gameOver) return;
-    this.hud.textContent = `SCORE: ${this.score.toString().padStart(5, '0')} | HP: ${Math.floor(this.health)}`;
+    this.hud.textContent = `SCORE: ${this.score.toString().padStart(5,'0')} | LIVES: ${this.lives}`;
   }
 }
