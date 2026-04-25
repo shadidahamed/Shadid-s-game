@@ -20,6 +20,7 @@
     }
     button:active { background:#0ff; color:#000; }
     #pauseBtn { position:absolute; top:12px; right:15px; padding:8px 20px; font-size:16px; z-index:150; }
+    .tip { margin-top:40px; font-size:15px; opacity:0.8; }
   </style>
 </head>
 <body>
@@ -28,12 +29,12 @@
   <button id="pauseBtn" style="display:none;">PAUSE</button>
   <canvas id="game"></canvas>
 
-  <!-- Start -->
+  <!-- Start Screen -->
   <div id="startScreen" class="overlay">
     <h1 style="font-size:58px; margin:0 0 10px 0; color:#0ff; text-shadow:0 0 20px #0ff;">VOID BLAST</h1>
     <div id="startHighScore" style="font-size:22px; margin:20px 0; color:#ff0;">HIGH SCORE: 00000</div>
     <button id="startBtn">PLAY NOW</button>
-    <p style="margin-top:50px; font-size:15px; opacity:0.85;">DRAG LEFT = MOVE<br>HOLD RIGHT = FIRE</p>
+    <div class="tip">TOUCH & DRAG ANYWHERE TO MOVE<br>HOLD TO FIRE LASERS</div>
   </div>
 
   <!-- Pause -->
