@@ -17,7 +17,7 @@ export class UI {
     this.health = Math.max(0, this.health - v);
     if (this.health <= 0 && !this.gameOver) {
       this.gameOver = true;
-      this.finalScoreEl.textContent = this.score;
+      this.finalScoreEl.textContent = `FINAL SCORE: ${this.score.toString().padStart(5, '0')}`;
       this.gameOverScreen.style.display = 'block';
     }
     this.render();
@@ -25,6 +25,6 @@ export class UI {
 
   render() {
     if (this.gameOver) return;
-    this.hud.textContent = `SCORE: ${this.score} | HP: ${this.health}`;
+    this.hud.textContent = `SCORE: ${this.score.toString().padStart(5, '0')} | HP: ${Math.floor(this.health)}`;
   }
 }
