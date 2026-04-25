@@ -17,7 +17,7 @@ class Game {
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
 
-    this.ui = new UI(10); // 10 lives
+    this.ui = new UI(10);
     this.fx = new FXSystem();
     this.particles = new ParticleSystem();
     this.audio = new AudioEngine();
@@ -26,69 +26,105 @@ class Game {
     this.enemies = new EnemySystem(this.player, this.ui, this.particles);
     this.shooting = new ShootingSystem(this.player, this.enemies, this.ui, this.fx, this.particles, this.audio);
 
-    this.keys = {};
-    this.touchMove = null;   // left side drag
-    this.isFiring = false;   // right side tap/hold
-
-    this.setupMobileControls();
+    this.isRunning = false;
+    this.isPaused = false;
+    this.touchMove = null;
     this.lastTime = performance.now();
-    this.loop();
+
+    this.setupUIButtons();
+    this.setupMobileControls();
+
+    // Show start screen initially
+    document.getElementById('startScreen').style.display = 'flex';
   }
 
   resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    // Keep logical game resolution for drawing (scales automatically)
     gameWidth = 800;
     gameHeight = 600;
   }
 
+  setupUIButtons() {
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const restartFromPauseBtn = document.getElementById('restartFromPauseBtn');
+
+    startBtn.addEventListener('click', () => this.startGame());
+    pauseBtn.addEventListener('click', () => this.togglePause());
+    resumeBtn.addEventListener('click', () => this.togglePause());
+    restartBtn.addEventListener('click', () => this.restartGame());
+    restartFromPauseBtn.addEventListener('click', () => this.restartGame());
+  }
+
+  startGame() {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('pauseBtn').style.display = 'block';
+    this.isRunning = true;
+    this.isPaused = false;
+    this.lastTime = performance.now();
+    this.loop();
+  }
+
+  togglePause() {
+    if (!this.isRunning) return;
+    this.isPaused = !this.isPaused;
+    document.getElementById('pauseScreen').style.display = this.isPaused ? 'flex' : 'none';
+    document.getElementById('pauseBtn').textContent = this.isPaused ? 'RESUME' : 'PAUSE';
+  }
+
+  restartGame() {
+    location.reload(); // Clean full restart (simple & reliable on mobile)
+  }
+
   setupMobileControls() {
     canvas.addEventListener('touchstart', (e) => {
+      if (!this.isRunning || this.isPaused) return;
       e.preventDefault();
+
       for (let touch of e.changedTouches) {
         const x = (touch.clientX / canvas.clientWidth) * gameWidth;
         if (x < gameWidth / 2) {
-          this.touchMove = { id: touch.identifier, x: touch.clientX, startX: this.player.x };
+          this.touchMove = { id: touch.identifier, startX: this.player.x, lastX: touch.clientX };
         } else {
-          this.isFiring = true;
           this.shooting.startAutoFire();
         }
       }
     });
 
     canvas.addEventListener('touchmove', (e) => {
+      if (!this.isRunning || this.isPaused) return;
       e.preventDefault();
+
       for (let touch of e.changedTouches) {
         if (this.touchMove && touch.identifier === this.touchMove.id) {
-          const dx = (touch.clientX - this.touchMove.x) * (gameWidth / canvas.clientWidth) * 1.8;
-          this.player.targetX = Math.max(40, Math.min(gameWidth - 40, this.touchMove.startX + dx));
+          const dx = (touch.clientX - this.touchMove.lastX) * (gameWidth / canvas.clientWidth) * 2.2;
+          this.player.targetX = Math.max(40, Math.min(gameWidth - 40, this.player.targetX + dx));
+          this.touchMove.lastX = touch.clientX;
         }
       }
     });
 
     canvas.addEventListener('touchend', (e) => {
+      if (!this.isRunning || this.isPaused) return;
       e.preventDefault();
+
       for (let touch of e.changedTouches) {
         if (this.touchMove && touch.identifier === this.touchMove.id) {
           this.touchMove = null;
         } else {
-          this.isFiring = false;
           this.shooting.stopAutoFire();
         }
       }
     });
-
-    // Tap to restart on game over
-    canvas.addEventListener('touchstart', () => {
-      if (this.ui.gameOver) location.reload();
-    });
   }
 
   update(dt) {
-    if (this.ui.gameOver) return;
+    if (!this.isRunning || this.isPaused) return;
 
-    this.player.update(this.keys, dt);
+    this.player.update({}, dt);
     this.enemies.update(dt);
     this.shooting.update(dt);
     this.fx.update(dt);
@@ -99,7 +135,6 @@ class Game {
     ctx.fillStyle = '#000411';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Scale drawing to fit screen while keeping aspect
     const scale = Math.min(canvas.width / gameWidth, canvas.height / gameHeight);
     const offsetX = (canvas.width - gameWidth * scale) / 2;
     const offsetY = (canvas.height - gameHeight * scale) / 2;
@@ -108,7 +143,7 @@ class Game {
     ctx.translate(offsetX, offsetY);
     ctx.scale(scale, scale);
 
-    // Stars
+    // Background stars
     ctx.fillStyle = '#fff';
     for (let i = 0; i < 100; i++) {
       const x = (i * 37 % gameWidth);
@@ -125,6 +160,8 @@ class Game {
   }
 
   loop() {
+    if (!this.isRunning) return;
+
     const now = performance.now();
     let dt = (now - this.lastTime) / 1000;
     this.lastTime = now;
@@ -133,6 +170,7 @@ class Game {
     this.update(dt);
     this.draw();
 
+    // Screen shake
     if (this.fx.shake > 0.3) {
       ctx.save();
       ctx.translate((Math.random() - 0.5) * this.fx.shake, (Math.random() - 0.5) * this.fx.shake * 0.5);
