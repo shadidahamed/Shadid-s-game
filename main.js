@@ -50,7 +50,7 @@ window.addEventListener('resize', () => {
 // Animate
 function animate() {
   requestAnimationFrame(animate);
-
+zombies.update();
   // Update player movement
   player.update();
 
