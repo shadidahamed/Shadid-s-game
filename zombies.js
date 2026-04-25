@@ -1,68 +1,71 @@
-export class ZombieSystem {
-  constructor(character, ui, director, particles) {
-    this.character = character;
+export class EnemySystem {
+  constructor(player, ui, particles) {
+    this.player = player;
     this.ui = ui;
-    this.director = director;
     this.particles = particles;
-    this.zombies = [];
+    this.enemies = [];
     this.spawnTimer = 0;
+    this.wave = 1;
   }
 
   spawn() {
-    const lane = Math.floor(Math.random() * 3);
-    this.zombies.push({
-      x: 115 + lane * 170,
-      y: -50,
-      size: 34,
-      speed: this.director.zombieSpeed() + Math.random() * 40,
-      health: 2 + Math.floor(this.director.wave * 0.6)
-    });
+    const count = 3 + Math.floor(this.wave / 2);
+    for (let i = 0; i < count; i++) {
+      this.enemies.push({
+        x: 80 + Math.random() * 640,
+        y: -40 - i * 60,
+        speed: 140 + this.wave * 18,
+        size: 32,
+        health: 1 + Math.floor(this.wave / 4)
+      });
+    }
   }
 
   update(dt) {
     this.spawnTimer += dt;
-    if (this.spawnTimer > this.director.spawnRate()) {
+    if (this.spawnTimer > 1.8 - this.wave * 0.08) {
       this.spawn();
       this.spawnTimer = 0;
+      if (Math.random() < 0.3) this.wave++;
     }
 
-    for (let i = this.zombies.length - 1; i >= 0; i--) {
-      const z = this.zombies[i];
-      z.y += z.speed * dt;
+    for (let i = this.enemies.length - 1; i >= 0; i--) {
+      const e = this.enemies[i];
+      e.y += e.speed * dt;
 
-      if (Math.hypot(z.x - this.character.x, z.y - this.character.y) < 42) {
-        this.ui.damage(22);
-        this.particles.bloodBurst(z.x, z.y);
-        this.zombies.splice(i, 1);
+      if (e.y > 650) {
+        this.enemies.splice(i, 1);
+        this.ui.loseLife();
         continue;
       }
 
-      if (z.y > 700) this.zombies.splice(i, 1);
+      // collision with player
+      if (Math.hypot(e.x - this.player.x, e.y - this.player.y) < 38) {
+        this.ui.loseLife();
+        this.particles.explosion(e.x, e.y);
+        this.enemies.splice(i, 1);
+      }
     }
   }
 
-  hit(zIndex, damage) {
-    const z = this.zombies[zIndex];
-    if (!z) return;
-    z.health -= damage;
-
-    if (z.health <= 0) {
-      this.particles.bloodBurst(z.x, z.y + 10, 25);
-      this.ui.addScore(25 + Math.floor(this.director.wave * 3));
-      this.zombies.splice(zIndex, 1);
-    } else {
-      this.particles.bloodBurst(z.x, z.y, 8);
+  hit(index, damage) {
+    const e = this.enemies[index];
+    e.health -= damage;
+    if (e.health <= 0) {
+      this.particles.explosion(e.x, e.y, 30);
+      this.ui.addScore(100 + this.wave * 20);
+      this.enemies.splice(index, 1);
     }
   }
 
   draw(ctx) {
-    for (const z of this.zombies) {
-      ctx.fillStyle = '#330000';
-      ctx.fillRect(z.x - z.size/2, z.y - z.size * 0.9, z.size, z.size * 1.9);
-
-      ctx.fillStyle = '#ff4444';
-      ctx.fillRect(z.x - 10, z.y - z.size * 0.4, 7, 10);
-      ctx.fillRect(z.x + 5, z.y - z.size * 0.4, 7, 10);
+    ctx.fillStyle = '#f44';
+    for (const e of this.enemies) {
+      ctx.fillRect(e.x - e.size/2, e.y - e.size/2, e.size, e.size);
+      ctx.fillStyle = '#ff0';
+      ctx.fillRect(e.x - 8, e.y - 12, 6, 8);
+      ctx.fillRect(e.x + 4, e.y - 12, 6, 8);
+      ctx.fillStyle = '#f44';
     }
   }
 }
