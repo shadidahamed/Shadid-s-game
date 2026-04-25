@@ -1,4 +1,5 @@
 export class UI {
+  
   constructor() {
     this.score = 0;
     this.health = 100;
