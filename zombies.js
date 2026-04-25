@@ -12,7 +12,7 @@ export class ZombieSystem {
 
     this.lanes = [-2, 0, 2];
 
-    this.mat = new THREE.MeshStandardMaterial({ color: 0x220000 });
+    this.mat = new THREE.MeshStandardMaterial({ color: 0x2a0000 });
   }
 
   spawn() {
@@ -24,7 +24,7 @@ export class ZombieSystem {
     z.position.set(
       this.lanes[Math.floor(Math.random() * 3)],
       1,
-      this.character.position.z - 40
+      this.character.position.z - 50
     );
 
     this.scene.add(z);
@@ -39,22 +39,19 @@ export class ZombieSystem {
   update(dt) {
     this.timer += dt;
 
-    if (this.timer > this.director.getSpawnRate()) {
+    if (this.timer > this.director.spawnRate()) {
       this.spawn();
       this.timer = 0;
     }
 
-    const speed = this.director.getZombieSpeed();
+    const speed = this.director.zombieSpeed();
 
     for (let i = this.zombies.length - 1; i >= 0; i--) {
       const z = this.zombies[i];
 
       z.position.z += speed * dt;
 
-      const dx = Math.abs(z.position.x - this.character.position.x);
-      const dz = Math.abs(z.position.z - this.character.position.z);
-
-      if (dx < 1 && dz < 1.2) {
+      if (z.position.distanceTo(this.character.position) < 1.2) {
         this.ui.damage(15);
         this.remove(i);
       }
