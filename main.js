@@ -8,7 +8,7 @@ import { AudioEngine } from './audio.js';
 import { ParticleSystem } from './particles.js';
 
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d', { alpha: true });
+const ctx = canvas.getContext('2d');
 
 class Game {
   constructor() {
@@ -30,8 +30,6 @@ class Game {
     this.setupControls();
 
     this.lastTime = performance.now();
-    this.gameOver = false;
-
     this.loop();
   }
 
@@ -43,7 +41,7 @@ class Game {
         this.character.cycleWeapon();
       }
       if ((e.key === 'r' || e.key === 'R') && this.ui.gameOver) {
-        this.restart();
+        location.reload();
       }
       if (e.key === ' ' && !this.ui.gameOver) {
         this.shooting.shoot();
@@ -55,13 +53,15 @@ class Game {
       this.keys[e.key.toLowerCase()] = false;
     });
 
-    canvas.addEventListener('mousedown', () => {
-      if (!this.ui.gameOver) this.shooting.shoot();
+    // Mouse click only for shooting (no movement)
+    canvas.addEventListener('mousedown', (e) => {
+      if (!this.ui.gameOver && e.button === 0) {
+        this.shooting.shoot();
+      }
     });
-  }
 
-  restart() {
-    location.reload(); // Clean restart for now (can be improved later)
+    // Prevent right-click menu
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
   }
 
   update(dt) {
@@ -76,11 +76,10 @@ class Game {
   }
 
   draw() {
-    // Background
     this.ctx.fillStyle = '#0a0a0a';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Road
+    // Road lines
     this.ctx.strokeStyle = '#1f1f1f';
     this.ctx.lineWidth = 6;
     for (let i = 1; i < 4; i++) {
@@ -90,12 +89,10 @@ class Game {
       this.ctx.stroke();
     }
 
-    // Draw order
     this.zombies.draw(this.ctx);
     this.character.draw(this.ctx);
     this.shooting.draw(this.ctx);
     this.particles.draw(this.ctx);
-    this.fx.draw(this.ctx); // shake is handled in main draw
   }
 
   loop() {
@@ -107,14 +104,13 @@ class Game {
     this.update(dt);
     this.draw();
 
-    // Apply screen shake
+    // Screen shake effect
     if (this.fx.shake > 0.3) {
       this.ctx.save();
-      this.ctx.translate(
-        (Math.random() - 0.5) * this.fx.shake,
-        (Math.random() - 0.5) * this.fx.shake * 0.6
-      );
-      this.draw(); // redraw with shake offset (simple but effective)
+      const shakeX = (Math.random() - 0.5) * this.fx.shake;
+      const shakeY = (Math.random() - 0.5) * this.fx.shake * 0.6;
+      this.ctx.translate(shakeX, shakeY);
+      this.draw();
       this.ctx.restore();
     }
 
