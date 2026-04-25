@@ -1,7 +1,7 @@
 export class UI {
   constructor() {
     this.score = 0;
-    this.lives = 3;
+    this.lives = 10;
     this.gameOver = false;
     this.hud = document.getElementById('hud');
     this.gameOverScreen = document.getElementById('gameOver');
