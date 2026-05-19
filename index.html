@@ -3,37 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TLOU 2D Survival MVP</title>
+    <title>Dead Zone: 2.5D Raycast Survival</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="game-container">
-        <!-- Game Display Canvas -->
-        <canvas id="gameCanvas" width="800" height="450"></canvas>
+    <div id="display-wrapper">
+        <!-- Render Viewport -->
+        <canvas id="gameCanvas" width="640" height="400"></canvas>
 
-        <!-- Heads-Up Display Status Overlay -->
-        <div id="hud">
-            <div class="stat-row">HP: <span id="hp-val">100</span></div>
-            <div id="inventory-ui">Alcohol: 0 | Binding: 0 | Blades: 0 | Medkits: 0 | Shivs: 1</div>
+        <!-- Minimalist Apocalyptic HUD -->
+        <div id="hud-overlay">
+            <div class="hud-card">VITAL SIGN: <span id="hp-display">100</span>%</div>
+            <div class="hud-card" id="inv-display">ALC: 0 | BND: 0 | BLD: 0 || MED: 0 | SHV: 1</div>
         </div>
 
-        <!-- Mobile Touch Layout Panel (Hidden on Desktop) -->
-        <div id="mobile-ui-panel">
-            <div id="joystick-zone">
-                <div id="joystick-base">
-                    <div id="joystick-knob"></div>
+        <!-- Dynamic Mobile Controller Module -->
+        <div id="mobile-control-deck">
+            <div id="dpad-zone">
+                <div id="virtual-joystick">
+                    <div id="joystick-handle"></div>
                 </div>
             </div>
             <div id="action-zone">
-                <button id="btn-crouch" class="mobile-btn">Crouch</button>
-                <button id="btn-heal" class="mobile-btn">Heal (Q)</button>
-                <button id="btn-craft-a" class="mobile-btn">Craft Medkit (A)</button>
-                <button id="btn-craft-d" class="mobile-btn">Craft Shiv (D)</button>
+                <button id="touch-crouch" class="ctrl-btn">STEALTH</button>
+                <button id="touch-heal" class="ctrl-btn">HEAL (Q)</button>
+                <button id="touch-craft-a" class="ctrl-btn">CRAFT MED (A)</button>
+                <button id="touch-craft-d" class="ctrl-btn">CRAFT SHIV (D)</button>
             </div>
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <script src="engine.js"></script>
 </body>
 </html>
