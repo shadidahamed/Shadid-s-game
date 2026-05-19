@@ -3,55 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dead Zone: Advanced Raycast Survival</title>
+    <title>DEAD ZONE: Tactician Edition</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Mandatory Orientation Lock Warning for Mobile Layouts -->
+    <!-- Device Orientation Screen Lock System -->
     <div id="orientation-lock">
-        <div class="lock-message">
-            <div class="rotate-icon">🔄</div>
-            <p>PLEASE ROTATE YOUR DEVICE TO LANDSCAPE TO SURVIVE</p>
+        <div class="lock-box">
+            <div class="radar-ping"></div>
+            <p>TACTICAL OVERLAY REQUIRES LANDSCAPE MODE</p>
+            <span class="sub-lock">ROTATE DEVICE TO ENGAGE SENSORS</span>
         </div>
     </div>
 
+    <!-- Main Game Container -->
     <div id="display-wrapper">
-        <!-- Main Core Game Rendering Viewport -->
+        
+        <!-- Retro CRT Monitor Scanner Screen Effect Filters Overlay -->
+        <div class="crt-scanlines"></div>
+        <div id="damage-flash"></div>
+
+        <!-- Main Raycast Core Renderer Viewport -->
         <canvas id="gameCanvas" width="640" height="400"></canvas>
 
-        <!-- Contextual Screen Menu System -->
+        <!-- Contextual Terminal Menu Interface System -->
         <div id="menu-overlay">
-            <h1 id="menu-title">DEAD ZONE</h1>
-            <p id="menu-subtitle">AN ADVANCED 2.5D RAYCAST SURVIVAL EXPERIENCE</p>
-            <div id="level-indicator" style="display: none;"></div>
-            <button id="btn-primary" class="menu-btn">START SURVIVAL</button>
-            <button id="btn-restart" class="menu-btn" style="display: none;">RESTART ZONE</button>
+            <div class="terminal-box">
+                <h1 id="menu-title">DEAD ZONE</h1>
+                <div class="glitch-line"></div>
+                <p id="menu-subtitle">2.5D PSEUDO-3D STEALTH RAYCAST ENGINE</p>
+                <div id="level-indicator" style="display: none;"></div>
+                <div class="menu-actions">
+                    <button id="btn-primary" class="menu-btn">ENGAGE INFILTRATION</button>
+                    <button id="btn-restart" class="menu-btn" style="display: none;">ABORT & RESET</button>
+                </div>
+            </div>
         </div>
 
-        <!-- Heads Up Display Data Layout -->
+        <!-- Heads Up Display Data Grid Layout -->
         <div id="hud-overlay" style="display: none;">
-            <div class="hud-left">
-                <div class="hud-card">VITAL SIGN: <span id="hp-display">100</span>%</div>
-                <div class="hud-card">LEVEL: <span id="level-display">1</span>/6</div>
+            <div class="hud-group left-group">
+                <div class="hud-card bios-card">VITAL SIGN: <span id="hp-display">100</span>%</div>
+                <div class="hud-card sector-card">SECTOR: <span id="level-display">1</span> / 6</div>
             </div>
-            <div class="hud-right">
-                <div class="hud-card" id="inv-display">TASK: FETCH THE IMMUNIZATION FUEL CELL</div>
+            <div class="hud-group right-group">
+                <div class="hud-card task-card" id="inv-display">SYSTEM ONLINE</div>
             </div>
         </div>
 
-        <!-- Mobile Touch Controls Deck Grid Layout -->
+        <!-- High-Performance Low-Latency Touch Gamepad Deck -->
         <div id="mobile-control-deck">
-            <div id="joystick-zone">
+            <div class="joystick-container">
                 <div id="virtual-joystick">
+                    <div id="joystick-ring"></div>
                     <div id="joystick-handle"></div>
                 </div>
             </div>
-            <div id="action-zone">
-                <button id="touch-crouch" class="ctrl-btn">STEALTH</button>
-                <button id="touch-heal" class="ctrl-btn">HEAL (Q)</button>
-                <button id="touch-craft-a" class="ctrl-btn">CRAFT MED (A)</button>
-                <button id="touch-craft-d" class="ctrl-btn">CRAFT SHIV (D)</button>
+            <div id="action-grid">
+                <button id="touch-crouch" class="action-btn stealth-btn">STEALTH TOGGLE</button>
+                <button id="touch-heal" class="action-btn heal-btn">USE MED (Q)</button>
+                <button id="touch-craft-a" class="action-btn craft-btn">CRAFT MED (A)</button>
+                <button id="touch-craft-d" class="action-btn craft-btn">CRAFT SHIV (D)</button>
             </div>
         </div>
     </div>
