@@ -2,7 +2,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // --- GAME SYSTEM STATE MACHINE ---
-// Values: 'START_SCREEN', 'PLAYING', 'PAUSED', 'GAME_OVER'
+// Values: 'START_SCREEN', 'PLAYING', 'PAUSED', 'GAME_OVER', 'VICTORY'
 let gameState = 'START_SCREEN';
 
 // --- THE GAME MAP GRID (1 = Wall, 0 = Open Path) ---
@@ -31,6 +31,10 @@ const SAFE_ZONE = {
     maxY: 4 * TILE_SIZE 
 };
 
+// --- NEW OBJECTIVE COORDINATES ---
+const FUEL_CELL = { x: 10 * TILE_SIZE + 32, y: 1 * TILE_SIZE + 32, size: 16, collected: false };
+const ESCAPE_HATCH = { x: 1 * TILE_SIZE + 32, y: 1 * TILE_SIZE + 32, size: 24 };
+
 // Z-Buffer array to manage depth calculations between walls and villains
 let depthBuffer = new Array(canvas.width);
 let player, enemies, inventory;
@@ -48,11 +52,13 @@ const hudOverlay = document.getElementById('hud-overlay');
 // --- GAME RESETS & INITIALIZATION ---
 function initGameData() {
     player = {
-        x: 96, y: 96, angle: 0.1, fov: Math.PI / 3,
+        x: 96, y: 160, angle: 0.1, fov: Math.PI / 3,
         walkSpeed: 3.0, crouchSpeed: 1.3,
         rotSpeed: 0.04, isCrouching: false,
         noiseRadius: 0, hp: 100, inSafeZone: true
     };
+
+    FUEL_CELL.collected = false;
 
     // Exactly two highly intelligent, distinct villains tracking the environment
     enemies = [
@@ -109,12 +115,22 @@ function changeState(newState) {
             btnPrimary.innerText = "TRY AGAIN";
             btnRestart.style.display = 'none';
             break;
+
+        case 'VICTORY':
+            menuOverlay.style.display = 'flex';
+            hudOverlay.style.display = 'none';
+            menuTitle.innerText = "ESCAPED!";
+            menuTitle.style.color = "#2ecc71";
+            menuSubtitle.innerText = "YOU SECURED THE FUEL CELL AND SURVIVED THE ZONE.";
+            btnPrimary.innerText = "PLAY AGAIN";
+            btnRestart.style.display = 'none';
+            break;
     }
 }
 
 // --- BUTTON MENU EVENT HANDLERS ---
 btnPrimary.addEventListener('click', () => {
-    if (gameState === 'START_SCREEN' || gameState === 'GAME_OVER') {
+    if (gameState === 'START_SCREEN' || gameState === 'GAME_OVER' || gameState === 'VICTORY') {
         initGameData();
         changeState('PLAYING');
     } else if (gameState === 'PAUSED') {
@@ -129,7 +145,6 @@ btnRestart.addEventListener('click', () => {
 
 // --- CORE SYSTEM INPUT EVENT LISTENERS ---
 window.addEventListener('keydown', (e) => {
-    // Escape key intercepts and flips pause cycles smoothly
     if (e.key === 'Escape' || e.key === 'Esc') {
         if (gameState === 'PLAYING') changeState('PAUSED');
         else if (gameState === 'PAUSED') changeState('PLAYING');
@@ -151,13 +166,6 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => {
     if (['ArrowUp', 'ArrowDown'].includes(e.key)) inputs.moveForward = 0;
     if (['ArrowLeft', 'ArrowRight'].includes(e.key)) inputs.rotate = 0;
-});
-
-// Mobile viewport viewport touch event to seamlessly toggle pause state
-canvas.addEventListener('touchstart', () => {
-    if (gameState === 'PLAYING' && isTouchDevice) {
-        setTimeout(() => { if(inputs.moveForward === 0 && inputs.rotate === 0) changeState('PAUSED'); }, 150);
-    }
 });
 
 // --- SURVIVAL CRAFTING LOGIC ---
@@ -184,8 +192,10 @@ function updateHUD() {
     hpDisplay.innerText = Math.round(player.hp);
     hpDisplay.style.color = player.inSafeZone ? '#2ecc71' : '#fff';
 
+    let taskText = FUEL_CELL.collected ? "🎯 RETURN TO ELEVATOR START" : "⚡ FIND THE FUEL CELL (Check Radar)";
+
     document.getElementById('inv-display').innerText = 
-        `ALC: ${inventory.alcohol} | BND: ${inventory.binding} | BLD: ${inventory.blades} || MED: ${inventory.medkits} | SHV: ${inventory.shivs}`;
+        `TASK: ${taskText} || MEDS: ${inventory.medkits} | SHIVS: ${inventory.shivs}`;
 }
 
 // --- RENDERING WORK PIPELINE (RAYCAST ENVIRONMENT) ---
@@ -216,7 +226,7 @@ function renderGame() {
         }
 
         let correctedDist = distance * Math.cos(rayAngle - player.angle);
-        depthBuffer[i] = correctedDist; // Cache matrix depth inside global index buffer arrays
+        depthBuffer[i] = correctedDist; 
 
         let wallHeight = Math.min(canvas.height, (TILE_SIZE * canvas.height) / correctedDist);
         let brightness = Math.max(15, 180 - (correctedDist * 0.35));
@@ -226,18 +236,74 @@ function renderGame() {
         rayAngle += angleIncrement;
     }
 
-    // 3. Project 3D terrifying billboard monster shapes onto display
+    // 3. Render Objective Items in 3D Space if in field of view
+    renderObjective3D();
+
+    // 4. Project 3D terrifying billboard monster shapes onto display
     renderSprites3D();
 
-    // 4. Safe zone ambient lighting screen filter effect overlays
+    // 5. Draw Waypoint HUD Guidance Line right in the center of the display screen
+    drawNavigationUI();
+
+    // 6. Safe zone ambient lighting screen filter effect overlays
     if (player.inSafeZone) {
-        ctx.fillStyle = 'rgba(46, 204, 113, 0.12)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#2ecc71'; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'left';
-        ctx.fillText('SANCTUARY: SAFE AREA (REGENERATING HEALTH)', 20, 30);
+        ctx.fillStyle = 'rgba(46, 204, 113, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
-    // 5. Draw 2D Minimap radar layer overlay
+    // 7. Draw 2D Minimap radar layer overlay
     drawMinimap();
+}
+
+// --- PROJECT OBJECTIVE ELEMENTS IN 3D ---
+function renderObjective3D() {
+    // Determine which target item we should render based on progress
+    let targetItem = !FUEL_CELL.collected ? FUEL_CELL : ESCAPE_HATCH;
+    let sx = targetItem.x - player.x, sy = targetItem.y - player.y;
+    let angle = Math.atan2(sy, sx) - player.angle;
+
+    while (angle < -Math.PI) angle += Math.PI * 2;
+    while (angle > Math.PI) angle -= Math.PI * 2;
+
+    let distance = Math.hypot(sx, sy);
+    if (distance < 10 || Math.abs(angle) >= player.fov) return;
+
+    if (depthBuffer[Math.floor(canvas.width / 2)] < distance) return; // Hidden by walls
+
+    let size = Math.min(canvas.height, (TILE_SIZE * canvas.height) / distance);
+    let screenX = Math.tan(angle) * (canvas.width / 2) + (canvas.width / 2);
+    let screenY = canvas.height / 2;
+
+    // Draw bright glowing energy capsule columns
+    ctx.fillStyle = !FUEL_CELL.collected ? `hsl(${Date.now() * 0.3 % 360}, 100%, 50%)` : '#2ecc71';
+    ctx.fillRect(screenX - size/6, screenY - size/4, size/3, size/2);
+
+    // Floating tag labels over items
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(!FUEL_CELL.collected ? "⚡ FUEL CELL" : "🚪 ESCAPE LIFT", screenX, screenY - size/4 - 10);
+}
+
+// --- HUD 3D COMPASS DIRECTION ARROW GUIDE ---
+function drawNavigationUI() {
+    let target = !FUEL_CELL.collected ? FUEL_CELL : ESCAPE_HATCH;
+    let angleToTarget = Math.atan2(target.y - player.y, target.x - player.x) - player.angle;
+
+    while (angleToTarget < -Math.PI) angleToTarget += Math.PI * 2;
+    while (angleToTarget > Math.PI) angleToTarget -= Math.PI * 2;
+
+    ctx.fillStyle = !FUEL_CELL.collected ? '#f1c40f' : '#2ecc71';
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'center';
+
+    // Draw guidance arrow icons depending on which direction you must rotate
+    if (angleToTarget < -0.2) {
+        ctx.fillText("◀◀ TURN LEFT", canvas.width / 2, canvas.height - 40);
+    } else if (angleToTarget > 0.2) {
+        ctx.fillText("TURN RIGHT ▶▶", canvas.width / 2, canvas.height - 40);
+    } else {
+        ctx.fillText("▲ OBJECTIVE STRAIGHT AHEAD ▲", canvas.width / 2, canvas.height - 40);
+    }
 }
 
 // --- VISUAL SCARY MONSTER VECTOR GRAPHICS BUILDER ---
@@ -254,7 +320,6 @@ function renderSprites3D() {
         let distance = Math.hypot(sx, sy);
         if (distance < 10 || Math.abs(spriteAngle) >= player.fov) return;
 
-        // Scaling constants optimized to create tall, towering proportions
         let spriteHeight = Math.min(canvas.height * 1.5, (TILE_SIZE * canvas.height) / distance);
         let spriteWidth = spriteHeight / 1.2;
         let screenX = Math.tan(spriteAngle) * (canvas.width / 2) + (canvas.width / 2);
@@ -262,36 +327,27 @@ function renderSprites3D() {
         let leftX = Math.floor(screenX - spriteWidth / 2);
         let rightX = Math.floor(screenX + spriteWidth / 2);
 
-        // Render monster slices column by column against depth buffers
         for (let x = leftX; x < rightX; x++) {
             if (x >= 0 && x < canvas.width && depthBuffer[x] > distance) {
                 let pct = (x - leftX) / spriteWidth;
                 let topY = canvas.height / 2 - spriteHeight / 2;
 
-                let bodyColor = '#050508';
-                let accentColor = sprite.color;
-
-                // Main shadow torso structure
-                ctx.fillStyle = bodyColor;
+                ctx.fillStyle = '#050508';
                 ctx.fillRect(x, topY, 1, spriteHeight);
 
-                // Jagged bio-luminescent skin lines running through torso matrix columns
                 if (Math.sin(x * 0.5) > 0.3) {
-                    ctx.fillStyle = accentColor;
+                    ctx.fillStyle = sprite.color;
                     ctx.fillRect(x, topY + (spriteHeight * 0.2), 1, spriteHeight * 0.6);
                 }
 
-                // Pointy distorted skull processing layer
                 if (pct > 0.35 && pct < 0.65) {
                     let headHeight = spriteHeight * 0.25;
                     ctx.fillStyle = '#000000';
                     let twitch = (sprite.state === 'HUNTING') ? Math.sin(Date.now() * 0.05) * 2 : 0;
                     ctx.fillRect(x + twitch, topY, 1, headHeight);
 
-                    // Piercing crimson glowing tracking vectors
                     ctx.fillStyle = sprite.state === 'HUNTING' ? '#ff0000' : '#aa0000';
 
-                    // Draw precise tracking pixels representing glowing left/right pupils
                     if (Math.abs(pct - 0.44) < 0.03 && (Date.now() % 600 > 40)) {
                         ctx.fillRect(x, topY + (headHeight * 0.4), 2, spriteHeight * 0.03);
                     }
@@ -300,19 +356,9 @@ function renderSprites3D() {
                     }
                 }
 
-                // Asymmetric lanky slender claws hanging down on peripheral borders
                 if ((pct < 0.15 || pct > 0.85) && x % 2 === 0) {
                     ctx.fillStyle = '#111';
                     ctx.fillRect(x, topY + (spriteHeight * 0.4), 1, spriteHeight * 0.55);
-                }
-
-                // Draw floating descriptive tracking metrics directly over head center slices
-                if (x === Math.floor(screenX)) {
-                    ctx.fillStyle = sprite.state === 'HUNTING' ? '#ff3333' : '#666';
-                    ctx.font = 'bold 9px monospace';
-                    ctx.textAlign = 'center';
-                    let statusLabel = sprite.state === 'HUNTING' ? `⚠️ ALERT: ${sprite.type.toUpperCase()}` : `[${sprite.type}]`;
-                    ctx.fillText(statusLabel, screenX, topY - 15);
                 }
             }
         }
@@ -324,17 +370,13 @@ function drawMinimap() {
     const scale = 0.15, offset = 15;
     const mapOffsetLeft = canvas.width - (MAP_SIZE * TILE_SIZE * scale) - offset;
     
-    // Background plate
     ctx.fillStyle = 'rgba(11, 12, 16, 0.85)';
     ctx.fillRect(mapOffsetLeft, offset, MAP_SIZE * TILE_SIZE * scale, MAP_SIZE * TILE_SIZE * scale);
 
     // Draw Sanctuary bounds highlight boxes
-    ctx.fillStyle = 'rgba(46, 204, 113, 0.25)';
+    ctx.fillStyle = 'rgba(46, 204, 113, 0.15)';
     ctx.fillRect(mapOffsetLeft + (SAFE_ZONE.minX * scale), offset + (SAFE_ZONE.minY * scale), (SAFE_ZONE.maxX - SAFE_ZONE.minX) * scale, (SAFE_ZONE.maxY - SAFE_ZONE.minY) * scale);
-    ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 1;
-    ctx.strokeRect(mapOffsetLeft + (SAFE_ZONE.minX * scale), offset + (SAFE_ZONE.minY * scale), (SAFE_ZONE.maxX - SAFE_ZONE.minX) * scale, (SAFE_ZONE.maxY - SAFE_ZONE.minY) * scale);
 
-    // Render structural walls layout geometry blocks
     for (let r = 0; r < MAP_SIZE; r++) {
         for (let c = 0; c < MAP_SIZE; c++) {
             if (MAP[r][c] > 0) {
@@ -344,12 +386,19 @@ function drawMinimap() {
         }
     }
     
-    // Draw player node tracker location points
+    // Draw objective spots onto radar plate directly
+    if (!FUEL_CELL.collected) {
+        ctx.fillStyle = '#f1c40f'; // Yellow core cell marker
+        ctx.fillRect(mapOffsetLeft + (FUEL_CELL.x * scale) - 2, offset + (FUEL_CELL.y * scale) - 2, 5, 5);
+    } else {
+        ctx.fillStyle = '#2ecc71'; // Green escape hatch marker
+        ctx.fillRect(mapOffsetLeft + (ESCAPE_HATCH.x * scale) - 3, offset + (ESCAPE_HATCH.y * scale) - 3, 6, 6);
+    }
+
     let px = mapOffsetLeft + (player.x * scale), py = offset + (player.y * scale);
-    ctx.fillStyle = player.inSafeZone ? '#2ecc71' : (player.isCrouching ? '#4a90e2' : '#50e3c2');
+    ctx.fillStyle = player.inSafeZone ? '#2ecc71' : '#50e3c2';
     ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
 
-    // Map monster markers positions onto minimap coordinates panel
     enemies.forEach(e => {
         ctx.fillStyle = e.color;
         ctx.beginPath(); ctx.arc(mapOffsetLeft + (e.x * scale), offset + (e.y * scale), 3, 0, Math.PI * 2); ctx.fill();
@@ -360,30 +409,37 @@ function drawMinimap() {
 function updatePhysics() {
     if (gameState !== 'PLAYING') return;
 
-    // Process positional angle rotation values
     player.angle += inputs.rotate * player.rotSpeed;
     let currentSpeed = player.isCrouching ? player.crouchSpeed : player.walkSpeed;
     let moveDist = inputs.moveForward * currentSpeed;
     let newX = player.x + Math.cos(player.angle) * moveDist, newY = player.y + Math.sin(player.angle) * moveDist;
 
-    // Axis sliding collision footprint tracking wall boundary matrices
     if (MAP[Math.floor(player.y / TILE_SIZE)][Math.floor(newX / TILE_SIZE)] === 0) player.x = newX;
     if (MAP[Math.floor(newY / TILE_SIZE)][Math.floor(player.x / TILE_SIZE)] === 0) player.y = newY;
 
-    // Check sanctuary zone entry thresholds parameters
+    // --- CHECK FOR OBJECTIVE PROGRESS COLLISIONS ---
+    if (!FUEL_CELL.collected && Math.hypot(player.x - FUEL_CELL.x, player.y - FUEL_CELL.y) < 30) {
+        FUEL_CELL.collected = true;
+        updateHUD();
+    }
+
+    if (FUEL_CELL.collected && Math.hypot(player.x - ESCAPE_HATCH.x, player.y - ESCAPE_HATCH.y) < 30) {
+        changeState('VICTORY');
+        return;
+    }
+
     player.inSafeZone = (player.x >= SAFE_ZONE.minX && player.x <= SAFE_ZONE.maxX && player.y >= SAFE_ZONE.minY && player.y <= SAFE_ZONE.maxY);
     if (player.inSafeZone && player.hp < 100) {
-        player.hp = Math.min(100, player.hp + 0.05); // Slow tick health regeneration
+        player.hp = Math.min(100, player.hp + 0.05); 
         updateHUD();
     }
     player.noiseRadius = (inputs.moveForward !== 0 && !player.isCrouching) ? 170 : 0;
 
-    // AI logic state updates loop for both remaining enemies
     enemies.forEach(e => {
         let dist = Math.hypot(player.x - e.x, player.y - e.y);
         
         if (player.inSafeZone) {
-            e.state = 'PATROL'; // Force instant drop-aggro loop cycles
+            e.state = 'PATROL'; 
         } else if (player.noiseRadius > 0 && dist <= player.noiseRadius) {
             e.state = 'HUNTING';
         }
@@ -394,38 +450,19 @@ function updatePhysics() {
             if (tDist < 10) e.targetIndex = (e.targetIndex + 1) % e.waypoints.length;
             e.angle = Math.atan2(target.y - e.y, target.x - e.x);
         } else {
-            e.angle = Math.atan2(player.y - e.y, player.x - e.x); // Lock tracking straight vector line onto player
+            e.angle = Math.atan2(player.y - e.y, player.x - e.x); 
         }
 
         let nEx = e.x + Math.cos(e.angle) * e.speed, nEy = e.y + Math.sin(e.angle) * e.speed;
         if (MAP[Math.floor(e.y / TILE_SIZE)][Math.floor(nEx / TILE_SIZE)] === 0) e.x = nEx;
         if (MAP[Math.floor(nEy / TILE_SIZE)][Math.floor(e.x / TILE_SIZE)] === 0) e.y = nEy;
 
-        // Proximity footprint engagement loops mapping active hit bounds checks
         if (dist < 22 && !player.inSafeZone) {
-            player.hp = Math.max(0, player.hp - 0.4);
+            player.hp = Math.max(0, player.hp - 0.5);
             updateHUD();
-            if (player.hp <= 0) changeState('GAME_OVER'); // Force Game Over conditions loop switches
+            if (player.hp <= 0) changeState('GAME_OVER'); 
         }
     });
-}
-
-// --- TOUCH INTERFACE JOYSTICK CONTROLLERS OVERRIDES ---
-if (isTouchDevice) {
-    const joyBase = document.getElementById('virtual-joystick'), joyHandle = document.getElementById('joystick-handle');
-    joyBase.addEventListener('touchmove', (e) => {
-        e.preventDefault(); if(gameState !== 'PLAYING') return;
-        let rect = joyBase.getBoundingClientRect(), centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
-        let dx = e.touches[0].clientX - centerX, dy = e.touches[0].clientY - centerY, distance = Math.hypot(dx, dy);
-        if (distance > 45) { dx = (dx / distance) * 45; dy = (dy / distance) * 45; }
-        joyHandle.style.transform = `translate(${dx}px, ${dy}px)`;
-        inputs.moveForward = -dy / 45; inputs.rotate = dx / 45;
-    });
-    joyBase.addEventListener('touchend', () => { joyHandle.style.transform = 'translate(0px, 0px)'; inputs.moveForward = 0; inputs.rotate = 0; });
-    document.getElementById('touch-crouch').addEventListener('touchstart', () => { if(gameState==='PLAYING'){ player.isCrouching = !player.isCrouching; document.getElementById('touch-crouch').style.background = player.isCrouching ? '#c5a059' : '#1f2833'; }});
-    document.getElementById('touch-heal').addEventListener('touchstart', () => { if(gameState==='PLAYING') useMedkit(); });
-    document.getElementById('touch-craft-a').addEventListener('touchstart', () => { if(gameState==='PLAYING') craftItem('medkit'); });
-    document.getElementById('touch-craft-d').addEventListener('touchstart', () => { if(gameState==='PLAYING') craftItem('shiv'); });
 }
 
 // --- MASTER LOOPER CORE ---
