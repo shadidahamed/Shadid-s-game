@@ -1,3 +1,4 @@
+/* --- CORE CSS RE-ARCHITECTURE --- */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -8,8 +9,8 @@
 }
 
 body {
-    background: #0b0c10;
-    color: #ff7700; /* Signature glowing orange tint over deep charcoal */
+    background: #05070a;
+    color: #ff6600; /* Signature High-Contrast Hazard Orange Tint */
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
     overflow: hidden;
@@ -25,187 +26,233 @@ body {
     width: 100vw;
     height: 100vh;
     max-width: 960px;
-    max-height: 600px;
+    max-height: 620px;
     display: flex;
     flex-direction: column;
-    background: #000;
+    background: #0b0c10;
     border: 3px solid #1f2833;
-    box-shadow: 0 0 35px rgba(255, 119, 0, 0.15);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.95), 0 0 20px rgba(255, 102, 0, 0.1);
+    overflow: hidden;
 }
 
 canvas {
-    background: #050508;
+    background: #020204;
     display: block;
     width: 100%;
     flex-grow: 1;
 }
 
-/* --- HUD OVERLAY --- */
+/* --- THE ARCADE CRT AMBIENCE SYSTEM --- */
+.crt-scanlines {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
+    background-size: 100% 4px, 6px 100%;
+    pointer-events: none;
+    z-index: 15;
+}
+
+#damage-flash {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 0, 0, 0);
+    pointer-events: none;
+    z-index: 14;
+    transition: background 0.1s ease;
+}
+
+/* --- TACTICAL GRAPHICAL HEADS UP DISPLAY --- */
 #hud-overlay {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    right: 15px;
+    top: 15px; left: 15px; right: 15px;
     display: flex;
     justify-content: space-between;
     pointer-events: none;
-    z-index: 10;
+    z-index: 12;
 }
 
-.hud-left, .hud-right {
+.hud-group {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
 }
 
 .hud-card {
-    background: rgba(11, 12, 16, 0.9);
-    border: 1px solid #ff7700;
-    color: #fff;
-    padding: 6px 12px;
-    font-size: 12px;
+    background: rgba(11, 12, 16, 0.92);
+    border: 1px solid #ff6600;
+    border-left: 4px solid #ff6600;
+    color: #ffffff;
+    padding: 6px 14px;
+    font-size: 11px;
     letter-spacing: 1px;
-    text-shadow: 0 0 5px #ff7700;
+    text-shadow: 0 0 4px #ff6600;
 }
 
-/* --- MENU UI OVERLAY --- */
+#hp-display {
+    color: #ff3333;
+    font-weight: 900;
+}
+
+/* --- MENU OVERLAY PANELS --- */
 #menu-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(5, 5, 8, 0.95);
+    background: rgba(7, 9, 13, 0.98);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 20;
     padding: 20px;
-    text-align: center;
+}
+
+.terminal-box {
+    border: 2px dashed #ff6600;
+    background: rgba(0,0,0,0.4);
+    padding: 30px 40px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: inset 0 0 20px rgba(255, 102, 0, 0.05);
 }
 
 #menu-title {
-    font-size: 48px;
-    color: #ff3300;
-    letter-spacing: 4px;
-    margin-bottom: 5px;
-    text-shadow: 0 0 15px rgba(255, 51, 0, 0.6);
+    font-size: 44px;
+    color: #ff2200;
+    letter-spacing: 6px;
+    text-shadow: 0 0 15px rgba(255, 34, 0, 0.5);
 }
 
 #menu-subtitle {
-    font-size: 14px;
-    color: #888;
-    margin-bottom: 25px;
-    letter-spacing: 2px;
+    font-size: 12px;
+    color: #7a828a;
+    margin: 10px 0 25px 0;
+    letter-spacing: 1px;
 }
 
 #level-indicator {
-    font-size: 18px;
-    color: #ff7700;
+    font-size: 16px;
+    color: #00ff66;
     margin-bottom: 20px;
-    text-shadow: 0 0 5px #ff7700;
+    text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
 }
 
 .menu-btn {
     background: #11141a;
-    color: #ff7700;
-    border: 2px solid #ff7700;
-    padding: 12px 30px;
-    font-size: 16px;
+    color: #ff6600;
+    border: 1px solid #ff6600;
+    padding: 12px 24px;
+    font-size: 14px;
     font-family: monospace;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(255, 119, 0, 0.2);
-    transition: all 0.2s ease;
-    margin: 5px;
+    letter-spacing: 1px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.menu-btn:hover, .menu-btn:active {
-    background: #ff7700;
-    color: #0b0c10;
-    box-shadow: 0 0 20px rgba(255, 119, 0, 0.5);
+.menu-btn:hover {
+    background: #ff6600;
+    color: #05070a;
+    box-shadow: 0 0 15px rgba(255, 102, 0, 0.4);
 }
 
-/* --- MOBILE CONTROLS DECK --- */
+/* --- ERGONOMIC JOYSTICK & CONTROLS DECK --- */
 #mobile-control-deck {
     display: none;
-    height: 140px;
-    background: #0b0c10;
+    height: 150px;
+    background: #07090d;
     border-top: 2px solid #1f2833;
-    padding: 10px 20px;
+    padding: 10px 25px;
     justify-content: space-between;
     align-items: center;
+    z-index: 18;
 }
 
-#joystick-zone {
-    width: 100px;
-    height: 100px;
+.joystick-container {
+    width: 110px;
+    height: 110px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 #virtual-joystick {
-    width: 90px;
-    height: 90px;
-    background: rgba(31, 40, 51, 0.3);
-    border: 2px solid #ff7700;
+    width: 96px;
+    height: 96px;
+    background: rgba(31, 40, 51, 0.25);
+    border: 2px solid #ff6600;
     border-radius: 50%;
     position: relative;
 }
 
-#joystick-handle {
-    width: 36px;
-    height: 36px;
-    background: #ff7700;
-    border-radius: 50%;
+#joystick-ring {
     position: absolute;
-    left: 27px;
-    top: 27px;
-    box-shadow: 0 0 10px #ff7700;
+    top: 10px; left: 10px; right: 10px; bottom: 10px;
+    border: 1px dashed rgba(255, 102, 0, 0.3);
+    border-radius: 50%;
 }
 
-#action-zone {
+#joystick-handle {
+    width: 38px;
+    height: 38px;
+    background: #ff6600;
+    border-radius: 50%;
+    position: absolute;
+    left: 27px; top: 27px;
+    box-shadow: 0 0 12px #ff6600;
+    transition: transform 0.05s linear;
+}
+
+#action-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 120px 120px;
     gap: 8px;
 }
 
-.ctrl-btn {
+.action-btn {
     background: #11141a;
     color: #fff;
-    border: 1px solid #ff7700;
-    padding: 10px 14px;
+    border: 1px solid #ff6600;
+    padding: 12px;
     font-size: 11px;
     font-family: monospace;
     font-weight: bold;
     border-radius: 2px;
 }
 
-.ctrl-btn:active {
-    background: #ff7700;
+.action-btn:active {
+    background: #ff6600;
     color: #000;
 }
 
-/* --- ORIENTATION HANDLING SYSTEM --- */
+/* --- RESPONSIVE DEVICE SYSTEM ORIENTATION LOCKS --- */
 #orientation-lock {
     display: none;
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
-    background: #050508;
-    z-index: 999;
+    background: #05070a;
+    z-index: 9999;
     justify-content: center;
     align-items: center;
-    color: #ff3300;
+    color: #ff2200;
     text-align: center;
 }
 
+.lock-box {
+    padding: 20px;
+    border: 1px solid #ff2200;
+    background: rgba(255,0,0,0.02);
+}
+
+.sub-lock {
+    display: block;
+    margin-top: 10px;
+    color: #555;
+    font-size: 11px;
+}
+
 @media (max-width: 1024px) and (orientation: portrait) {
-    #orientation-lock {
-        display: flex;
-    }
+    #orientation-lock { display: flex; }
 }
 
 @media (max-width: 1024px) {
-    #mobile-control-deck {
-        display: flex;
-    }
+    #mobile-control-deck { display: flex; }
 }
