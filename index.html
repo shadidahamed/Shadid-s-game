@@ -1,57 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>VOID BLAST</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <style>
-    body { margin:0; padding:0; overflow:hidden; background:#000; touch-action:none; font-family:'Courier New',monospace; }
-    canvas { display:block; width:100%; height:100%; }
-    #hud { position:absolute; top:12px; left:15px; font-size:19px; color:#0ff; text-shadow:0 0 12px #0ff; z-index:100; pointer-events:none; }
-    #highScore { position:absolute; top:12px; right:15px; font-size:16px; color:#ff0; text-shadow:0 0 8px #ff0; z-index:100; }
-    .overlay {
-      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-      background:rgba(0,4,20,0.92); z-index:200; flex-direction:column; color:#0ff; text-align:center;
-    }
-    button {
-      background:#000; color:#0ff; border:4px solid #0ff; padding:16px 48px; font-size:26px;
-      margin:12px; cursor:pointer; text-shadow:0 0 12px #0ff; box-shadow:0 0 25px #0ff;
-      touch-action:manipulation;
-    }
-    button:active { background:#0ff; color:#000; }
-    #pauseBtn { position:absolute; top:12px; right:15px; padding:8px 20px; font-size:16px; z-index:150; }
-    .tip { margin-top:40px; font-size:15px; opacity:0.8; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TLOU 2D Survival MVP</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="hud">SCORE: 00000 | LIVES: 10</div>
-  <div id="highScore">HI: 00000</div>
-  <button id="pauseBtn" style="display:none;">PAUSE</button>
-  <canvas id="game"></canvas>
 
-  <!-- Start Screen -->
-  <div id="startScreen" class="overlay">
-    <h1 style="font-size:58px; margin:0 0 10px 0; color:#0ff; text-shadow:0 0 20px #0ff;">VOID BLAST</h1>
-    <div id="startHighScore" style="font-size:22px; margin:20px 0; color:#ff0;">HIGH SCORE: 00000</div>
-    <button id="startBtn">PLAY NOW</button>
-    <div class="tip">TOUCH & DRAG ANYWHERE TO MOVE<br>HOLD TO FIRE LASERS</div>
-  </div>
+    <div id="game-container">
+        <!-- Game Display Canvas -->
+        <canvas id="gameCanvas" width="800" height="450"></canvas>
 
-  <!-- Pause -->
-  <div id="pauseScreen" class="overlay" style="display:none;">
-    <h1>PAUSED</h1>
-    <button id="resumeBtn">RESUME</button>
-    <button id="restartFromPauseBtn">RESTART</button>
-  </div>
+        <!-- Heads-Up Display Status Overlay -->
+        <div id="hud">
+            <div class="stat-row">HP: <span id="hp-val">100</span></div>
+            <div id="inventory-ui">Alcohol: 0 | Binding: 0 | Blades: 0 | Medkits: 0 | Shivs: 1</div>
+        </div>
 
-  <!-- Game Over -->
-  <div id="gameOverScreen" class="overlay" style="display:none;">
-    <h1 style="color:#f33; font-size:52px;">GAME OVER</h1>
-    <p id="finalScore" style="font-size:28px; margin:20px 0; color:#ff0;">FINAL SCORE: 00000</p>
-    <p id="newHighScore" style="color:#0f0; font-size:20px; display:none;">★ NEW HIGH SCORE! ★</p>
-    <button id="restartBtn">PLAY AGAIN</button>
-  </div>
+        <!-- Mobile Touch Layout Panel (Hidden on Desktop) -->
+        <div id="mobile-ui-panel">
+            <div id="joystick-zone">
+                <div id="joystick-base">
+                    <div id="joystick-knob"></div>
+                </div>
+            </div>
+            <div id="action-zone">
+                <button id="btn-crouch" class="mobile-btn">Crouch</button>
+                <button id="btn-heal" class="mobile-btn">Heal (Q)</button>
+                <button id="btn-craft-a" class="mobile-btn">Craft Medkit (A)</button>
+                <button id="btn-craft-d" class="mobile-btn">Craft Shiv (D)</button>
+            </div>
+        </div>
+    </div>
 
-  <script type="module" src="main.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
