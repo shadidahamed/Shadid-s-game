@@ -3,22 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dead Zone: 2.5D Raycast Survival</title>
+    <title>Dead Zone: 2.5D Raycast Survival with Minimap</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="display-wrapper">
-        <!-- Render Viewport -->
         <canvas id="gameCanvas" width="640" height="400"></canvas>
 
-        <!-- Minimalist Apocalyptic HUD -->
         <div id="hud-overlay">
             <div class="hud-card">VITAL SIGN: <span id="hp-display">100</span>%</div>
             <div class="hud-card" id="inv-display">ALC: 0 | BND: 0 | BLD: 0 || MED: 0 | SHV: 1</div>
         </div>
 
-        <!-- Dynamic Mobile Controller Module -->
         <div id="mobile-control-deck">
             <div id="dpad-zone">
                 <div id="virtual-joystick">
