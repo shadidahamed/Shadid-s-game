@@ -1,524 +1,323 @@
-const canvas = document.getElementById('gameCanvas');
+const canvas = document.getElementById('runnerCanvas');
 const ctx = canvas.getContext('2d');
 
-let gameState = 'START_SCREEN';
-let currentLevel = 1;
-const TILE_SIZE = 64;
-const MAP_SIZE = 12;
+let runState = 'START_MENU';
+let currentScore = 0;
+let runSpeedMultiplier = 1.0;
+let keyboardMatrix = {};
 
-let depthBuffer = new Array(canvas.width);
-let player, enemies, inventory;
-let keys = {};
+// Track Configuration Structure (3-Lane Rail Matrix System)
+// Lateral Lane coordinates mapped onto localized 2D projections
+const LANES = [-1.2, 0, 1.2]; 
+let activePlayerLaneIndex = 1; // Start in Center Lane
+let calculatedPlayerX = 0; // Absolute physical center variable used for smooth lerp shifting
 
-// --- MULTI-STAGE PROCEDURAL MAZE ARRAYS ---
-const MAZES = {
-    1: [
-        [1,1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,1,0,0,0,0,0,0,1],
-        [1,0,1,0,1,0,1,1,1,1,0,1],
-        [1,0,1,0,0,0,0,0,0,1,0,1],
-        [1,0,1,1,1,1,1,0,0,1,0,1],
-        [1,0,0,0,0,0,1,0,0,0,0,1],
-        [1,1,1,1,0,0,1,1,1,1,0,1],
-        [1,0,0,0,0,0,0,0,0,1,0,1],
-        [1,0,1,1,1,1,1,1,0,1,0,1],
-        [1,0,1,0,0,0,0,1,0,0,0,1],
-        [1,0,0,0,1,0,0,0,0,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1,1]
-    ],
-    2: [
-        [1,1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,0,0,1,0,0,0,0,1],
-        [1,1,1,0,1,0,1,0,1,1,0,1],
-        [1,0,0,0,1,0,0,0,1,0,0,1],
-        [1,0,1,1,1,1,2,1,1,0,1,1],
-        [1,0,1,0,0,0,0,0,0,0,0,1],
-        [1,0,1,0,1,1,2,1,1,1,0,1],
-        [1,0,0,0,1,0,0,0,0,1,0,1],
-        [1,1,1,0,1,1,1,1,0,1,0,1],
-        [1,0,0,0,0,0,0,1,0,1,0,1],
-        [1,0,1,1,1,1,0,0,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1,1]
-    ],
-    3: [
-        [1,1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,0,1,0,0,0,0,0,1],
-        [1,0,1,1,0,1,0,1,1,1,0,1],
-        [1,0,1,0,0,0,0,0,0,1,0,1],
-        [1,0,1,0,1,1,1,1,0,1,0,1],
-        [1,0,0,0,1,0,0,1,0,0,0,1],
-        [1,1,1,0,1,0,0,1,1,1,0,1],
-        [1,0,1,0,0,0,0,0,0,1,0,1],
-        [1,0,1,1,1,0,1,1,0,1,0,1],
-        [1,0,0,0,1,0,1,0,0,0,0,1],
-        [1,1,1,0,0,0,1,0,1,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1,1]
-    ],
-    4: [
-        [1,1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,1,0,0,0,0,1,0,1],
-        [1,0,1,0,1,1,1,1,0,1,0,1],
-        [1,0,1,0,0,0,0,1,0,0,0,1],
-        [1,1,1,1,1,0,0,1,1,1,0,1],
-        [1,0,0,0,0,0,0,0,0,1,0,1],
-        [1,0,1,1,1,1,2,1,0,1,0,1],
-        [1,0,1,0,0,0,0,1,0,0,0,1],
-        [1,0,1,0,1,1,0,1,1,1,1,1],
-        [1,0,1,0,1,0,0,0,0,0,0,1],
-        [1,0,0,0,1,0,1,1,1,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1,1]
-    ],
-    5: [
-        [1,1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,1,1,1,1,1,1,1,1,0,1],
-        [1,0,1,0,0,0,0,0,0,1,0,1],
-        [1,0,1,0,1,1,1,1,0,1,0,1],
-        [1,0,1,0,1,0,0,1,0,1,0,1],
-        [1,0,1,0,1,1,0,1,0,1,0,1],
-        [1,0,1,0,0,0,0,1,0,1,0,1],
-        [1,0,1,1,1,1,1,1,0,1,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1,1]
-    ],
-    6: [
-        [1,1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,1,0,0,0,1,0,0,1],
-        [1,1,1,0,1,0,1,0,1,0,1,1],
-        [1,0,0,0,0,0,1,0,0,0,0,1],
-        [1,0,1,1,1,1,1,1,1,1,0,1],
-        [1,0,1,0,0,0,0,0,0,1,0,1],
-        [1,0,1,0,1,1,1,1,0,1,0,1],
-        [1,0,1,0,1,0,0,1,0,1,0,1],
-        [1,0,0,0,1,0,0,1,0,0,0,1],
-        [1,1,1,1,1,0,1,1,1,1,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1,1]
-    ]
+// --- COMPANION LEADER SCOUT CONFIGURATION ---
+let companionScout = {
+    laneIndex: 1,
+    targetLaneIndex: 1,
+    zPos: 140, // Keeps them running forward cleanly ahead of the player camera (0)
+    switchTimer: 0
 };
 
-let MAP = MAZES[1];
+// Array holding objects rushing toward the runner
+let trackEntities = []; 
+let environmentTick = 0;
 
-// Primary Objective & Infiltration Coordinates
-const FUEL_CELL = { x: 0, y: 0, collected: false };
-const ESCAPE_HATCH = { x: 96, y: 96 };
-const SAFE_ZONE = { minX: 64, maxX: 192, minY: 64, maxY: 192 };
+const elementVignette = document.getElementById('damage-vignette');
+const modalOverlay = document.getElementById('modal-system-overlay');
 
-// --- DOM REGISTRATION LINK INTERFACES ---
-const menuOverlay = document.getElementById('menu-overlay');
-const menuTitle = document.getElementById('menu-title');
-const menuSubtitle = document.getElementById('menu-subtitle');
-const levelIndicator = document.getElementById('level-indicator');
-const btnPrimary = document.getElementById('btn-primary');
-const btnRestart = document.getElementById('btn-restart');
-const hudOverlay = document.getElementById('hud-overlay');
-const damageFlash = document.getElementById('damage-flash');
+// Setup Player Core Vital Systems
+let runnerProfile = { hp: 100 };
 
-// --- LEVEL SECTOR INITIATION AND CONFIG MATRIX ---
-function initLevel(level) {
-    currentLevel = level;
-    MAP = MAZES[currentLevel];
+// --- RUN STATE ENGINE MACHINE PIPELINES ---
+function triggerEngineState(intent) {
+    switch(intent) {
+        case 'START_GAME':
+        case 'RESTART_RUN':
+            currentScore = 0;
+            runnerProfile.hp = 100;
+            runSpeedMultiplier = 1.0;
+            trackEntities = [];
+            activePlayerLaneIndex = 1;
+            companionScout.laneIndex = 1;
+            companionScout.zPos = 140;
+            runState = 'RUNNING';
+            modalOverlay.style.display = 'none';
+            updateTelemetryDisplay();
+            break;
+        case 'RESUME_RUN':
+            runState = 'RUNNING';
+            modalOverlay.style.display = 'none';
+            break;
+        case 'QUIT_TO_MAIN':
+            runState = 'START_MENU';
+            modalOverlay.style.display = 'flex';
+            document.getElementById('menu-start').style.display = 'block';
+            document.getElementById('menu-death').style.display = 'none';
+            document.getElementById('menu-pause').style.display = 'none';
+            break;
+    }
+}
 
-    player = {
-        x: 96, y: 96, angle: 0.6, fov: Math.PI / 3,
-        walkSpeed: 2.5, crouchSpeed: 1.2, rotSpeed: 0.048,
-        isCrouching: false, noiseRadius: 0, hp: player ? player.hp : 100, inSafeZone: true
-    };
+document.getElementById('pause-trigger-btn').addEventListener('click', () => {
+    if (runState === 'RUNNING') {
+        runState = 'PAUSED';
+        modalOverlay.style.display = 'flex';
+        document.getElementById('menu-start').style.display = 'none';
+        document.getElementById('menu-death').style.display = 'none';
+        document.getElementById('menu-pause').style.display = 'block';
+    }
+});
 
-    FUEL_CELL.collected = false;
+// --- HARDWARE PC KEYBOARD CONTROLS PASS ---
+window.addEventListener('keydown', e => {
+    keyboardMatrix[e.key.toLowerCase()] = true;
+    if (runState !== 'RUNNING') return;
     
-    // Dynamic Level Scattering configuration targets
-    if (currentLevel % 2 === 0) {
-        FUEL_CELL.x = 10 * TILE_SIZE + 32; FUEL_CELL.y = 1 * TILE_SIZE + 32;
-    } else {
-        FUEL_CELL.x = 10 * TILE_SIZE + 32; FUEL_CELL.y = 10 * TILE_SIZE + 32;
+    if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+        if (activePlayerLaneIndex > 0) activePlayerLaneIndex--;
     }
-
-    // AI configurations: Slowed base movement, but intensified field-of-view alert sensors
-    enemies = [
-        { 
-            id: 1, type: 'Stalker', x: 8 * TILE_SIZE, y: 8 * TILE_SIZE, angle: 0, 
-            speed: 0.5 + (currentLevel * 0.08), radius: 12, color: '#ff3300', state: 'PATROL',
-            waypoints: [{x: 8 * TILE_SIZE, y: 8 * TILE_SIZE}, {x: 3 * TILE_SIZE, y: 9 * TILE_SIZE}], targetIdx: 0
-        },
-        { 
-            id: 2, type: 'Wanderer', x: 2 * TILE_SIZE, y: 10 * TILE_SIZE, angle: Math.PI, 
-            speed: 0.4 + (currentLevel * 0.06), radius: 14, color: '#bd00ff', state: 'PATROL',
-            waypoints: [{x: 2 * TILE_SIZE, y: 10 * TILE_SIZE}, {x: 10 * TILE_SIZE, y: 4 * TILE_SIZE}], targetIdx: 0
-        }
-    ];
-
-    if (level === 1) {
-        inventory = { alcohol: 3, binding: 2, blades: 2, medkits: 1, shivs: 0 };
+    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+        if (activePlayerLaneIndex < 2) activePlayerLaneIndex++;
     }
-    updateHUD();
-}
+    if (e.key === '1') shiftSpeedGear('STILL');
+    if (e.key === '2') shiftSpeedGear('SCOUT');
+    if (e.key === '3') shiftSpeedGear('BLITZ');
+});
+window.addEventListener('keyup', e => { keyboardMatrix[e.key.toLowerCase()] = false; });
 
-// --- STATE MANAGER PIPELINE ---
-function changeState(newState) {
-    gameState = newState;
-    switch(gameState) {
-        case 'START_SCREEN':
-            menuOverlay.style.display = 'flex';
-            hudOverlay.style.display = 'none';
-            levelIndicator.style.display = 'none';
-            menuTitle.innerText = "DEAD ZONE";
-            menuTitle.style.color = "#ff3300";
-            btnPrimary.innerText = "ENGAGE INFILTRATION";
-            btnRestart.style.display = 'none';
-            break;
-        case 'PLAYING':
-            menuOverlay.style.display = 'none';
-            hudOverlay.style.display = 'flex';
-            break;
-        case 'GAME_OVER':
-            menuOverlay.style.display = 'flex';
-            hudOverlay.style.display = 'none';
-            levelIndicator.style.display = 'none';
-            menuTitle.innerText = "BIO-SIGN FLATLINE";
-            menuTitle.style.color = "#ff0000";
-            menuSubtitle.innerText = "SECTOR SECURE MATRIX HAS CRASHED.";
-            btnPrimary.innerText = "RE-ENGAGE SYSTEM";
-            btnRestart.style.display = 'none';
-            break;
-        case 'LEVEL_CLEAR':
-            menuOverlay.style.display = 'flex';
-            hudOverlay.style.display = 'none';
-            levelIndicator.style.display = 'block';
-            levelIndicator.innerText = `SECTOR ${currentLevel} COMPROMISED & CLEARED`;
-            menuTitle.innerText = "ZONE EXTRACTED";
-            menuTitle.style.color = "#00ff66";
-            menuSubtitle.innerText = "PROCEED TO THE NEXT SECTOR LIFT DECK GATE.";
-            btnPrimary.innerText = "DEVIATE TO NEXT SECTOR";
-            btnRestart.style.display = 'none';
-            break;
-        case 'VICTORY':
-            menuOverlay.style.display = 'flex';
-            hudOverlay.style.display = 'none';
-            levelIndicator.style.display = 'none';
-            menuTitle.innerText = "MISSION SUCCESS";
-            menuTitle.style.color = "#00ff66";
-            menuSubtitle.innerText = "ALL FUEL CAPSULES SECURED. RECON DATA ARCHIVED.";
-            btnPrimary.innerText = "RE-EXECUTE SURVIVAL REC";
-            btnRestart.style.display = 'none';
-            break;
+// --- TACTICAL SPEED GEAR MECHANICS ---
+function shiftSpeedGear(gear) {
+    document.querySelectorAll('.gear-btn').forEach(b => b.classList.remove('active-gear'));
+    if (gear === 'STILL') {
+        document.getElementById('gear-still').classList.add('active-gear');
+        runSpeedMultiplier = 0.0;
+    } else if (gear === 'SCOUT') {
+        document.getElementById('gear-scout').classList.add('active-gear');
+        runSpeedMultiplier = 1.0;
+    } else if (gear === 'BLITZ') {
+        document.getElementById('gear-blitz').classList.add('active-gear');
+        runSpeedMultiplier = 2.1;
     }
 }
 
-// --- CONTROL TERMINAL EVENT BINDINGS ---
-btnPrimary.addEventListener('click', () => {
-    if (gameState === 'START_SCREEN' || gameState === 'GAME_OVER' || gameState === 'VICTORY') {
-        initLevel(1); changeState('PLAYING');
-    } else if (gameState === 'LEVEL_CLEAR') {
-        initLevel(currentLevel + 1); changeState('PLAYING');
+document.getElementById('gear-still').addEventListener('touchstart', () => shiftSpeedGear('STILL'));
+document.getElementById('gear-scout').addEventListener('touchstart', () => shiftSpeedGear('SCOUT'));
+document.getElementById('gear-blitz').addEventListener('touchstart', () => shiftSpeedGear('BLITZ'));
+
+// --- ANALOG DISC TRACK STEERING CONTROLLER MAPPINGS ---
+const steeringWheelDisc = document.getElementById('steering-wheel-disc');
+let wheelMetrics = { active: false, midX: 0, radStart: 0, degreesAccumulated: 0 };
+
+steeringWheelDisc.addEventListener('touchstart', e => {
+    wheelMetrics.active = true;
+    const box = steeringWheelDisc.getBoundingClientRect();
+    wheelMetrics.midX = box.left + box.width / 2;
+    const touch = e.touches[0];
+    wheelMetrics.radStart = Math.atan2(touch.clientY - (box.top + box.height / 2), touch.clientX - wheelMetrics.midX);
+});
+
+window.addEventListener('touchmove', e => {
+    if (!wheelMetrics.active || runState !== 'RUNNING') return;
+    const box = steeringWheelDisc.getBoundingClientRect();
+    const touch = e.touches[0];
+    const currentRad = Math.atan2(touch.clientY - (box.top + box.height / 2), touch.clientX - wheelMetrics.midX);
+    let shiftDelta = currentRad - wheelMetrics.radStart;
+
+    while (shiftDelta < -Math.PI) shiftDelta += Math.PI * 2;
+    while (shiftDelta > Math.PI) shiftDelta -= Math.PI * 2;
+
+    wheelMetrics.degreesAccumulated += shiftDelta * (180 / Math.PI);
+    steeringWheelDisc.style.transform = `rotate(${wheelMetrics.degreesAccumulated}deg)`;
+
+    // Map the wheel angle offsets directly into targeted lane indexes
+    if (shiftDelta < -0.15 && activePlayerLaneIndex > 0) {
+        activePlayerLaneIndex--;
+        wheelMetrics.radStart = currentRad; // Calibrate tracking index
+    } else if (shiftDelta > 0.15 && activePlayerLaneIndex < 2) {
+        activePlayerLaneIndex++;
+        wheelMetrics.radStart = currentRad;
     }
 });
 
-// --- HARDWARE INTERFACE CAPTURE PLATFORMS ---
-window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
-window.addEventListener('keyup', e => { 
-    keys[e.key.toLowerCase()] = false; 
-    if (e.key.toLowerCase() === 'a') craftItem('medkit');
-    if (e.key.toLowerCase() === 'd') craftItem('shiv');
-    if (e.key.toLowerCase() === 'q') useMedkit();
-    if (e.key === ' ') { player.isCrouching = !player.isCrouching; updateHUD(); }
-});
+window.addEventListener('touchend', () => { wheelMetrics.active = false; });
 
-function craftItem(type) {
-    if (type === 'medkit' && inventory.alcohol >= 1 && inventory.binding >= 1) {
-        inventory.alcohol--; inventory.binding--; inventory.medkits++;
-    } else if (type === 'shiv' && inventory.blades >= 1 && inventory.binding >= 1) {
-        inventory.blades--; inventory.binding--; inventory.shivs++;
-    }
-    updateHUD();
+function updateTelemetryDisplay() {
+    document.getElementById('hud-hp').innerText = `${Math.round(runnerProfile.hp)}%`;
+    document.getElementById('hud-score').innerText = String(Math.round(currentScore)).padStart(4, '0');
 }
 
-function useMedkit() {
-    if (inventory.medkits > 0 && player.hp < 100) {
-        inventory.medkits--; player.hp = Math.min(100, player.hp + 45);
-        updateHUD();
-    }
-}
-
-function updateHUD() {
-    const hpEl = document.getElementById('hp-display');
-    hpEl.innerText = Math.round(player.hp);
-    hpEl.style.color = player.inSafeZone ? '#00ff66' : (player.hp < 35 ? '#ff2200' : '#ffffff');
-    document.getElementById('level-display').innerText = currentLevel;
+// --- SYSTEM FATALITY CRASH EXECUTIONS ---
+function handleFatalityCollision() {
+    runState = 'DEAD';
     
-    let taskText = !FUEL_CELL.collected ? "⚠️ FETCH IMMUNIZATION CELL" : "⚡ CELL EXTRACTED. GET TO ELEVATOR START";
-    document.getElementById('inv-display').innerText = `${taskText} || MEDS: ${inventory.medkits} | SHIVS: ${inventory.shivs} ${player.isCrouching ? '[STEALTH ENGAGED]' : ''}`;
+    // Exact 50% score reduction penalty rule implementation
+    let scoreLost = Math.round(currentScore * 0.5);
+    currentScore = Math.max(0, currentScore - scoreLost);
+    
+    updateTelemetryDisplay();
+
+    // Trigger Pop-up Modal Deck UI adjustments
+    modalOverlay.style.display = 'flex';
+    document.getElementById('menu-start').style.display = 'none';
+    document.getElementById('menu-pause').style.display = 'none';
+    
+    const containerDeath = document.getElementById('menu-death');
+    containerDeath.style.display = 'block';
+    document.getElementById('death-penalty-msg').innerText = `CRASH TRIGGERED! HAZARD DETECTED.\nPENALTY LOSS: -${scoreLost} PTS (50% LIQUIDATED)`;
 }
 
-// --- ELASTIC TOUCH JOYSTICK SYSTEM CONTROL ---
-let joystick = { active: false, startX: 0, startY: 0, moveX: 0, moveY: 0 };
-const jsZone = document.getElementById('virtual-joystick');
-const jsHandle = document.getElementById('joystick-handle');
+// --- FORWARD 3D PERSPECTIVE RENDERING PIPELINE ---
+function render3DRunnerScene() {
+    // Render deep charcoal horizon background textures
+    ctx.fillStyle = '#05070a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-jsZone.addEventListener('touchstart', e => {
-    joystick.active = true;
-    const t = e.touches[0];
-    const rect = jsZone.getBoundingClientRect();
-    joystick.startX = rect.left + rect.width / 2;
-    joystick.startY = rect.top + rect.height / 2;
-    handleJoystickInput(t);
-});
-
-jsZone.addEventListener('touchmove', e => {
-    if (!joystick.active) return;
-    handleJoystickInput(e.touches[0]);
-});
-
-jsZone.addEventListener('touchend', () => {
-    joystick.active = false; joystick.moveX = 0; joystick.moveY = 0;
-    jsHandle.style.transform = "translate(0px, 0px)";
-});
-
-function handleJoystickInput(touch) {
-    let dx = touch.clientX - joystick.startX;
-    let dy = touch.clientY - joystick.startY;
-    const boundary = 32;
-    const distance = Math.hypot(dx, dy);
-
-    if (distance > boundary) {
-        dx = (dx / distance) * boundary;
-        dy = (dy / distance) * boundary;
+    const vanX = canvas.width / 2;
+    const vanY = canvas.height * 0.40; // Horizon vanishing anchor coordinate points
+    
+    // Draw the 3D Running Lane Lines mapping forward paths down the track
+    ctx.strokeStyle = '#1a2436'; ctx.lineWidth = 2;
+    for (let l = 0; l <= 3; l++) {
+        let pct = (l - 1.5) * 160;
+        ctx.beginPath();
+        ctx.moveTo(vanX + (pct * 0.05), vanY);
+        ctx.lineTo(vanX + (pct * 2.2), canvas.height);
+        ctx.stroke();
     }
-    jsHandle.style.transform = `translate(${dx}px, ${dy}px)`;
-    joystick.moveX = dx / boundary;
-    joystick.moveY = dy / boundary;
-}
 
-// Mobile Tactical Button Hooks
-document.getElementById('touch-crouch').addEventListener('touchstart', () => { player.isCrouching = !player.isCrouching; updateHUD(); });
-document.getElementById('touch-heal').addEventListener('touchstart', useMedkit);
-document.getElementById('touch-craft-a').addEventListener('touchstart', () => craftItem('medkit'));
-document.getElementById('touch-craft-d').addEventListener('touchstart', () => craftItem('shiv'));
-
-// --- HIGH-PERFORMANCE PSEUDO-3D CORE RAYCAST RENDERING PIPELINE ---
-function renderGame() {
-    // Ceiling and Floor rendering arrays
-    ctx.fillStyle = '#06080b'; ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
-    ctx.fillStyle = '#020305'; ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
-
-    let numRays = canvas.width;
-    let rayAngle = player.angle - player.fov / 2;
-    let increment = player.fov / numRays;
-
-    for (let i = 0; i < numRays; i++) {
-        let distance = 0, step = 2.0, hitWall = false, wallType = 1;
-        let cos = Math.cos(rayAngle), sin = Math.sin(rayAngle);
-
-        while (!hitWall && distance < 650) {
-            distance += step;
-            let cx = Math.floor((player.x + cos * distance) / TILE_SIZE);
-            let cy = Math.floor((player.y + sin * distance) / TILE_SIZE);
-
-            if (cx < 0 || cx >= MAP_SIZE || cy < 0 || cy >= MAP_SIZE) {
-                hitWall = true; distance = 650;
-            } else if (MAP[cy][cx] > 0) {
-                hitWall = true; wallType = MAP[cy][cx];
-            }
+    // --- EXECUTE TICK CALCULATIONS AND PROCEDURAL TRACK SPOTS ---
+    if (runSpeedMultiplier > 0) {
+        environmentTick += 4 * runSpeedMultiplier;
+        
+        // Procedural distribution configuration rules for item objects down tracks
+        if (environmentTick % 12 === 0) {
+            let selectedLane = Math.floor(Math.random() * 3);
+            let rolledType = Math.random() > 0.45 ? 'COIN' : 'HAZARD';
+            trackEntities.push({ lane: selectedLane, z: 600, type: rolledType, variant: Math.random() > 0.5 ? 1 : 2 });
         }
+    }
 
-        let correctedDist = distance * Math.cos(rayAngle - player.angle);
-        depthBuffer[i] = correctedDist;
-
-        let wallHeight = Math.min(canvas.height, (TILE_SIZE * canvas.height) / correctedDist);
-        let shade = Math.max(0, 180 - (correctedDist * 0.42));
-
-        // Procedural Custom Textured Wall Shader Layers
-        if (wallType === 2) {
-            // Leaking Chemical Wall Variant (Hazard Orange Accents)
-            let textureStripe = Math.sin(i * 0.2) > 0.4 ? 1.1 : 0.7;
-            ctx.fillStyle = `rgb(${shade * 0.9 * textureStripe}, ${shade * 0.25 * textureStripe}, 0)`;
-        } else {
-            // Metallic Industrial Columns Variant (Deep Charcoal Tint)
-            let texturePlate = i % 16 < 2 ? 0.5 : 1.0;
-            ctx.fillStyle = `rgb(${shade * 0.35 * texturePlate}, ${shade * 0.38 * texturePlate}, ${shade * 0.42 * texturePlate})`;
+    // --- PROCESS COMPANION LEADER SCOUT ARTIFICIAL INTELLIGENCE PASS ---
+    companionScout.switchTimer -= runSpeedMultiplier;
+    if (companionScout.switchTimer <= 0) {
+        companionScout.switchTimer = 40 + Math.random() * 60;
+        
+        // Scan upcoming tracks to safely calculate lane tracks to lead the player forward
+        let criticalThreatAhead = trackEntities.find(e => e.z > 250 && e.z < 500 && e.lane === companionScout.laneIndex && e.type === 'HAZARD');
+        if (criticalThreatAhead) {
+            let openLanes = [0, 1, 2].filter(l => l !== companionScout.laneIndex);
+            companionScout.targetLaneIndex = openLanes[Math.floor(Math.random() * openLanes.length)];
+        } else if (Math.random() > 0.6) {
+            // Find nearby paths containing coins to guide the player toward points
+            let coinTarget = trackEntities.find(e => e.z > 300 && e.type === 'COIN');
+            if (coinTarget) companionScout.targetLaneIndex = coinTarget.lane;
         }
-
-        ctx.fillRect(i, (canvas.height - wallHeight) / 2, 1, wallHeight);
-        rayAngle += increment;
     }
 
-    render3DEntities();
-    drawTrackerCompass();
-    drawRadarOverlay();
+    // Smooth lateral movement mapping for the Lead Scout avatar
+    companionScout.laneIndex += (companionScout.targetLaneIndex - companionScout.laneIndex) * 0.08;
 
-    // Safezone Ambient Overlay HUD Glow Filter Effect
-    if (player.inSafeZone) {
-        ctx.fillStyle = 'rgba(0, 255, 102, 0.04)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-}
+    // --- PROJECT COINS, SENTINEL BLOCKS, AND CHARACTERS DOWN TRACKS ---
+    let projectedEntities = [];
 
-// --- BILLBOARD ENTITY RENDERING ENGINE LAYERS ---
-function render3DEntities() {
-    let entities = [];
-    let objective = !FUEL_CELL.collected ? FUEL_CELL : ESCAPE_HATCH;
-    entities.push({ x: objective.x, y: objective.y, isItem: true, color: !FUEL_CELL.collected ? '#ff5500' : '#00ff66' });
+    // Map Companion Scout metrics into the active depth array
+    projectedEntities.push({
+        laneX: LANES[Math.round(companionScout.laneIndex)] * 110,
+        z: companionScout.zPos,
+        type: 'SCOUT_AGENT'
+    });
 
-    enemies.forEach(e => { entities.push({ x: e.x, y: e.y, isItem: false, color: e.color, state: e.state }); });
-    entities.sort((a, b) => Math.hypot(b.x - player.x, b.y - player.y) - Math.hypot(a.x - player.x, a.y - player.y));
+    trackEntities.forEach(ent => {
+        ent.z -= 6 * runSpeedMultiplier; // Move entities closer down the track
+        projectedEntities.push({
+            laneX: LANES[ent.lane] * 110,
+            z: ent.z,
+            type: ent.type,
+            variant: ent.variant,
+            rawRef: ent
+        });
+    });
 
-    entities.forEach(ent => {
-        let sx = ent.x - player.x, sy = ent.y - player.y;
-        let angle = Math.atan2(sy, sx) - player.angle;
+    // Clean out dead elements behind the camera perspective to free processing registers
+    trackEntities = trackEntities.filter(e => e.z > 10);
 
-        while (angle < -Math.PI) angle += Math.PI * 2;
-        while (angle > Math.PI) angle -= Math.PI * 2;
+    // Sort entities by depth to accurately project sizes over one another
+    projectedEntities.sort((a, b) => b.z - a.z);
 
-        let dist = Math.hypot(sx, sy);
-        if (dist < 12 || Math.abs(angle) >= player.fov) return;
+    // Project each active component into 2D screenspace coordinate points
+    projectedEntities.forEach(item => {
+        if (item.z <= 15 || item.z > 650) return;
 
-        let size = Math.min(canvas.height * 1.3, (TILE_SIZE * canvas.height) / dist);
-        let screenX = Math.tan(angle) * (canvas.width / 2) + (canvas.width / 2);
-        let topY = canvas.height / 2 - size / 2;
+        // Calculate size ratios based on distance down the track
+        let horizonScaleRatio = 32 / item.z; 
+        let screenX = vanX + (item.laneX * horizonScaleRatio * 7.5);
+        let screenY = vanY + (canvas.height * 0.45 * horizonScaleRatio * 7.0);
+        let sizeWidth = 80 * horizonScaleRatio * 6.0;
+        let sizeHeight = 100 * horizonScaleRatio * 6.0;
 
-        let leftX = Math.floor(screenX - size / 4);
-        let rightX = Math.floor(screenX + size / 4);
+        if (item.type === 'COIN') {
+            // Draw Glowing Hazard Orange Currency Energy Cubes
+            ctx.fillStyle = '#ff9900';
+            ctx.shadowColor = '#ff6600'; ctx.shadowBlur = 10;
+            ctx.fillRect(screenX - sizeWidth / 3, screenY - sizeHeight / 1.5, sizeWidth * 0.6, sizeWidth * 0.6);
+            ctx.shadowBlur = 0; // Reset canvas context state pipelines
 
-        for (let x = leftX; x < rightX; x++) {
-            if (x >= 0 && x < canvas.width && depthBuffer[x] > dist) {
-                if (ent.isItem) {
-                    ctx.fillStyle = ent.color;
-                    ctx.fillRect(x, topY + size * 0.25, 1, size * 0.5);
-                } else {
-                    ctx.fillStyle = '#07090c'; ctx.fillRect(x, topY, 1, size); // Silhouette
-                    if (Math.sin(x * 0.3) > -0.2) {
-                        ctx.fillStyle = ent.state === 'HUNTING' ? '#ff1100' : ent.color;
-                        ctx.fillRect(x, topY + size * 0.15, 1, size * 0.7);
-                    }
-                }
+            // Core proximity tracking calculations
+            if (item.z < 45 && item.z > 15 && Math.abs(screenX - (vanX + calculatedPlayerX)) < sizeWidth * 1.5) {
+                currentScore += 150;
+                updateTelemetryDisplay();
+                item.rawRef.z = -99; // Flag for instant clearing
             }
+        } else if (item.type === 'HAZARD') {
+            // Draw Impenetrable Terminal Walls
+            if (item.variant === 1) {
+                ctx.fillStyle = '#ff2200'; // Flashing Crimson Hazard Gates
+                ctx.fillRect(screenX - sizeWidth / 1.1, screenY - sizeHeight, sizeWidth * 1.8, sizeHeight * 0.8);
+            } else {
+                ctx.fillStyle = '#252e3d'; // Solid Infrastructure Obstacles
+                ctx.fillRect(screenX - sizeWidth / 1.5, screenY - sizeHeight * 1.2, sizeWidth * 1.3, sizeHeight * 1.2);
+            }
+
+            // High-Performance Collision Intersection Check
+            if (item.z < 42 && item.z > 18 && Math.abs(screenX - (vanX + calculatedPlayerX)) < sizeWidth * 1.1) {
+                item.rawRef.z = -99;
+                elementVignette.style.boxShadow = "inset 0 0 50px rgba(255, 0, 0, 0.85)";
+                setTimeout(() => { elementVignette.style.boxShadow = "inset 0 0 50px rgba(255, 0, 0, 0)"; }, 90);
+                handleFatalityCollision();
+            }
+        } else if (item.type === 'SCOUT_AGENT') {
+            // Draw the Companion Agent leading the path ahead
+            ctx.fillStyle = '#00ff66';
+            ctx.shadowColor = '#00ff66'; ctx.shadowBlur = 12;
+            
+            // Draw a diamond chevron shape representing the squad leader
+            ctx.beginPath();
+            ctx.moveTo(screenX, screenY - sizeHeight * 1.1);
+            ctx.lineTo(screenX + sizeWidth / 2, screenY - sizeHeight * 0.6);
+            ctx.lineTo(screenX, screenY - sizeHeight * 0.1);
+            ctx.lineTo(screenX - sizeWidth / 2, screenY - sizeHeight * 0.6);
+            ctx.closePath(); ctx.fill();
+            ctx.shadowBlur = 0;
         }
     });
+
+    // Smooth out character lane shifts
+    let targetPlayerX = LANES[activePlayerLaneIndex] * 110;
+    calculatedPlayerX += (targetPlayerX - calculatedPlayerX) * 0.22;
+
+    // Draw Score tick values dynamically over distance tracks
+    if (runSpeedMultiplier > 0 && runState === 'RUNNING') {
+        currentScore += 0.25 * runSpeedMultiplier;
+        updateTelemetryDisplay();
+    }
 }
 
-// --- RADAR COMPASS UI ORIENTATION ROUTINES ---
-function drawTrackerCompass() {
-    let target = !FUEL_CELL.collected ? FUEL_CELL : ESCAPE_HATCH;
-    let diff = Math.atan2(target.y - player.y, target.x - player.x) - player.angle;
-    while (diff < -Math.PI) diff += Math.PI * 2;
-    while (diff > Math.PI) diff -= Math.PI * 2;
-
-    ctx.fillStyle = '#ff6600'; ctx.font = '900 11px monospace'; ctx.textAlign = 'center';
-    if (diff < -0.22) ctx.fillText("📡 BEACON LOCK: ALTER PORT ROTATION", canvas.width / 2, canvas.height - 20);
-    else if (diff > 0.22) ctx.fillText("📡 BEACON LOCK: ALTER STARBOARD ROTATION", canvas.width / 2, canvas.height - 20);
-    else ctx.fillText("⚡ TARGET LOCK ACQUIRED: MAINTAIN HEADING", canvas.width / 2, canvas.height - 20);
+// --- MASTER ANIMATION REFRESH CYCLE ---
+function stepEngineFrame() {
+    if (runState === 'RUNNING') {
+        render3DRunnerScene();
+    }
+    requestAnimationFrame(stepEngineFrame);
 }
-
-// --- MINIMAP RADAR LAYER OVERLAY ---
-function drawRadarOverlay() {
-    const scale = 0.11, pad = 15;
-    const startX = canvas.width - (MAP_SIZE * TILE_SIZE * scale) - pad;
-
-    ctx.fillStyle = 'rgba(7, 9, 13, 0.9)';
-    ctx.fillRect(startX, pad, MAP_SIZE * TILE_SIZE * scale, MAP_SIZE * TILE_SIZE * scale);
-
-    for (let r = 0; r < MAP_SIZE; r++) {
-        for (let c = 0; c < MAP_SIZE; c++) {
-            if (MAP[r][c] > 0) {
-                ctx.fillStyle = '#1c232d';
-                ctx.fillRect(startX + (c * TILE_SIZE * scale), pad + (r * TILE_SIZE * scale), TILE_SIZE * scale - 0.5, TILE_SIZE * scale - 0.5);
-            }
-        }
-    }
-
-    let objective = !FUEL_CELL.collected ? FUEL_CELL : ESCAPE_HATCH;
-    ctx.fillStyle = !FUEL_CELL.collected ? '#ff6600' : '#00ff66';
-    ctx.fillRect(startX + (objective.x * scale) - 1.5, pad + (objective.y * scale) - 1.5, 3, 3);
-
-    ctx.fillStyle = player.isCrouching ? '#ffcc00' : '#ffffff';
-    ctx.beginPath(); ctx.arc(startX + player.x * scale, pad + player.y * scale, 2.5, 0, Math.PI * 2); ctx.fill();
-
-    enemies.forEach(e => {
-        let dist = Math.hypot(player.x - e.x, player.y - e.y);
-        // Blips dissolve on tracking monitors if user is operating silently inside stealth vectors
-        if (!player.isCrouching || dist < 140 || e.state === 'HUNTING') {
-            ctx.fillStyle = e.state === 'HUNTING' ? '#ff0000' : e.color;
-            ctx.beginPath(); ctx.arc(startX + e.x * scale, pad + e.y * scale, 2, 0, Math.PI * 2); ctx.fill();
-        }
-    });
-}
-
-// --- ENVIRONMENTAL FRAME PHYSICS TICK CONTROL ENGINE ---
-function processPhysics() {
-    if (gameState !== 'PLAYING') return;
-
-    let forwardInput = 0, rotationalInput = 0;
-
-    if (keys['arrowup'] || keys['w']) forwardInput = 1;
-    if (keys['arrowdown'] || keys['s']) forwardInput = -1;
-    if (keys['arrowleft'] || keys['a']) rotationalInput = -1;
-    if (keys['arrowright'] || keys['d']) rotationalInput = 1;
-
-    if (joystick.active) {
-        forwardInput = -joystick.moveY; rotationalInput = joystick.moveX * 0.85;
-    }
-
-    player.angle += rotationalInput * player.rotSpeed;
-    let speed = player.isCrouching ? player.crouchSpeed : player.walkSpeed;
-    let step = forwardInput * speed;
-
-    let targetX = player.x + Math.cos(player.angle) * step;
-    let targetY = player.y + Math.sin(player.angle) * step;
-
-    if (MAP[Math.floor(player.y / TILE_SIZE)][Math.floor(targetX / TILE_SIZE)] === 0) player.x = targetX;
-    if (MAP[Math.floor(targetY / TILE_SIZE)][Math.floor(player.x / TILE_SIZE)] === 0) player.y = targetY;
-
-    player.inSafeZone = (player.x >= SAFE_ZONE.minX && player.x <= SAFE_ZONE.maxX && player.y >= SAFE_ZONE.minY && player.y <= SAFE_ZONE.maxY);
-    player.noiseRadius = (forwardInput !== 0 && !player.isCrouching) ? 200 : 0;
-
-    if (player.inSafeZone && player.hp < 100) {
-        player.hp = Math.min(100, player.hp + 0.1); updateHUD();
-    }
-
-    if (!FUEL_CELL.collected && Math.hypot(player.x - FUEL_CELL.x, player.y - FUEL_CELL.y) < 30) {
-        FUEL_CELL.collected = true; updateHUD();
-    }
-
-    if (FUEL_CELL.collected && Math.hypot(player.x - ESCAPE_HATCH.x, player.y - ESCAPE_HATCH.y) < 30) {
-        if (currentLevel < 6) changeState('LEVEL_CLEAR'); else changeState('VICTORY');
-        return;
-    }
-
-    enemies.forEach(e => {
-        let dist = Math.hypot(player.x - e.x, player.y - e.y);
-
-        if (player.inSafeZone) e.state = 'PATROL';
-        else if (player.noiseRadius > 0 && dist <= player.noiseRadius) e.state = 'HUNTING';
-        else if (dist < 95) e.state = 'HUNTING';
-
-        if (e.state === 'PATROL') {
-            let node = e.waypoints[e.targetIdx];
-            if (Math.hypot(node.x - e.x, node.y - e.y) < 15) e.targetIdx = (e.targetIdx + 1) % e.waypoints.length;
-            e.angle = Math.atan2(node.y - e.y, node.x - e.x);
-        } else {
-            e.angle = Math.atan2(player.y - e.y, player.x - e.x);
-        }
-
-        let exNext = e.x + Math.cos(e.angle) * e.speed;
-        let eyNext = e.y + Math.sin(e.angle) * e.speed;
-
-        if (MAP[Math.floor(e.y / TILE_SIZE)][Math.floor(exNext / TILE_SIZE)] === 0) e.x = exNext;
-        if (MAP[Math.floor(eyNext / TILE_SIZE)][Math.floor(e.x / TILE_SIZE)] === 0) e.y = eyNext;
-
-        if (dist < 24 && !player.inSafeZone) {
-            player.hp = Math.max(0, player.hp - 0.75); updateHUD();
-            damageFlash.style.background = "rgba(255, 0, 0, 0.4)";
-            setTimeout(() => { damageFlash.style.background = "rgba(255, 0, 0, 0)"; }, 60);
-            if (player.hp <= 0) changeState('GAME_OVER');
-        }
-    });
-}
-
-// --- INITIATE CLOCK LOOP ENGINE RUNNERS ---
-initLevel(1);
-function frame() {
-    processPhysics();
-    if (gameState === 'PLAYING') renderGame();
-    requestAnimationFrame(frame);
-}
-frame();
+stepEngineFrame();
