@@ -1,13 +1,3 @@
-window.Game = {
-  Engine: null,
-  Player: null,
-  AI: null,
-  Audio: null,
-  Lighting: null,
-  Events: null,
-  UI: null
-};
-
 /* ORPHEUS ENGINE — MAIN BOOTSTRAP (AAA+ PATCH) */
 
 window.Engine = {
