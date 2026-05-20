@@ -1,258 +1,228 @@
-/* --- CORE CSS RE-ARCHITECTURE --- */
+/* --- STRUCTURAL ENCAPSULATION --- */
 * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
 }
 
 body {
-    background: #05070a;
+    background: #030406;
     color: #ff6600; /* Signature High-Contrast Hazard Orange Tint */
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
-    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    width: 100vw;
+    height: 100vh; width: 100vw;
+    overflow: hidden;
 }
 
-#display-wrapper {
+#master-viewport {
     position: relative;
     width: 100vw;
     height: 100vh;
-    max-width: 960px;
-    max-height: 620px;
+    max-width: 480px;
+    max-height: 860px;
+    background: #07090c;
+    border: 4px solid #12171e;
     display: flex;
     flex-direction: column;
-    background: #0b0c10;
-    border: 3px solid #1f2833;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.95), 0 0 20px rgba(255, 102, 0, 0.1);
-    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    #master-viewport {
+        border-radius: 6px;
+        height: 94vh;
+        box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 25px rgba(255,102,0,0.12);
+    }
 }
 
 canvas {
-    background: #020204;
-    display: block;
     width: 100%;
-    flex-grow: 1;
+    height: 56%;
+    background: #010203;
+    display: block;
 }
 
-/* --- THE ARCADE CRT AMBIENCE SYSTEM --- */
-.crt-scanlines {
+/* --- RETRO SCANLINE & SCREEN FLARE FILTERS --- */
+.crt-overlay {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
-    background-size: 100% 4px, 6px 100%;
+    top: 0; left: 0; width: 100%; height: 56%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
+    background-size: 100% 4px;
     pointer-events: none;
-    z-index: 15;
+    z-index: 10;
 }
 
-#damage-flash {
+#damage-vignette {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(255, 0, 0, 0);
+    top: 0; left: 0; width: 100%; height: 56%;
+    box-shadow: inset 0 0 40px rgba(255, 0, 0, 0);
     pointer-events: none;
-    z-index: 14;
-    transition: background 0.1s ease;
+    z-index: 9;
+    transition: box-shadow 0.08s ease-in-out;
 }
 
-/* --- TACTICAL GRAPHICAL HEADS UP DISPLAY --- */
-#hud-overlay {
+/* --- METRIC DATA TRANSMISSION BAR --- */
+#diagnostic-hud {
     position: absolute;
-    top: 15px; left: 15px; right: 15px;
+    top: 14px; left: 14px; right: 14px;
     display: flex;
     justify-content: space-between;
-    pointer-events: none;
+    align-items: center;
     z-index: 12;
 }
 
-.hud-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.hud-card {
-    background: rgba(11, 12, 16, 0.92);
-    border: 1px solid #ff6600;
-    border-left: 4px solid #ff6600;
-    color: #ffffff;
+.hud-item {
+    background: rgba(4, 6, 8, 0.94);
+    border-left: 3px solid #ff6600;
     padding: 6px 14px;
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 1px;
-    text-shadow: 0 0 4px #ff6600;
 }
 
-#hp-display {
-    color: #ff3333;
+.label { color: #6f7c91; }
+.value { color: #ffffff; text-shadow: 0 0 4px #ff6600; }
+.text-red { color: #ff3333 !important; }
+.text-orange { color: #ff9900 !important; }
+
+.mini-hud-btn {
+    background: #0a0e14;
+    border: 1px solid #ff6600;
+    color: #ff6600;
+    width: 34px; height: 34px;
+    cursor: pointer;
+    font-family: monospace;
     font-weight: 900;
 }
 
-/* --- MENU OVERLAY PANELS --- */
-#menu-overlay {
+/* --- OVERLAY TERMINAL CONTROL SYSTEM --- */
+#modal-system-overlay {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(7, 9, 13, 0.98);
+    top: 0; left: 0; width: 100%; height: 56%;
+    background: rgba(3, 4, 6, 0.97);
+    z-index: 25;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 20;
     padding: 20px;
 }
 
-.terminal-box {
-    border: 2px dashed #ff6600;
-    background: rgba(0,0,0,0.4);
-    padding: 30px 40px;
-    max-width: 600px;
+.modal-window {
     width: 100%;
-    box-shadow: inset 0 0 20px rgba(255, 102, 0, 0.05);
-}
-
-#menu-title {
-    font-size: 44px;
-    color: #ff2200;
-    letter-spacing: 6px;
-    text-shadow: 0 0 15px rgba(255, 34, 0, 0.5);
-}
-
-#menu-subtitle {
-    font-size: 12px;
-    color: #7a828a;
-    margin: 10px 0 25px 0;
-    letter-spacing: 1px;
-}
-
-#level-indicator {
-    font-size: 16px;
-    color: #00ff66;
-    margin-bottom: 20px;
-    text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
-}
-
-.menu-btn {
-    background: #11141a;
-    color: #ff6600;
     border: 1px solid #ff6600;
-    padding: 12px 24px;
-    font-size: 14px;
-    font-family: monospace;
-    font-weight: bold;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.menu-btn:hover {
-    background: #ff6600;
-    color: #05070a;
-    box-shadow: 0 0 15px rgba(255, 102, 0, 0.4);
-}
-
-/* --- ERGONOMIC JOYSTICK & CONTROLS DECK --- */
-#mobile-control-deck {
-    display: none;
-    height: 150px;
-    background: #07090d;
-    border-top: 2px solid #1f2833;
-    padding: 10px 25px;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 18;
-}
-
-.joystick-container {
-    width: 110px;
-    height: 110px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#virtual-joystick {
-    width: 96px;
-    height: 96px;
-    background: rgba(31, 40, 51, 0.25);
-    border: 2px solid #ff6600;
-    border-radius: 50%;
-    position: relative;
-}
-
-#joystick-ring {
-    position: absolute;
-    top: 10px; left: 10px; right: 10px; bottom: 10px;
-    border: 1px dashed rgba(255, 102, 0, 0.3);
-    border-radius: 50%;
-}
-
-#joystick-handle {
-    width: 38px;
-    height: 38px;
-    background: #ff6600;
-    border-radius: 50%;
-    position: absolute;
-    left: 27px; top: 27px;
-    box-shadow: 0 0 12px #ff6600;
-    transition: transform 0.05s linear;
-}
-
-#action-grid {
-    display: grid;
-    grid-template-columns: 120px 120px;
-    gap: 8px;
-}
-
-.action-btn {
-    background: #11141a;
-    color: #fff;
-    border: 1px solid #ff6600;
-    padding: 12px;
-    font-size: 11px;
-    font-family: monospace;
-    font-weight: bold;
-    border-radius: 2px;
-}
-
-.action-btn:active {
-    background: #ff6600;
-    color: #000;
-}
-
-/* --- RESPONSIVE DEVICE SYSTEM ORIENTATION LOCKS --- */
-#orientation-lock {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: #05070a;
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    color: #ff2200;
+    background: #080b0f;
+    padding: 24px;
     text-align: center;
 }
 
-.lock-box {
-    padding: 20px;
-    border: 1px solid #ff2200;
-    background: rgba(255,0,0,0.02);
+.modal-window h1 { font-size: 34px; letter-spacing: 5px; color: #ff2200; text-shadow: 0 0 10px rgba(255,34,0,0.4); }
+.modal-window h2 { font-size: 24px; letter-spacing: 2px; color: #ff3333; }
+.modal-window p { font-size: 11px; color: #7a869a; margin: 12px 0 20px 0; }
+
+.orange-bar, .red-bar { height: 2px; margin: 8px auto; width: 50%; }
+.orange-bar { background: #ff6600; }
+.red-bar { background: #ff3333; }
+
+.control-btn {
+    width: 100%;
+    background: #10151d;
+    color: #ff6600;
+    border: 1px solid #ff6600;
+    padding: 14px;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-bottom: 8px;
 }
 
-.sub-lock {
-    display: block;
-    margin-top: 10px;
-    color: #555;
+.control-btn:active { background: #ff6600; color: #000; }
+.modal-actions-stacked { display: flex; flex-direction: column; gap: 4px; }
+
+/* --- SYSTEM LOWER REAR COMMAND PANEL --- */
+#portrait-command-deck {
+    flex-grow: 1;
+    background: #05070a;
+    border-top: 3px solid #12171e;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 15px 10px;
+}
+
+.steering-bay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+#steering-wheel-disc {
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, #0c1017 40%, #121a24 70%);
+    border: 4px solid #ff6600;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 15px rgba(0,0,0,0.7);
+    will-change: transform;
+}
+
+.center-core {
+    width: 20px; height: 20px;
+    top: 56px; left: 56px;
+    background: #05070a;
+    border: 2px solid #ff6600;
+    border-radius: 50%;
+    position: absolute;
+}
+
+.grip-top {
+    width: 14px; height: 14px;
+    top: 8px; left: 59px;
+    background: #ff6600;
+    border-radius: 50%;
+    position: absolute;
+    box-shadow: 0 0 8px #ff6600;
+}
+
+.steering-readout {
+    font-size: 10px;
+    color: #4b5563;
+    letter-spacing: 1px;
+}
+
+.gear-bay {
+    display: flex;
+    width: 90%;
+    gap: 8px;
+}
+
+.gear-btn {
+    flex: 1;
+    background: #0e1218;
+    border: 1px solid #1d2530;
+    color: #526075;
+    padding: 15px 0;
+    font-family: monospace;
+    font-weight: 900;
     font-size: 11px;
+    border-radius: 4px;
 }
 
-@media (max-width: 1024px) and (orientation: portrait) {
-    #orientation-lock { display: flex; }
+.active-gear {
+    background: #141b24;
+    border: 2px solid #ff6600;
+    color: #ffffff;
+    text-shadow: 0 0 4px #ff6600;
 }
 
-@media (max-width: 1024px) {
-    #mobile-control-deck { display: flex; }
+.active-gear.warning-flash {
+    border-color: #ff2200;
+    text-shadow: 0 0 4px #ff2200;
 }
