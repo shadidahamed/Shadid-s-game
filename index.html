@@ -3,70 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>DEAD ZONE: FORWARD LABYRINTH RUNNER</title>
+    <title>DEAD ZONE: HORIZON RUNNER</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="master-viewport">
-        <!-- Arcade Ambient Screen Scanlines -->
+        <!-- Arcade Ambient FX Layer -->
         <div class="crt-overlay"></div>
         <div id="damage-vignette"></div>
         
-        <!-- Forward Horizon Pseudo-3D Canvas Render Layer -->
-        <canvas id="runnerCanvas" width="480" height="460"></canvas>
+        <!-- The Core 3D Render Engine Viewport -->
+        <canvas id="runnerCanvas" width="800" height="450"></canvas>
 
-        <!-- Contextual Game UI State Overlays -->
+        <!-- Tactical Real-Time Telemetry Overlays -->
+        <div id="diagnostic-hud">
+            <div class="hud-group">
+                <div class="hud-item"><span class="label">VITAL:</span> <span id="hud-hp" class="value text-red">100%</span></div>
+                <div class="hud-item"><span class="label">SCORE:</span> <span id="hud-score" class="value text-orange">0000</span></div>
+            </div>
+            <div class="hud-group">
+                <div id="desktop-controls-legend" class="pc-only-tip">KEYS: ←/→ TO MOVE | ↑ TO JUMP | ↓ TO SLIDE | 1/2/3 GEARS</div>
+                <button id="pause-trigger-btn" class="mini-hud-btn">II</button>
+            </div>
+        </div>
+
+        <!-- Interactive System State Overlays -->
         <div id="modal-system-overlay">
             <div class="modal-window main-box" id="menu-start">
                 <h1>DEAD ZONE</h1>
                 <div class="orange-bar"></div>
-                <p>FIRST-PERSON HIGH-VELOCITY LABYRINTH RUNNER</p>
+                <p>3D HYPER-VELOCITY LABYRINTH RUNNER</p>
                 <button class="control-btn run-btn" onclick="triggerEngineState('START_GAME')">ENGAGE RUN PLATFORM</button>
             </div>
 
             <div class="modal-window death-box" id="menu-death" style="display: none;">
-                <h2>VITAL CORRUPTION</h2>
+                <h2>VITAL CORRUPTION DETECTED</h2>
                 <div class="red-bar"></div>
-                <p id="death-penalty-msg">SYSTEM CAUGHT. SCORE REDUCED BY 50%</p>
-                <div class="modal-actions-stacked">
-                    <button class="control-btn reset-btn" onclick="triggerEngineState('RESTART_RUN')">RE-INITIALIZE RUNNER</button>
-                    <button class="control-btn quit-btn" onclick="triggerEngineState('QUIT_TO_MAIN')">ABORT MISSION</button>
-                </div>
+                <p id="death-penalty-msg">SYSTEM CRASH. DATA STORAGE PENALIZED BY 50%</p>
+                <button class="control-btn reset-btn" onclick="triggerEngineState('RESTART_RUN')">RE-INITIALIZE RUNNER SYSTEM</button>
             </div>
 
             <div class="modal-window break-box" id="menu-pause" style="display: none;">
-                <h2>RUN DEACTIVATED</h2>
+                <h2>SIMULATION ON STANDBY</h2>
                 <div class="orange-bar"></div>
-                <p>SIMULATION STANDING BY.</p>
-                <button class="control-btn run-btn" onclick="triggerEngineState('RESUME_RUN')">RESUME</button>
-                <button class="control-btn quit-btn" onclick="triggerEngineState('QUIT_TO_MAIN')">TERMINATE RUN</button>
+                <button class="control-btn run-btn" onclick="triggerEngineState('RESUME_RUN')">RESUME INTERACTIVE STREAM</button>
+                <button class="control-btn quit-btn" onclick="triggerEngineState('QUIT_TO_MAIN')">TERMINATE RUN PROCESS</button>
             </div>
         </div>
 
-        <!-- Tactical Run Telemetry Matrix -->
-        <div id="diagnostic-hud">
-            <div class="hud-item"><span class="label">VITAL:</span> <span id="hud-hp" class="value text-red">100%</span></div>
-            <div class="hud-item"><span class="label">SCORE:</span> <span id="hud-score" class="value text-orange">0000</span></div>
-            <button id="pause-trigger-btn" class="mini-hud-btn">II</button>
-        </div>
-
-        <!-- Responsive Mobile Command Base Deck -->
+        <!-- Mobile-Only Physical Controller Deck (Automatically Drops to 0px height on PC) -->
         <div id="portrait-command-deck">
-            <!-- Smooth Precision Mechanical Steering Disc -->
             <div class="steering-bay">
-                <div id="steering-wheel-disc">
-                    <div class="disc-marker center-core"></div>
-                    <div class="disc-marker grip-top"></div>
-                </div>
-                <div class="steering-readout">STEER CAR TRACKS</div>
+                <div id="steering-wheel-disc"><div class="grip-top"></div></div>
+                <div class="steering-readout">TOUCH-STEER RAILWAY</div>
             </div>
-
-            <!-- Kinetic Multi-Speed Gear Shifters -->
             <div class="gear-bay">
                 <button id="gear-still" class="gear-btn">STILL</button>
-                <button id="gear-scout" class="gear-btn active-gear">SCOUT RUN</button>
-                <button id="gear-blitz" class="gear-btn warning-flash">BLITZ SPRINT</button>
+                <button id="gear-scout" class="gear-btn active-gear">SCOUT</button>
+                <button id="gear-blitz" class="gear-btn warning-flash">BLITZ</button>
             </div>
         </div>
     </div>
