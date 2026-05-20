@@ -1,738 +1,402 @@
-# ORPHEUS ENGINE // POLISHED COMPLETE EDITION
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>ORPHEUS ENGINE // THE BACKROOMS HYBRID ECOSYSTEM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ORPHEUS ENGINE // THE BACKROOMS HYBRID ECOSYSTEM</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #030509;
+            --glass-bg: rgba(6, 9, 16, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --accent-crimson: #bf1725;
+            --accent-glow: rgba(191, 23, 37, 0.4);
+            --gold-fine-wine: #c4a267;
+        }
 
-<style>
-:root {
-    --bg-dark: #04070d;
-    --glass: rgba(10, 14, 24, 0.62);
-    --glass-border: rgba(255,255,255,0.08);
-    --gold: #c4a267;
-    --red: #bf1725;
-    --cyan: #6de5ff;
-    --white: #f4f7fb;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    user-select:none;
-    -webkit-user-select:none;
-}
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #f3f4f6;
+        }
 
-html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#000;
-    font-family:Inter,system-ui,sans-serif;
-    color:var(--white);
-}
+        #viewport-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
 
-#viewport-container{
-    position:relative;
-    width:100vw;
-    height:100vh;
-}
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
 
-canvas{
-    display:block;
-}
+        /* High-End Glassmorphic Layer Controls */
+        .glass-hud-panel {
+            position: absolute;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 20px;
+            z-index: 10;
+            pointer-events: auto;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
 
-.glass-panel{
-    position:absolute;
-    background:var(--glass);
-    backdrop-filter:blur(22px);
-    border:1px solid var(--glass-border);
-    border-radius:20px;
-    box-shadow:0 25px 80px rgba(0,0,0,0.45);
-    z-index:50;
-}
+        .top-left-status {
+            top: 25px;
+            left: 25px;
+            min-width: 280px;
+        }
 
-#hud{
-    top:22px;
-    left:22px;
-    width:300px;
-    padding:18px;
-}
+        .status-header h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #fff;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
 
-#hud h1{
-    font-size:1.1rem;
-    letter-spacing:2px;
-    margin-bottom:6px;
-}
+        .status-header p {
+            font-size: 0.75rem;
+            color: var(--gold-fine-wine);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
-#hud p{
-    font-size:0.72rem;
-    color:var(--gold);
-    letter-spacing:2px;
-}
+        /* Resource Metric Bars */
+        .metric-group {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
 
-.metric{
-    margin-top:16px;
-}
+        .metric-bar-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+        }
 
-.metric-head{
-    display:flex;
-    justify-content:space-between;
-    font-size:0.72rem;
-    margin-bottom:6px;
-    color:#d1d5db;
-}
+        .metric-fill-vital {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, var(--accent-crimson), #ff3344);
+            box-shadow: 0 0 10px var(--accent-glow);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-.bar{
-    width:100%;
-    height:6px;
-    border-radius:999px;
-    overflow:hidden;
-    background:rgba(255,255,255,0.06);
-}
+        /* Boot Loading System Overlays */
+        #engine-boot-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #04060a;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 1s ease;
+        }
 
-.fill{
-    width:100%;
-    height:100%;
-    border-radius:999px;
-    transition:width .25s ease;
-}
+        .boot-terminal-box {
+            width: 85%;
+            max-width: 550px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+        }
 
-#healthFill{
-    background:linear-gradient(90deg,var(--red),#ff5566);
-    box-shadow:0 0 20px rgba(191,23,37,.55);
-}
+        .boot-title {
+            color: var(--gold-fine-wine);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
 
-#staminaFill{
-    background:linear-gradient(90deg,#22c55e,#7dffad);
-}
+        .boot-logs {
+            font-size: 0.8rem;
+            color: #4b5563;
+            height: 150px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
 
-#sanityFill{
-    background:linear-gradient(90deg,#00d4ff,#9be7ff);
-}
+        .boot-action-btn {
+            padding: 12px 30px;
+            background: transparent;
+            border: 1px solid var(--gold-fine-wine);
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
 
-#crosshair{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    width:18px;
-    height:18px;
-    z-index:30;
-    pointer-events:none;
-}
-
-#crosshair::before,
-#crosshair::after{
-    content:'';
-    position:absolute;
-    background:white;
-}
-
-#crosshair::before{
-    width:2px;
-    height:18px;
-    left:8px;
-}
-
-#crosshair::after{
-    width:18px;
-    height:2px;
-    top:8px;
-}
-
-#boot-screen{
-    position:absolute;
-    inset:0;
-    z-index:500;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:radial-gradient(circle at center,#0c1019 0%, #020304 100%);
-    transition:opacity 1s ease;
-}
-
-.boot-box{
-    width:min(90%,650px);
-    background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.08);
-    border-radius:20px;
-    padding:30px;
-    box-shadow:0 20px 60px rgba(0,0,0,.6);
-}
-
-.boot-title{
-    font-size:1rem;
-    color:var(--gold);
-    letter-spacing:3px;
-    margin-bottom:18px;
-}
-
-#logs{
-    height:180px;
-    overflow:auto;
-    color:#9ca3af;
-    font-family:monospace;
-    font-size:0.8rem;
-    line-height:1.6;
-    padding-right:6px;
-}
-
-button{
-    margin-top:24px;
-    width:100%;
-    border:none;
-    border-radius:14px;
-    padding:15px;
-    font-size:0.9rem;
-    letter-spacing:3px;
-    background:linear-gradient(90deg,var(--gold),#ffe0a3);
-    color:#000;
-    cursor:pointer;
-    font-weight:700;
-    transition:transform .25s ease, box-shadow .25s ease;
-}
-
-button:hover{
-    transform:translateY(-2px);
-    box-shadow:0 10px 30px rgba(196,162,103,.35);
-}
-
-#warning{
-    position:absolute;
-    top:18px;
-    right:22px;
-    padding:14px 18px;
-    border-radius:14px;
-    background:rgba(191,23,37,.15);
-    border:1px solid rgba(191,23,37,.4);
-    backdrop-filter:blur(18px);
-    color:#ff8a95;
-    letter-spacing:2px;
-    z-index:60;
-    opacity:0;
-    transition:opacity .4s ease;
-}
-
-#minimap{
-    position:absolute;
-    right:22px;
-    bottom:22px;
-    width:180px;
-    height:180px;
-    border-radius:20px;
-    overflow:hidden;
-    border:1px solid rgba(255,255,255,.1);
-    background:rgba(0,0,0,.35);
-    z-index:40;
-}
-
-@media(max-width:768px){
-    #hud{
-        width:240px;
-        padding:15px;
-    }
-
-    #minimap{
-        width:130px;
-        height:130px;
-    }
-}
-</style>
+        .boot-action-btn:hover {
+            background: var(--gold-fine-wine);
+            color: #000;
+            box-shadow: 0 0 20px rgba(196, 162, 103, 0.3);
+        }
+    </style>
 </head>
 <body>
 
-<div id="viewport-container">
-
-    <div id="crosshair"></div>
-
-    <div id="warning">ENTITY DETECTED</div>
-
-    <canvas id="minimap"></canvas>
-
-    <div id="hud" class="glass-panel">
-        <h1 id="zoneTitle">ZONE // PHASE-0</h1>
-        <p id="zoneDesc">LIMINAL TRANSITION SPACE</p>
-
-        <div class="metric">
-            <div class="metric-head">
-                <span>HEALTH</span>
-                <span id="healthText">100%</span>
+    <div id="engine-boot-screen">
+        <div class="boot-terminal-box">
+            <div class="boot-title">SYSTEM:// ORPHEUS_ENGINE_HYBRID_COREINIT</div>
+            <div class="boot-logs" id="terminal-logger">
+                [SYSTEM] Allocating WebGL Context Layers...<br>
+                [SYSTEM] Binding 2.5D Projection Pipelines...<br>
+                [SYSTEM] Ready to compile spatial parameters...
             </div>
-            <div class="bar"><div class="fill" id="healthFill"></div></div>
-        </div>
-
-        <div class="metric">
-            <div class="metric-head">
-                <span>STAMINA</span>
-                <span id="staminaText">100%</span>
-            </div>
-            <div class="bar"><div class="fill" id="staminaFill"></div></div>
-        </div>
-
-        <div class="metric">
-            <div class="metric-head">
-                <span>SANITY</span>
-                <span id="sanityText">100%</span>
-            </div>
-            <div class="bar"><div class="fill" id="sanityFill"></div></div>
+            <button class="boot-action-btn" id="initialize-call-trigger">Awaken Reality</button>
         </div>
     </div>
 
-    <div id="boot-screen">
-        <div class="boot-box">
-            <div class="boot-title">ORPHEUS ENGINE // CORE BOOT</div>
-            <div id="logs">
-                [SYSTEM] Initializing WebGL Renderer...<br>
-                [SYSTEM] Preparing Hybrid 2.5D Environment...<br>
-                [SYSTEM] Allocating Lighting Pipelines...<br>
-                [SYSTEM] Ready.
+    <div id="viewport-container">
+        
+        <div class="glass-hud-panel top-left-status">
+            <div class="status-header">
+                <h1 id="hud-level-title">ZONE: PHASE LINE 0</h1>
+                <p id="hud-level-motto">VECTORS MATRIX INVERSION</p>
             </div>
-
-            <button id="startBtn">ENTER THE BACKROOMS</button>
+            <div class="metric-group">
+                <div style="display:flex; justify-content:space-between; font-size:0.65rem; letter-spacing:1px; color:#9ca3af;">
+                    <span>HERO SYNCHRONICITY STABILITY</span>
+                    <span id="vital-percentage-lbl">100%</span>
+                </div>
+                <div class="metric-bar-container">
+                    <div class="metric-fill-vital" id="vital-integrity-bar"></div>
+                </div>
+            </div>
         </div>
+
     </div>
 
-</div>
+    <script>
+        // --- MASTER APPLICATION GAME ENGINE SCOPE ---
+        const CoreEngine = {
+            // Environment Context Variables
+            scene: null,
+            camera: null,
+            renderer: null,
+            clock: null,
+            
+            // Structural Render Subsets
+            worldGroup: null,
+            actorGroup: null,
+            
+            // Assets Pipelines & Models Target Frame Tracking
+            heroModelURI: "resident-evil-2-remake-leon-kennedy.glb",
+            heroInstance: null,
+            heroMixer: null,
+            
+            // Engine Spatial Realtime Configurations
+            currentZone: 0,
+            isEngineRunning: false,
+            
+            // Global Input States Tracking
+            inputTracker: {
+                forward: false, backward: false, left: false, right: false,
+                climb: false, jump: false
+            }
+        };
 
-<script>
-const Engine = {
-    scene:null,
-    camera:null,
-    renderer:null,
-    clock:null,
-    player:null,
-    walls:[],
-    entities:[],
-    running:false,
-    health:100,
-    stamina:100,
-    sanity:100,
-    velocity:new THREE.Vector3(),
-    input:{forward:false,back:false,left:false,right:false},
-};
+        // --- PIPELINE RUNTIME LOGIC CONSTRUCTORS ---
+        function initEngineContext() {
+            const container = document.getElementById('viewport-container');
+            
+            // Standard WebGL Scene Initializations
+            CoreEngine.scene = new THREE.Scene();
+            CoreEngine.clock = new THREE.Clock();
 
-const container = document.getElementById('viewport-container');
+            // 2.5D / 3D Mixed Perspective Matrices Definition Formulation
+            CoreEngine.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            CoreEngine.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            CoreEngine.renderer.setSize(window.innerWidth, window.innerHeight);
+            CoreEngine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            CoreEngine.renderer.shadowMap.enabled = true;
+            CoreEngine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            CoreEngine.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            CoreEngine.renderer.toneMappingExposure = 1.0;
+            container.appendChild(CoreEngine.renderer.domElement);
 
-function init(){
-    Engine.scene = new THREE.Scene();
-    Engine.scene.background = new THREE.Color(0x05070b);
-    Engine.scene.fog = new THREE.FogExp2(0x05070b,0.035);
+            // Group Layout Instantiations
+            CoreEngine.worldGroup = new THREE.Group();
+            CoreEngine.actorGroup = new THREE.Group();
+            CoreEngine.scene.add(CoreEngine.worldGroup);
+            CoreEngine.scene.add(CoreEngine.actorGroup);
 
-    Engine.clock = new THREE.Clock();
+            // Establish Cinematic Ambient and Direct Shadow Caster Lighting rigs
+            setupCinematicLightingEcosystem();
+            
+            // Initialize Hardware System Input Hooks
+            bindHardwareInputSystems();
 
-    Engine.camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth/window.innerHeight,
-        0.1,
-        1000
-    );
+            // Run GLB Asset Ingestion Pipeline
+            ingestHeroModelAsset();
+        }
 
-    Engine.renderer = new THREE.WebGLRenderer({
-        antialias:true,
-        powerPreference:'high-performance'
-    });
+        function setupCinematicLightingEcosystem() {
+            // Dark fine wine ambient lighting floor limits
+            const ambient = new THREE.AmbientLight(0x0a0f1d, 0.4);
+            CoreEngine.scene.add(ambient);
 
-    Engine.renderer.setSize(window.innerWidth,window.innerHeight);
-    Engine.renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-    Engine.renderer.shadowMap.enabled = true;
+            // Primary Dark Fantasy Directional Cascade Shadow Caster
+            const dirLight = new THREE.DirectionalLight(0xc4a267, 0.85); // Gold-tinted ray
+            dirLight.position.set(25, 45, 20);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.bias = -0.0001;
+            CoreEngine.scene.add(dirLight);
 
-    container.appendChild(Engine.renderer.domElement);
+            // Foggy atmosphere density tracking
+            CoreEngine.scene.background = new THREE.Color(0x030509);
+            CoreEngine.scene.fog = new THREE.FogExp2(0x030509, 0.025);
+        }
 
-    createLights();
-    createWorld();
-    createPlayer();
-    createEntities();
+        // --- GLB MODEL INGESTION PIPELINE ---
+        function ingestHeroModelAsset() {
+            const logger = document.getElementById('terminal-logger');
+            logger.innerHTML += "<br>[PIPELINE] Initializing GLTF/GLB Ingestion Stream...";
 
-    bindInputs();
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+                CoreEngine.heroModelURI,
+                function (gltf) {
+                    logger.innerHTML += "<br>[PIPELINE] File stream compiled. Parsing meshes...";
+                    
+                    CoreEngine.heroInstance = gltf.scene;
+                    
+                    // Traverse and inject high-end shadow maps safely over custom uploaded mesh structures
+                    CoreEngine.heroInstance.traverse(function (node) {
+                        if (node.isMesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                            // Optimize material parameters for fine-wine styling pipeline
+                            if(node.material) {
+                                node.material.roughness = 0.45;
+                                node.material.metalness = 0.2;
+                            }
+                        }
+                    });
 
-    animate();
-}
+                    // Positioning baseline parameters
+                    CoreEngine.heroInstance.position.set(0, 0, 0);
+                    CoreEngine.heroInstance.scale.set(1.2, 1.2, 1.2);
+                    CoreEngine.actorGroup.add(CoreEngine.heroInstance);
 
-function createLights(){
-    const ambient = new THREE.AmbientLight(0xffffff,0.25);
-    Engine.scene.add(ambient);
+                    // Track animations mapping frames if loaded
+                    if(gltf.animations && gltf.animations.length > 0) {
+                        CoreEngine.heroMixer = new THREE.AnimationMixer(CoreEngine.heroInstance);
+                        // Optional fallback automatic idle action trigger loop
+                        const action = CoreEngine.heroMixer.clipAction(gltf.animations[0]);
+                        action.play();
+                    }
 
-    const dir = new THREE.DirectionalLight(0xfff1c2,1.2);
-    dir.position.set(15,20,10);
-    dir.castShadow = true;
-    dir.shadow.mapSize.width = 2048;
-    dir.shadow.mapSize.height = 2048;
-    Engine.scene.add(dir);
+                    logger.innerHTML += "<br><span style='color:#c4a267;'>[SUCCESS] HERO GLB LINK BOUND SECURELY. Ready to launch.</span>";
+                },
+                function (xhr) {
+                    let percent = Math.floor((xhr.loaded / xhr.total) * 100);
+                    if(isNaN(percent)) percent = "Streaming";
+                    logger.innerHTML += `<br>[PIPELINE] Reading data vectors: ${percent}%`;
+                    logger.scrollTop = logger.scrollHeight;
+                },
+                function (error) {
+                    logger.innerHTML += "<br><span style='color:#bf1725;'>[WARNING] GLB structural load path skipped. Generating high-fidelity procedural substitute fallback hero asset.</span>";
+                    generateFallbackProceduralHero();
+                }
+            );
+        }
 
-    for(let i=0;i<18;i++){
-        const point = new THREE.PointLight(0xffd58a,0.9,12);
-        point.position.set(
-            (Math.random()-0.5)*80,
-            3,
-            (Math.random()-0.5)*80
-        );
-        Engine.scene.add(point);
-    }
-}
+        function generateFallbackProceduralHero() {
+            // High-fidelity procedural substitute capsule styling if external model mapping fails locally
+            const heroGroup = new THREE.Group();
+            
+            const bodyGeo = new THREE.CylinderGeometry(0.4, 0.3, 1.8, 16);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a2436, roughness: 0.5, metalness: 0.3 });
+            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+            bodyMesh.position.y = 0.9;
+            bodyMesh.castShadow = true;
+            bodyMesh.receiveShadow = true;
+            heroGroup.add(bodyMesh);
 
-function createWorld(){
-    const floorGeo = new THREE.PlaneGeometry(200,200);
-    const floorMat = new THREE.MeshStandardMaterial({
-        color:0x3c3624,
-        roughness:0.9,
-        metalness:0.05
-    });
+            const crestGeo = new THREE.SphereGeometry(0.3, 16, 16);
+            const crestMat = new THREE.MeshStandardMaterial({ color: 0xbf1725, emissive: 0xbf1725, emissiveIntensity: 0.2 });
+            const crestMesh = new THREE.Mesh(crestGeo, crestMat);
+            crestMesh.position.y = 2.0;
+            heroGroup.add(crestMesh);
 
-    const floor = new THREE.Mesh(floorGeo,floorMat);
-    floor.rotation.x = -Math.PI/2;
-    floor.receiveShadow = true;
-    Engine.scene.add(floor);
+            CoreEngine.actorGroup.add(heroGroup);
+            CoreEngine.heroInstance = heroGroup;
+        }
 
-    const wallGeo = new THREE.BoxGeometry(4,5,1);
+        // --- HARDWARE BINDINGS ---
+        function bindHardwareInputSystems() {
+            window.addEventListener('keydown', (e) => { processKeyEvent(e.key, true); });
+            window.addEventListener('keyup', (e) => { processKeyEvent(e.key, false); });
+            
+            window.addEventListener('resize', () => {
+                CoreEngine.camera.aspect = window.innerWidth / window.innerHeight;
+                CoreEngine.camera.updateProjectionMatrix();
+                CoreEngine.renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
 
-    for(let i=0;i<50;i++){
-        const wallMat = new THREE.MeshStandardMaterial({
-            color:0x8f845e,
-            roughness:0.8
+        function processKeyEvent(keyString, isPressed) {
+            switch(keyString) {
+                case 'ArrowUp': CoreEngine.inputTracker.forward = isPressed; break;
+                case 'ArrowDown': CoreEngine.inputTracker.backward = isPressed; break;
+                case 'ArrowLeft': CoreEngine.inputTracker.left = isPressed; break;
+                case 'ArrowRight': CoreEngine.inputTracker.right = isPressed; break;
+                case 's': case 'S': CoreEngine.inputTracker.climb = isPressed; break;
+                case 'j': case 'J': CoreEngine.inputTracker.jump = isPressed; break;
+            }
+        }
+
+        // --- REVOLUTIONARY GLOBAL PIPELINE TRANSITION EXECUTION ---
+        document.getElementById('initialize-call-trigger').addEventListener('click', () => {
+            document.getElementById('engine-boot-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('engine-boot-screen').style.display = 'none';
+                CoreEngine.isEngineRunning = true;
+            }, 1000);
         });
 
-        const wall = new THREE.Mesh(wallGeo,wallMat);
-
-        wall.position.set(
-            (Math.random()-0.5)*90,
-            2.5,
-            (Math.random()-0.5)*90
-        );
-
-        wall.rotation.y = Math.random()*Math.PI;
-
-        wall.castShadow = true;
-        wall.receiveShadow = true;
-
-        Engine.scene.add(wall);
-        Engine.walls.push(wall);
-    }
-}
-
-function createPlayer(){
-    const geo = new THREE.CapsuleGeometry(0.4,1.2,4,8);
-    const mat = new THREE.MeshStandardMaterial({
-        color:0xbf1725,
-        emissive:0x45070d,
-        roughness:0.45,
-        metalness:0.25
-    });
-
-    Engine.player = new THREE.Mesh(geo,mat);
-    Engine.player.position.set(0,1,0);
-    Engine.player.castShadow = true;
-
-    Engine.scene.add(Engine.player);
-
-    Engine.camera.position.set(0,2,5);
-}
-
-function createEntities(){
-    for(let i=0;i<8;i++){
-        const geo = new THREE.SphereGeometry(0.7,20,20);
-        const mat = new THREE.MeshStandardMaterial({
-            color:0x101010,
-            emissive:0x7a0015,
-            emissiveIntensity:0.7
-        });
-
-        const entity = new THREE.Mesh(geo,mat);
-
-        entity.position.set(
-            (Math.random()-0.5)*70,
-            1,
-            (Math.random()-0.5)*70
-        );
-
-        entity.userData.speed = 0.015 + Math.random()*0.02;
-
-        Engine.scene.add(entity);
-        Engine.entities.push(entity);
-    }
-}
-
-function bindInputs(){
-    window.addEventListener('keydown',e=>{
-        if(e.key==='w'||e.key==='ArrowUp') Engine.input.forward = true;
-        if(e.key==='s'||e.key==='ArrowDown') Engine.input.back = true;
-        if(e.key==='a'||e.key==='ArrowLeft') Engine.input.left = true;
-        if(e.key==='d'||e.key==='ArrowRight') Engine.input.right = true;
-    });
-
-    window.addEventListener('keyup',e=>{
-        if(e.key==='w'||e.key==='ArrowUp') Engine.input.forward = false;
-        if(e.key==='s'||e.key==='ArrowDown') Engine.input.back = false;
-        if(e.key==='a'||e.key==='ArrowLeft') Engine.input.left = false;
-        if(e.key==='d'||e.key==='ArrowRight') Engine.input.right = false;
-    });
-
-    window.addEventListener('mousemove',e=>{
-        if(!Engine.running) return;
-
-        Engine.camera.rotation.y -= e.movementX * 0.002;
-    });
-
-    window.addEventListener('resize',()=>{
-        Engine.camera.aspect = window.innerWidth/window.innerHeight;
-        Engine.camera.updateProjectionMatrix();
-        Engine.renderer.setSize(window.innerWidth,window.innerHeight);
-    });
-}
-
-function updatePlayer(delta){
-    const speed = 6 * delta;
-
-    const direction = new THREE.Vector3();
-
-    if(Engine.input.forward) direction.z -= speed;
-    if(Engine.input.back) direction.z += speed;
-    if(Engine.input.left) direction.x -= speed;
-    if(Engine.input.right) direction.x += speed;
-
-    direction.applyAxisAngle(new THREE.Vector3(0,1,0),Engine.camera.rotation.y);
-
-    Engine.player.position.add(direction);
-
-    const targetCamPos = new THREE.Vector3(
-        Engine.player.position.x,
-        Engine.player.position.y + 2,
-        Engine.player.position.z + 5
-    );
-
-    targetCamPos.applyAxisAngle(
-        new THREE.Vector3(0,1,0),
-        Engine.camera.rotation.y
-    );
-
-    Engine.camera.position.lerp(targetCamPos,0.08);
-    Engine.camera.lookAt(Engine.player.position.x,Engine.player.position.y+1,Engine.player.position.z);
-}
-
-function updateEntities(){
-    let nearby = false;
-
-    Engine.entities.forEach(entity=>{
-        const dir = new THREE.Vector3().subVectors(
-            Engine.player.position,
-            entity.position
-        );
-
-        const dist = dir.length();
-
-        if(dist < 18){
-            nearby = true;
-            dir.normalize();
-            entity.position.add(dir.multiplyScalar(entity.userData.speed));
-        }
-
-        entity.rotation.y += 0.02;
-
-        if(dist < 2){
-            Engine.health -= 0.15;
-            Engine.sanity -= 0.08;
-        }
-    });
-
-    document.getElementById('warning').style.opacity = nearby ? 1 : 0;
-}
-
-function updateHUD(){
-    Engine.health = Math.max(0,Engine.health);
-    Engine.stamina = Math.max(0,Engine.stamina);
-    Engine.sanity = Math.max(0,Engine.sanity);
-
-    document.getElementById('healthFill').style.width = Engine.health + '%';
-    document.getElementById('staminaFill').style.width = Engine.stamina + '%';
-    document.getElementById('sanityFill').style.width = Engine.sanity + '%';
-
-    document.getElementById('healthText').innerText = Math.floor(Engine.health) + '%';
-    document.getElementById('staminaText').innerText = Math.floor(Engine.stamina) + '%';
-    document.getElementById('sanityText').innerText = Math.floor(Engine.sanity) + '%';
-}
-
-function updateMiniMap(){
-    const canvas = document.getElementById('minimap');
-    const ctx = canvas.getContext('2d');
-
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    ctx.fillStyle = 'rgba(0,0,0,.65)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    const scale = 2;
-
-    ctx.fillStyle = '#ff4d5f';
-
-    Engine.entities.forEach(entity=>{
-        ctx.fillRect(
-            canvas.width/2 + entity.position.x * scale,
-            canvas.height/2 + entity.position.z * scale,
-            4,
-            4
-        );
-    });
-
-    ctx.fillStyle = '#6de5ff';
-    ctx.beginPath();
-    ctx.arc(canvas.width/2,canvas.height/2,5,0,Math.PI*2);
-    ctx.fill();
-}
-
-function animate(){
-    requestAnimationFrame(animate);
-
-    if(!Engine.running) return;
-
-    const delta = Engine.clock.getDelta();
-
-    updatePlayer(delta);
-    updateEntities();
-    updateHUD();
-    updateMiniMap();
-
-    if(Engine.health <= 0){
-        alert('YOU WERE CONSUMED BY THE BACKROOMS');
-        window.location.reload();
-    }
-
-    Engine.renderer.render(Engine.scene,Engine.camera);
-}
-
-function startGame(){
-    document.getElementById('boot-screen').style.opacity = '0';
-
-    setTimeout(()=>{
-        document.getElementById('boot-screen').style.display = 'none';
-        Engine.running = true;
-    },900);
-
-    container.requestPointerLock?.();
-}
-
-init();
-
-document.getElementById('startBtn').addEventListener('click',startGame);
-</script>
-</body>
-// ===== EXTRA POLISH SYSTEMS =====
-
-// Dynamic flicker system
-setInterval(() => {
-    Engine.scene.traverse(obj => {
-        if(obj.isPointLight){
-            obj.intensity = 0.6 + Math.random() * 1.2;
-        }
-    });
-}, 120);
-
-// Atmospheric sanity drain
-setInterval(() => {
-    if(!Engine.running) return;
-
-    Engine.sanity -= 0.04;
-
-    if(Engine.sanity < 40){
-        document.body.style.filter = `contrast(${1 + Math.random()*0.08}) brightness(${0.95 + Math.random()*0.08})`;
-    }
-
-    if(Engine.sanity <= 0){
-        alert('YOUR MIND COLLAPSED INSIDE THE LIMINAL VOID');
-        window.location.reload();
-    }
-}, 120);
-
-// Footstep atmosphere
-const stepAudio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=footstep-wood-1-122970.mp3');
-stepAudio.volume = 0.15;
-
-setInterval(() => {
-    if(!Engine.running) return;
-
-    if(
-        Engine.input.forward ||
-        Engine.input.back ||
-        Engine.input.left ||
-        Engine.input.right
-    ){
-        stepAudio.currentTime = 0;
-        stepAudio.play().catch(()=>{});
-    }
-}, 480);
-
-// Random ambience whispers
-const whisperAudio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_5d1c0a6f4c.mp3?filename=horror-ambience-6117.mp3');
-whisperAudio.volume = 0.08;
-
-setInterval(() => {
-    if(!Engine.running) return;
-
-    if(Math.random() < 0.25){
-        whisperAudio.currentTime = 0;
-        whisperAudio.play().catch(()=>{});
-    }
-}, 12000);
-
-// Smooth breathing camera effect
-function breathingEffect(){
-    if(!Engine.running) return;
-
-    const t = performance.now() * 0.0015;
-    Engine.camera.position.y += Math.sin(t) * 0.002;
-
-    requestAnimationFrame(breathingEffect);
-}
-
-breathingEffect();
-
-// Procedural floating dust particles
-const particleGeometry = new THREE.BufferGeometry();
-const particleCount = 1200;
-const positions = [];
-
-for(let i=0;i<particleCount;i++){
-    positions.push((Math.random()-0.5)*200);
-    positions.push(Math.random()*20);
-    positions.push((Math.random()-0.5)*200);
-}
-
-particleGeometry.setAttribute(
-    'position',
-    new THREE.Float32BufferAttribute(positions,3)
-);
-
-const particleMaterial = new THREE.PointsMaterial({
-    color:0xffffff,
-    size:0.05,
-    transparent:true,
-    opacity:0.35
-});
-
-const particles = new THREE.Points(
-    particleGeometry,
-    particleMaterial
-);
-
-Engine.scene.add(particles);
-
-// Cinematic title pulse
-setInterval(()=>{
-    const title = document.getElementById('zoneTitle');
-    title.style.opacity = 0.6 + Math.random()*0.4;
-},180);
-
-</script>
+        // Initialize Engine Systems Framework Setup execution
+        window.onload = initEngineContext;
+    </script>
 </body>
 </html>
-```
