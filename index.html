@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ORPHEUS 2.5D // THE SPIRAL BOUNDARY EXPERIMENT</title>
+    <title>SHADID THE ZOMBIE KILLER // MAZE RUNNER MATRIX</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --bg-dark: #020406;
-            --glass-bg: rgba(7, 10, 15, 0.85);
+            --bg-dark: #05070a;
+            --glass-bg: rgba(10, 14, 22, 0.85);
             --glass-border: rgba(255, 255, 255, 0.05);
-            --accent-crimson: #a8131d;
-            --gold-fine-wine: #b08f54;
-            --fluorescent-buzz: #e0d5a6;
+            --concrete-grey: #4e535c;
+            --alert-glow: #ff2a3b;
         }
 
         * {
@@ -32,7 +30,7 @@
             height: 100%;
             overflow: hidden;
             background-color: var(--bg-dark);
-            font-family: 'Courier New', Courier, monospace;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #e5e7eb;
         }
 
@@ -49,30 +47,30 @@
             height: 100%;
         }
 
-        /* Glassmorphic Cyberpunk Interface Elements */
+        /* Glassmorphic Minimalist HUD */
         .glass-hud-panel {
             position: absolute;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-radius: 12px;
-            padding: 18px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 8px;
+            padding: 15px;
             z-index: 10;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
         }
 
         .top-left-status {
             top: 20px;
             left: 20px;
-            min-width: 320px;
+            min-width: 280px;
         }
 
         .top-right-telemetry {
             top: 20px;
             right: 20px;
-            width: 150px;
-            height: 150px;
+            width: 130px;
+            height: 130px;
             padding: 5px;
             display: flex;
             justify-content: center;
@@ -80,124 +78,102 @@
         }
 
         #minimap-canvas {
-            width: 135px;
-            height: 135px;
-            border-radius: 6px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 120px;
+            height: 120px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.7);
         }
 
         .status-header h1 {
-            font-size: 1rem;
-            font-weight: 900;
-            letter-spacing: 2px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
             color: #fff;
         }
 
         .status-header p {
-            font-size: 0.7rem;
-            color: var(--gold-fine-wine);
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        .metric-group {
-            margin-top: 8px;
+            font-size: 0.65rem;
+            color: #9ca3af;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
         .metric-bar-container {
             width: 100%;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.03);
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-top: 4px;
             border-radius: 2px;
             overflow: hidden;
-            margin-top: 4px;
         }
 
-        .metric-fill-vital {
+        .metric-fill {
             height: 100%;
             width: 100%;
-            background: var(--accent-crimson);
-            box-shadow: 0 0 8px rgba(168, 19, 29, 0.6);
+            background: var(--alert-glow);
+            transition: width 0.1s ease;
         }
 
-        .metric-fill-hydrate {
-            height: 100%;
-            width: 100%;
-            background: #2563eb;
-        }
-
-        /* 2.5D Retro Focal Reticle Crosshair */
         #crosshair {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 14px;
-            height: 14px;
+            width: 10px;
+            height: 10px;
             z-index: 100;
             pointer-events: none;
-            opacity: 0.6;
+            opacity: 0.5;
         }
         #crosshair::before, #crosshair::after {
             content: '';
             position: absolute;
-            background: white;
+            background: #fff;
         }
-        #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
-        #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
+        #crosshair::before { top: 4px; left: 0; width: 10px; height: 2px; }
+        #crosshair::after { top: 0; left: 4px; width: 2px; height: 10px; }
 
-        /* Fullscreen Processing Displays Overlays */
+        /* Fullscreen Overlay System */
         .fullscreen-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #030508;
+            background: #06080c;
             z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            transition: opacity 0.6s ease;
+            transition: opacity 0.5s ease;
         }
 
         .terminal-box {
             width: 90%;
-            max-width: 580px;
+            max-width: 500px;
             padding: 30px;
             background: var(--glass-bg);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            border-radius: 8px;
-            box-shadow: 0 40px 90px rgba(0,0,0,0.9);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            text-align: center;
         }
 
         .action-submit-btn {
             width: 100%;
             padding: 12px;
             background: transparent;
-            border: 1px solid var(--gold-fine-wine);
+            border: 1px solid #9ca3af;
             color: #fff;
             font-weight: bold;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             text-transform: uppercase;
             cursor: pointer;
-            font-family: inherit;
             margin-top: 15px;
+            font-family: inherit;
         }
 
         .action-submit-btn:hover {
-            background: var(--gold-fine-wine);
+            background: #fff;
             color: #000;
-        }
-
-        .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(2, 3, 5, 0.95);
-            z-index: 2000;
-            display: none;
-            justify-content: center;
-            align-items: center;
+            border-color: #fff;
         }
     </style>
 </head>
@@ -207,54 +183,39 @@
 
     <div id="engine-boot-screen" class="fullscreen-overlay">
         <div class="terminal-box">
-            <div style="color: var(--gold-fine-wine); font-weight: bold; margin-bottom: 12px;">SYSTEM:// COGNITIVE_2.5D_HYBRID_CORE</div>
-            <p style="font-size: 0.8rem; color:#888; line-height:1.5;">
-                [STATUS] Re-compiling 3D world parameters down into parallel 2.5D scanlines. Raycaster step arrays mapped. Procedural synthesizer initialized to loop frequency layers without assets.
+            <h2 style="color: #fff; letter-spacing: 2px; margin-bottom: 10px;">MAZE RUNNER PROTOCOL</h2>
+            <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 15px;">
+                Generating massive concrete matrix sectors. Simulating procedural sound waves. Click below to awaken your viewpoint.
             </p>
-            <button class="action-submit-btn" id="initialize-call-trigger">BOOT PHASING MATRIX</button>
+            <button class="action-submit-btn" id="initialize-call-trigger">ENTER THE MAZE</button>
         </div>
     </div>
 
-    <div id="tv-intermission-overlay" class="fullscreen-overlay" style="display: none; background: #040507;">
-        <div class="terminal-box" style="border-color: var(--gold-fine-wine);">
-            <div id="tv-terminal-display" style="font-size: 0.85rem; line-height: 1.6; color:#ccc;"></div>
-            <button class="action-submit-btn" id="tv-power-btn">ENGAGE RENDER GRID</button>
-        </div>
-    </div>
-
-    <div id="game-state-modal" class="modal-overlay">
-        <div class="terminal-box" style="border-color: var(--accent-crimson);">
-            <h2 id="modal-title" style="color: var(--accent-crimson); font-size:1.1rem; margin-bottom:10px;">ALERT BOUNDARY COLLAPSE</h2>
-            <p id="modal-desc" style="font-size:0.8rem; color:#aaa; margin-bottom:15px;"></p>
-            <button class="action-submit-btn" id="modal-action-btn">RE-COMPILATION DATA ENTRY</button>
+    <div id="game-state-modal" class="fullscreen-overlay" style="display: none; background: rgba(5,7,10,0.95);">
+        <div class="terminal-box" style="border-color: var(--alert-glow);">
+            <h2 id="modal-title" style="color: var(--alert-glow); font-size: 1.2rem; margin-bottom: 10px;">CRITICAL OVERLOAD</h2>
+            <p id="modal-desc" style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 20px;"></p>
+            <button class="action-submit-btn" id="modal-action-btn">RE-ENTER SECTOR</button>
         </div>
     </div>
 
     <div id="viewport-container">
-        
         <div class="glass-hud-panel top-left-status">
             <div class="status-header">
-                <h1 id="hud-level-title">ZONE: PHASE LINE 0</h1>
-                <p id="hud-level-motto">PSEUDO-2.5D ARCHITECTURE INITIALIZATION</p>
+                <h1>SECTOR: WALL BLOCK 7</h1>
+                <p>BRUTALIST MULTI-TIER COGNITION ENVIRONMENT</p>
             </div>
-            <div class="metric-group">
-                <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:#9ca3af;">
-                    <span>SURVIVOR SANITY FREQUENCY</span>
-                    <span id="vital-percentage-lbl">100%</span>
-                </div>
-                <div class="metric-bar-container"><div class="metric-fill-vital" id="vital-integrity-bar"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:#9ca3af;">
+                <span>SURVIVOR VITALS</span>
+                <span id="vital-lbl">100%</span>
             </div>
-            <div class="metric-group">
-                <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:#9ca3af;">
-                    <span>CELLULAR FLUID LEVELS</span>
-                    <span id="hydrate-percentage-lbl">100%</span>
-                </div>
-                <div class="metric-bar-container"><div class="metric-fill-hydrate" id="hydration-integrity-bar"></div></div>
+            <div class="metric-bar-container">
+                <div class="metric-fill" id="vital-bar"></div>
             </div>
         </div>
 
         <div class="glass-hud-panel top-right-telemetry">
-            <canvas id="minimap-canvas" width="270" height="270"></canvas>
+            <canvas id="minimap-canvas" width="240" height="240"></canvas>
         </div>
     </div>
 
@@ -262,125 +223,88 @@
         const CoreEngine = {
             scene: null, camera: null, renderer: null, clock: null,
             worldGroup: null, dynamicGroup: null,
-            currentZone: 0, isEngineRunning: false, gridWidth: 16,
+            isEngineRunning: false, gridWidth: 24, // Expanded map layout matrix
             matrixGrid: [], activeDoorsArray: [], activeEntitiesArray: [],
             
             playerData: {
-                gridX: 2.5, gridZ: 2.5, heightY: 0.0,
-                viewAngle: 0.0, vertVelocity: 0.0, isAirborne: false,
-                vitalIntegrity: 100, hydrationReserve: 100, playerRadius: 0.38,
-                isOnStairs: false
+                gridX: 2.0, gridZ: 2.0, heightY: 0.0,
+                viewAngle: 0.0, playerRadius: 0.45,
+                vitalIntegrity: 100
             },
             
             inputTracker: { forward: false, backward: false, left: false, right: false },
-            audioCtx: null, bzzGain: null, proximitySynth: null
+            audioCtx: null, ambientHum: null
         };
 
-        const ZONE_MANIFEST = {
-            0: {
-                name: "Level 0: Yellow Slices",
-                motto: "The Illusionary 2.5D Horizon",
-                wallColor: 0xcca854, floorColor: 0x54472b, ceilColor: 0xeae4b5, fogColor: 0x06080c,
-                lightIntensity: 0.65, dehydrationRate: 0.05,
-                tvRules: "<h2>Level 0: Pseudo Perspective Matrix</h2><p>VECTORS REMAPPED: True 3D perspective depth has been compressed to evoke vintage raycast engines. All wall intersections are strictly locked.</p><p>EXECUTION PROTOCOL: Locate the Blue Staircase corridor. Step forward upon it to automatically engage the vertical tracks, taking you up to the security clearance gate.</p>"
-            },
-            1: {
-                name: "Level 1: Uncanny Vault Corridors",
-                motto: "Monochrome Isolation Grid",
-                wallColor: 0x4b4f56, floorColor: 0x222529, ceilColor: 0x383c42, fogColor: 0x020305,
-                lightIntensity: 0.4, dehydrationRate: 0.08,
-                tvRules: "<h2>Level 1: The Dark Sub-Floors</h2><p>CRITICAL BOUNDARY: A multi-layered billboard entity has generated inside this sector layer. Avoid proximity contact at all costs.</p>"
-            }
-        };
-
-        // --- PROCEDURAL AUDIO GENERATION PLATFORM (NO AUDIO FILES REQUIRED) ---
-        function initProceduralAudioMatrix() {
+        // --- PROCEDURAL AUDIO API OPERATIONS ---
+        function initAudioEcosystem() {
             try {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                CoreEngine.audioCtx = new AudioContextClass();
+                const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+                CoreEngine.audioCtx = new AudioCtxClass();
                 
-                // Track 1: Low-Frequency Fluorescent Light Hum Layer
-                const humOscillator = CoreEngine.audioCtx.createOscillator();
+                // Deep monolithic mechanical concrete rumbling ambiance
+                const droneOsc = CoreEngine.audioCtx.createOscillator();
+                const droneGain = CoreEngine.audioCtx.createGain();
                 const lowFilter = CoreEngine.audioCtx.createBiquadFilter();
-                CoreEngine.bzzGain = CoreEngine.audioCtx.createGain();
                 
-                humOscillator.type = 'sawtooth';
-                humOscillator.frequency.value = 60; // 60Hz hum simulation
+                droneOsc.type = 'sawtooth';
+                droneOsc.frequency.value = 48; 
                 lowFilter.type = 'lowpass';
-                lowFilter.frequency.value = 120;
+                lowFilter.frequency.value = 90;
                 
-                CoreEngine.bzzGain.gain.value = 0.08;
+                droneGain.gain.value = 0.15;
                 
-                humOscillator.connect(lowFilter);
-                lowFilter.connect(CoreEngine.bzzGain);
-                CoreEngine.bzzGain.connect(CoreEngine.audioCtx.destination);
-                humOscillator.start();
-
-                // Track 2: Creature Proximity Threat Synthesizer
-                CoreEngine.proximitySynth = CoreEngine.audioCtx.createGain();
-                CoreEngine.proximitySynth.gain.value = 0;
-                
-                const scaryOsc = CoreEngine.audioCtx.createOscillator();
-                scaryOsc.type = 'triangle';
-                scaryOsc.frequency.value = 45;
-                
-                scaryOsc.connect(CoreEngine.proximitySynth);
-                CoreEngine.proximitySynth.connect(CoreEngine.audioCtx.destination);
-                scaryOsc.start();
-
-            } catch(e) {
-                console.log("Audio infrastructure generation bypassed or restricted by user permissions.");
-            }
+                droneOsc.connect(lowFilter);
+                lowFilter.connect(droneGain);
+                droneGain.connect(CoreEngine.audioCtx.destination);
+                droneOsc.start();
+            } catch(e) { console.log("Audio contexts deferred."); }
         }
 
-        function triggerProceduralFootstepClick() {
-            if (!CoreEngine.audioCtx) return;
-            const clickOsc = CoreEngine.audioCtx.createOscillator();
-            const clickGain = CoreEngine.audioCtx.createGain();
+        function playFootstepAudioSound() {
+            if(!CoreEngine.audioCtx) return;
+            const osc = CoreEngine.audioCtx.createOscillator();
+            const gain = CoreEngine.audioCtx.createGain();
             
-            clickOsc.type = 'triangle';
-            clickOsc.frequency.setValueAtTime(90, CoreEngine.audioCtx.currentTime);
-            clickOsc.frequency.exponentialRampToValueAtTime(30, CoreEngine.audioCtx.currentTime + 0.08);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(65, CoreEngine.audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(20, CoreEngine.audioCtx.currentTime + 0.12);
             
-            clickGain.gain.setValueAtTime(0.12, CoreEngine.audioCtx.currentTime);
-            clickGain.gain.linearRampToValueAtTime(0, CoreEngine.audioCtx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.25, CoreEngine.audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, CoreEngine.audioCtx.currentTime + 0.12);
             
-            clickOsc.connect(clickGain);
-            clickGain.connect(CoreEngine.audioCtx.destination);
-            clickOsc.start();
-            clickOsc.stop(CoreEngine.audioCtx.currentTime + 0.09);
+            osc.connect(gain);
+            gain.connect(CoreEngine.audioCtx.destination);
+            osc.start(); osc.stop(CoreEngine.audioCtx.currentTime + 0.13);
         }
 
-        function triggerDoorActivationSound() {
-            if (!CoreEngine.audioCtx) return;
-            const gateOsc = CoreEngine.audioCtx.createOscillator();
-            const gateGain = CoreEngine.audioCtx.createGain();
+        function playDoorGrindAudio() {
+            if(!CoreEngine.audioCtx) return;
+            const osc = CoreEngine.audioCtx.createOscillator();
+            const gain = CoreEngine.audioCtx.createGain();
             
-            gateOsc.type = 'sine';
-            gateOsc.frequency.setValueAtTime(260, CoreEngine.audioCtx.currentTime);
-            gateOsc.frequency.linearRampToValueAtTime(140, CoreEngine.audioCtx.currentTime + 0.4);
+            osc.type = 'sawtooth';
+            osc.frequency.value = 35;
+            gain.gain.setValueAtTime(0.08, CoreEngine.audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, CoreEngine.audioCtx.currentTime + 0.5);
             
-            gateGain.gain.setValueAtTime(0.1, CoreEngine.audioCtx.currentTime);
-            gateGain.gain.linearRampToValueAtTime(0, CoreEngine.audioCtx.currentTime + 0.4);
-            
-            gateOsc.connect(gateGain);
-            gateGain.connect(CoreEngine.audioCtx.destination);
-            gateOsc.start();
-            gateOsc.stop(CoreEngine.audioCtx.currentTime + 0.42);
+            osc.connect(gain);
+            gain.connect(CoreEngine.audioCtx.destination);
+            osc.start(); osc.stop(CoreEngine.audioCtx.currentTime + 0.52);
         }
 
-        // --- PIPELINE INITIALIZATIONS ---
-        function initEngineContext() {
+        // --- GRAPHICS & CORE FRAMEWORKS ---
+        function initEngineWorkspace() {
             const container = document.getElementById('viewport-container');
             CoreEngine.scene = new THREE.Scene();
             CoreEngine.clock = new THREE.Clock();
 
-            // Configured perspective FOV layout to evoke flat retro retro-raycaster environments
-            CoreEngine.camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.05, 300);
+            // Narrowed field of view to achieve high-end depth perspective illusions
+            CoreEngine.camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 400);
             
-            CoreEngine.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            CoreEngine.renderer = new THREE.WebGLRenderer({ antialias: true });
             CoreEngine.renderer.setSize(window.innerWidth, window.innerHeight);
-            CoreEngine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+            CoreEngine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             container.appendChild(CoreEngine.renderer.domElement);
 
             CoreEngine.worldGroup = new THREE.Group();
@@ -388,26 +312,27 @@
             CoreEngine.scene.add(CoreEngine.worldGroup);
             CoreEngine.scene.add(CoreEngine.dynamicGroup);
 
-            setupEnvironmentLights();
-            bindInputMechanics();
-        }
-
-        function setupEnvironmentLights() {
-            const ambient = new THREE.AmbientLight(0x1a2130, 0.8);
+            // Brutalist Concrete High-Contrast Light Rig
+            const ambient = new THREE.AmbientLight(0x1a212d, 0.4);
             CoreEngine.scene.add(ambient);
-            
-            CoreEngine.scene.background = new THREE.Color(0x020406);
-            CoreEngine.scene.fog = new THREE.FogExp2(0x020406, 0.045);
+
+            const directSun = new THREE.DirectionalLight(0xdbe4f0, 0.85);
+            directSun.position.set(40, 120, 30);
+            CoreEngine.scene.add(directSun);
+
+            CoreEngine.scene.background = new THREE.Color(0x040608);
+            CoreEngine.scene.fog = new THREE.FogExp2(0x040608, 0.022);
+
+            bindControlsListeners();
         }
 
-        function bindInputMechanics() {
-            window.addEventListener('keydown', (e) => { toggleKeys(e.key, true); });
-            window.addEventListener('keyup', (e) => { toggleKeys(e.key, false); });
+        function bindControlsListeners() {
+            window.addEventListener('keydown', (e) => { handleKeyInput(e.key, true); });
+            window.addEventListener('keyup', (e) => { handleKeyInput(e.key, false); });
             
             window.addEventListener('mousemove', (e) => {
-                if (CoreEngine.isEngineRunning) {
-                    // Restrict camera movement strictly to the horizontal angle axis to lock the 2.5D layout perspective
-                    CoreEngine.playerData.viewAngle -= e.movementX * 0.0035;
+                if(CoreEngine.isEngineRunning) {
+                    CoreEngine.playerData.viewAngle -= e.movementX * 0.004;
                 }
             });
 
@@ -418,532 +343,385 @@
             });
         }
 
-        function toggleKeys(keyString, activeState) {
-            if(activeState && !CoreEngine.audioCtx) initProceduralAudioMatrix();
-            switch(keyString) {
-                case 'ArrowUp': case 'w': case 'W': CoreEngine.inputTracker.forward = activeState; break;
-                case 'ArrowDown': case 's': case 'S': CoreEngine.inputTracker.backward = activeState; break;
-                case 'ArrowLeft': case 'a': case 'A': CoreEngine.inputTracker.left = activeState; break;
-                case 'ArrowRight': case 'd': case 'D': CoreEngine.inputTracker.right = activeState; break;
+        function handleKeyInput(key, isActive) {
+            if(isActive && !CoreEngine.audioCtx) initAudioEcosystem();
+            switch(key) {
+                case 'w': case 'W': case 'ArrowUp': CoreEngine.inputTracker.forward = isActive; break;
+                case 's': case 'S': case 'ArrowDown': CoreEngine.inputTracker.backward = isActive; break;
+                case 'a': case 'A': case 'ArrowLeft': CoreEngine.inputTracker.left = isActive; break;
+                case 'd': case 'D': case 'ArrowRight': CoreEngine.inputTracker.right = isActive; break;
             }
         }
 
-        // --- MAP CONTEXT GENERATORS ---
-        function compileProceduralMatrix(zoneID) {
+        // --- PROCEDURAL LABYRINTH ARCHITECTURE GRID ---
+        function generateProceduralMazeData() {
             const size = CoreEngine.gridWidth;
             CoreEngine.matrixGrid = Array(size).fill().map(() => Array(size).fill(0));
 
-            for(let i = 0; i < size; i++) {
+            // Generate massive monolithic perimeter layout fields
+            for(let i=0; i<size; i++) {
                 CoreEngine.matrixGrid[0][i] = 1;
                 CoreEngine.matrixGrid[size-1][i] = 1;
                 CoreEngine.matrixGrid[i][0] = 1;
                 CoreEngine.matrixGrid[i][size-1] = 1;
             }
 
-            // Fixed procedural alignment walls segments
-            for(let r = 2; r < size-2; r+=3) {
-                for(let c = 2; c < size-2; c+=3) {
+            // Create towering interior maze partitions
+            for(let r = 2; r < size - 2; r += 2) {
+                for(let c = 2; c < size - 2; c += 2) {
                     CoreEngine.matrixGrid[r][c] = 1;
-                    CoreEngine.matrixGrid[r][c+1] = 1;
+                    if(Math.random() > 0.3) CoreEngine.matrixGrid[r][c+1] = 1;
+                    if(Math.random() > 0.4) CoreEngine.matrixGrid[r+1][c] = 1;
                 }
             }
 
+            // Keep startup vectors cleanly path-cleared
             CoreEngine.matrixGrid[1][1] = 0; CoreEngine.matrixGrid[1][2] = 0;
+            CoreEngine.matrixGrid[2][1] = 0; CoreEngine.matrixGrid[2][2] = 0;
 
-            // Specialized Interaction Target Anchors
-            CoreEngine.matrixGrid[8][8] = 2;   // THE BLUE STAIRCASE TRACK
-            CoreEngine.matrixGrid[9][8] = 5;   // UPPER BLOCK ACCESS SECURITY GATEWAY
-            CoreEngine.matrixGrid[10][8] = 3;  // DIMENSIONAL TRANSITION LOOP ENDPOINT
+            // Specialized Interaction Coordinate Tokens
+            CoreEngine.matrixGrid[12][12] = 2; // Staircase structural climb node
+            CoreEngine.matrixGrid[13][12] = 5; // Heavy Monolithic Mechanical Gate Block
+            CoreEngine.matrixGrid[14][12] = 3; // Section Completion Extraction Vortex
         }
 
-        function instantiatePhysicalWorld(zoneID) {
+        function constructPhysicalLabyrinth() {
             const size = CoreEngine.gridWidth;
-            const data = ZONE_MANIFEST[zoneID];
-
+            
             while(CoreEngine.worldGroup.children.length > 0) { CoreEngine.worldGroup.remove(CoreEngine.worldGroup.children[0]); }
             while(CoreEngine.dynamicGroup.children.length > 0) { CoreEngine.dynamicGroup.remove(CoreEngine.dynamicGroup.children[0]); }
             
             CoreEngine.activeDoorsArray = [];
             CoreEngine.activeEntitiesArray = [];
 
-            CoreEngine.scene.fog.color.setHex(data.fogColor);
+            // True Dark Brutalist Texturing Simulations
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0x3a3d42, roughness: 0.9, metalness: 0.2 });
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e2024, roughness: 0.95 });
+            const ceilMat = new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.8 });
 
-            const wallMaterial = new THREE.MeshStandardMaterial({ color: data.wallColor, roughness: 0.85, metalness: 0.1 });
-            const floorMaterial = new THREE.MeshStandardMaterial({ color: data.floorColor, roughness: 0.9 });
-            const ceilMaterial = new THREE.MeshStandardMaterial({ color: data.ceilColor, roughness: 0.6 });
+            const wallGeo = new THREE.BoxGeometry(6, 24, 6); // Massive towering scale
+            const areaGeo = new THREE.PlaneGeometry(size * 6, size * 6);
 
-            const wallGeo = new THREE.BoxGeometry(4, 8, 4);
-            const planeGeo = new THREE.PlaneGeometry(size * 4, size * 4);
+            // Ground Floor Plates
+            const floor = new THREE.Mesh(areaGeo, floorMat);
+            floor.rotation.x = -Math.PI/2;
+            floor.position.set((size * 6)/2 - 3, -3, (size * 6)/2 - 3);
+            CoreEngine.worldGroup.add(floor);
 
-            const floorMesh = new THREE.Mesh(planeGeo, floorMaterial);
-            floorMesh.rotation.x = -Math.PI / 2;
-            floorMesh.position.set((size * 4) / 2 - 2, -2.0, (size * 4) / 2 - 2);
-            CoreEngine.worldGroup.add(floorMesh);
+            // Industrial Concrete Ceiling Panels
+            const ceiling = new THREE.Mesh(areaGeo, ceilMat);
+            ceiling.rotation.x = Math.PI/2;
+            ceiling.position.set((size * 6)/2 - 3, 21, (size * 6)/2 - 3);
+            CoreEngine.worldGroup.add(ceiling);
 
-            const ceilingMesh = new THREE.Mesh(planeGeo, ceilMaterial);
-            ceilingMesh.rotation.x = Math.PI / 2;
-            ceilingMesh.position.set((size * 4) / 2 - 2, 6.0, (size * 4) / 2 - 2);
-            CoreEngine.worldGroup.add(ceilingMesh);
-
-            for (let r = 0; r < size; r++) {
-                for (let c = 0; c < size; c++) {
+            for(let r=0; r<size; r++) {
+                for(let c=0; c<size; c++) {
                     const token = CoreEngine.matrixGrid[r][c];
-                    const tx = c * 4;
-                    const tz = r * 4;
+                    const tx = c * 6;
+                    const tz = r * 6;
 
-                    if (token === 1) {
-                        const wall = new THREE.Mesh(wallGeo, wallMaterial);
-                        wall.position.set(tx, 2.0, tz);
-                        CoreEngine.worldGroup.add(wall);
+                    if(token === 1) {
+                        const wallBlock = new THREE.Mesh(wallGeo, wallMat);
+                        wallBlock.position.set(tx, 9, tz);
+                        CoreEngine.worldGroup.add(wallBlock);
                         
-                        // Add vintage overhead tube light fixtures to cast flickering highlights
-                        if(Math.random() < 0.1) {
-                            const lightFixture = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.8), new THREE.MeshBasicMaterial({color: 0xfffee0}));
-                            lightFixture.position.set(tx, 5.8, tz);
-                            lightFixture.rotation.z = Math.PI / 2;
-                            CoreEngine.worldGroup.add(lightFixture);
-
-                            const bulbLight = new THREE.PointLight(0xfffcd1, data.lightIntensity, 10);
-                            bulbLight.position.set(tx, 5.5, tz);
-                            CoreEngine.worldGroup.add(bulbLight);
+                        // Add top industrial bracing architectural details to challenge perspective depth
+                        if(Math.random() < 0.15) {
+                            const beamGeo = new THREE.BoxGeometry(6, 1, 1);
+                            const beam = new THREE.Mesh(beamGeo, wallMat);
+                            beam.position.set(tx, 20, tz);
+                            CoreEngine.worldGroup.add(beam);
                         }
-                    } else if (token === 2) {
-                        instantiateStableStaircase(tx, tz);
-                    } else if (token === 3) {
-                        instantiateExitGateway(tx, tz);
-                    } else if (token === 5) {
-                        instantiateElevatedSecurityDoor(tx, tz);
+                    } else if(token === 2) {
+                        buildToweringStaircase(tx, tz);
+                    } else if(token === 5) {
+                        buildBrutalistMechanicalGate(tx, tz);
+                    } else if(token === 3) {
+                        buildExtractionVortex(tx, tz);
                     }
                 }
             }
 
-            // Always instantiate threats across simulation corridors
-            spawnProcedural25DBillboardEntity();
+            spawnRetroHybridThreatEntity();
         }
 
-        function instantiateStableStaircase(x, z) {
-            const stairs = new THREE.Group();
-            stairs.position.set(x, -2.0, z);
-            const stepMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.4, emissive: 0x1d4ed8, emissiveIntensity: 0.3 });
+        function buildToweringStaircase(x, z) {
+            const stairGroup = new THREE.Group();
+            stairGroup.position.set(x, -3, z);
+            const stepMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.6, emissive: 0x112b7a });
 
-            // Renders 16 solid steps rising up to an elevated height platform of 4.5 units
-            for(let i = 0; i < 16; i++) {
-                const step = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.3, 0.25), stepMat);
-                step.position.set(0, (i * 0.28) + 0.15, (i * 0.24) - 1.8);
-                stairs.add(step);
+            // Generates solid step segments rising cleanly to an elevated level of 6.0 units
+            for(let i=0; i<20; i++) {
+                const step = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.35, 0.35), stepMat);
+                step.position.set(0, (i * 0.35) + 0.175, (i * 0.28) - 2.5);
+                stairGroup.add(step);
             }
-            CoreEngine.worldGroup.add(stairs);
+            CoreEngine.worldGroup.add(stairGroup);
         }
 
-        function instantiateElevatedSecurityDoor(x, z) {
-            const doorGroup = new THREE.Group();
-            doorGroup.position.set(x, 2.5, z); // Fixed exactly at the upper vertical tier height line
+        function buildBrutalistMechanicalGate(x, z) {
+            const gateGroup = new THREE.Group();
+            gateGroup.position.set(x, 4, z); // Positioned high matching stair exit vector platforms
 
-            const panelMat = new THREE.MeshStandardMaterial({ 
-                color: 0xa8131d, transparent: true, opacity: 0.6, roughness: 0.1, metalness: 0.9 
-            });
-
-            const leftPane = new THREE.Mesh(new THREE.BoxGeometry(1.9, 4.0, 0.15), panelMat);
-            leftPane.position.set(-0.95, 0, 0);
+            const gateMat = new THREE.MeshStandardMaterial({ color: 0x1f232b, metalness: 0.8, roughness: 0.2 });
+            const pane = new THREE.Mesh(new THREE.BoxGeometry(5.8, 8.0, 0.3), gateMat);
+            gateGroup.add(pane);
             
-            const rightPane = new THREE.Mesh(new THREE.BoxGeometry(1.9, 4.0, 0.15), panelMat);
-            rightPane.position.set(0.95, 0, 0);
-
-            doorGroup.add(leftPane, rightPane);
-            CoreEngine.worldGroup.add(doorGroup);
-
+            CoreEngine.worldGroup.add(gateGroup);
             CoreEngine.activeDoorsArray.push({
-                leftPane: leftPane, rightPane: rightPane,
-                gridCoordX: x, gridCoordZ: z,
-                currentAnimOffset: 0, targetAnimOffset: 0,
-                hasTriggeredAudio: false
+                meshTarget: gateGroup, gridX: x, gridZ: z,
+                currentY: 4, targetY: 4, audioTriggered: false
             });
         }
 
-        function instantiateExitGateway(x, z) {
-            const gateway = new THREE.Group();
-            gateway.position.set(x, 2.5, z);
-
-            const vortex = new THREE.Mesh(
-                new THREE.BoxGeometry(2.5, 4.0, 0.1),
-                new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 1.8 })
-            );
-            gateway.add(vortex);
+        function buildExtractionVortex(x, z) {
+            const beacon = new THREE.Group();
+            beacon.position.set(x, 4, z);
             
-            const alertLight = new THREE.PointLight(0x10b981, 2, 8);
-            alertLight.position.set(0, 1, 0);
-            gateway.add(alertLight);
-
-            CoreEngine.worldGroup.add(gateway);
+            const core = new THREE.Mesh(new THREE.BoxGeometry(3, 7, 0.2), new THREE.MeshBasicMaterial({ color: 0x10b981 }));
+            beacon.add(core);
+            
+            const pLight = new THREE.PointLight(0x10b981, 3, 15);
+            beacon.add(pLight);
+            
+            CoreEngine.worldGroup.add(beacon);
         }
 
-        // --- CREATION OF THE CREATING MULTI-LAYERED 2.5D BILLBOARD THREAT ---
-        function spawnProcedural25DBillboardEntity() {
-            const billboardContainer = new THREE.Group();
-            billboardContainer.position.set(5 * 4, -0.5, 5 * 4);
+        function spawnRetroHybridThreatEntity() {
+            // High-End 2.5D multi-layered hybrid animated threat frame matrix
+            const container = new THREE.Group();
+            container.position.set(6 * 6, -1, 6 * 6);
 
-            // Constructing an unsettling retro entity using asymmetrical, flat sprite panels 
-            // that keep players guessing whether they are 2D or 3D meshes
-            const entityMat = new THREE.MeshStandardMaterial({ 
-                color: 0x111111, roughness: 0.1, metalness: 0.9, side: THREE.DoubleSide 
-            });
+            const mat = new THREE.MeshStandardMaterial({ color: 0x0a0d14, roughness: 0.1, side: THREE.DoubleSide });
+            const torso = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 5.0), mat);
+            torso.position.y = 2.5;
+            container.add(torso);
 
-            const spinePanel = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 3.5), entityMat);
-            spinePanel.position.y = 1.75;
-            billboardContainer.add(spinePanel);
+            const redEye = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff0022 }));
+            redEye.position.set(0, 4.2, 0.1);
+            container.add(redEye);
 
-            // Append floating malformed horizontal visual blocks
-            const crossPanel = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.6), new THREE.MeshStandardMaterial({color: 0x2a080c, side: THREE.DoubleSide}));
-            crossPanel.position.set(0, 2.2, 0.05);
-            billboardContainer.add(crossPanel);
-
-            const coreEye = new THREE.Mesh(
-                new THREE.SphereGeometry(0.18, 8, 8),
-                new THREE.MeshBasicMaterial({ color: 0xff0033 })
-            );
-            coreEye.position.set(0, 2.2, 0.15);
-            billboardContainer.add(coreEye);
-
-            CoreEngine.dynamicGroup.add(billboardContainer);
-
+            CoreEngine.dynamicGroup.add(container);
             CoreEngine.activeEntitiesArray.push({
-                rootMesh: billboardContainer,
-                spawnGridX: 5 * 4, spawnGridZ: 5 * 4,
-                ticker: 0.0, speed: 2.5
+                rootMesh: container, originX: 6*6, originZ: 6*6, ticker: 0, speed: 2.8
             });
         }
 
-        // --- CORE MOVEMENT KINEMATICS ENGINE ---
-        function processPlayerKinematics(delta) {
-            const currentZoneData = ZONE_MANIFEST[CoreEngine.currentZone];
-            let currentMoveSpeed = 5.8 * delta;
-            let currentTurnSpeed = 2.4 * delta;
+        // --- KINEMATICS PHYSICS AND INTERFACE UPDATES ---
+        function runPlayerKinematicsEngine(delta) {
+            let movementSpeed = 8.5 * delta; // Optimized fluid traversal velocities
+            let turnSpeed = 2.6 * delta;
 
-            // Resource Depletion Loops
-            CoreEngine.playerData.hydrationReserve -= currentZoneData.dehydrationRate * 6.0 * delta;
-            if (CoreEngine.playerData.hydrationReserve <= 0) {
-                CoreEngine.playerData.hydrationReserve = 0;
-                currentMoveSpeed *= 0.5;
-                CoreEngine.playerData.vitalIntegrity -= 4.0 * delta;
+            if(CoreEngine.inputTracker.left) CoreEngine.playerData.viewAngle += turnSpeed;
+            if(CoreEngine.inputTracker.right) CoreEngine.playerData.viewAngle -= turnSpeed;
+
+            let moveX = 0;
+            let moveZ = 0;
+
+            if(CoreEngine.inputTracker.forward) {
+                moveX = Math.sin(CoreEngine.playerData.viewAngle) * movementSpeed;
+                moveZ = Math.cos(CoreEngine.playerData.viewAngle) * movementSpeed;
+            }
+            if(CoreEngine.inputTracker.backward) {
+                moveX = -Math.sin(CoreEngine.playerData.viewAngle) * movementSpeed;
+                moveZ = -Math.cos(CoreEngine.playerData.viewAngle) * movementSpeed;
             }
 
-            // Continuous Rotation Analysis
-            if (CoreEngine.inputTracker.left) CoreEngine.playerData.viewAngle += currentTurnSpeed;
-            if (CoreEngine.inputTracker.right) CoreEngine.playerData.viewAngle -= currentTurnSpeed;
-
-            let moveVectorX = 0;
-            let moveVectorZ = 0;
-
-            if (CoreEngine.inputTracker.forward) {
-                moveVectorX = Math.sin(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
-                moveVectorZ = Math.cos(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
-            }
-            if (CoreEngine.inputTracker.backward) {
-                moveVectorX = -Math.sin(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
-                moveVectorZ = -Math.cos(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
-            }
-
-            if (moveVectorX !== 0 || moveVectorZ !== 0) {
-                // Generate procedural footstep resonance sound updates
-                if (Math.floor(CoreEngine.clock.getElapsedTime() * 4.5) % 2 === 0) {
-                    triggerProceduralFootstepClick();
+            if(moveX !== 0 || moveZ !== 0) {
+                if(Math.floor(CoreEngine.clock.getElapsedTime() * 4.8) % 2 === 0) {
+                    playFootstepAudioSound();
                 }
             }
 
-            let nextX = CoreEngine.playerData.gridX + moveVectorX;
-            let nextZ = CoreEngine.playerData.gridZ + moveVectorZ;
+            let nextPredictedX = CoreEngine.playerData.gridX + moveX;
+            let nextPredictedZ = CoreEngine.playerData.gridZ + moveZ;
 
-            // Apply Strict Collision Boundary Checks
-            if (!checkGridCollision(nextX, CoreEngine.playerData.gridZ)) CoreEngine.playerData.gridX = nextX;
-            if (!checkGridCollision(CoreEngine.playerData.gridX, nextZ)) CoreEngine.playerData.gridZ = nextZ;
+            if(!checkWallCollisionMatrix(nextPredictedX, CoreEngine.playerData.gridZ)) CoreEngine.playerData.gridX = nextPredictedX;
+            if(!checkWallCollisionMatrix(CoreEngine.playerData.gridX, nextPredictedZ)) CoreEngine.playerData.gridZ = nextPredictedZ;
 
-            // REAL-TIME FIXED STAIRCASE TRACK LINK SYSTEM
-            const cellX = Math.floor(CoreEngine.playerData.gridX);
-            const cellZ = Math.floor(CoreEngine.playerData.gridZ);
+            // STAIRCASE SECTOR CONTEXT ROUTING
+            const cx = Math.floor(CoreEngine.playerData.gridX);
+            const cz = Math.floor(CoreEngine.playerData.gridZ);
 
-            if (cellX >= 0 && cellX < CoreEngine.gridWidth && cellZ >= 0 && cellZ < CoreEngine.gridWidth) {
-                const activeToken = CoreEngine.matrixGrid[cellZ][cellX];
-                
-                if (activeToken === 2) { 
-                    // When crossing onto a staircase cell, smoothly increment height index along the diagonal pitch path
-                    CoreEngine.playerData.isOnStairs = true;
-                    if (CoreEngine.inputTracker.forward) {
-                        if (CoreEngine.playerData.heightY < 4.5) {
-                            CoreEngine.playerData.heightY += 2.8 * delta;
-                        }
+            if(cx >= 0 && cx < CoreEngine.gridWidth && cz >= 0 && cz < CoreEngine.gridWidth) {
+                const token = CoreEngine.matrixGrid[cz][cx];
+                if(token === 2) { // Moving on Blue staircase track updates altitude
+                    if(CoreEngine.inputTracker.forward && CoreEngine.playerData.heightY < 7.0) {
+                        CoreEngine.playerData.heightY += 3.5 * delta;
                     }
                 } else {
-                    CoreEngine.playerData.isOnStairs = false;
-                    // Return back smoothly if player retreats off active stair boundaries
-                    if (CoreEngine.playerData.heightY > 0.0 && CoreEngine.playerData.heightY < 4.2) {
-                        CoreEngine.playerData.heightY -= 4.5 * delta;
-                        if (CoreEngine.playerData.heightY < 0.0) CoreEngine.playerData.heightY = 0.0;
+                    if(CoreEngine.playerData.heightY > 0.0 && CoreEngine.playerData.heightY < 6.5) {
+                        CoreEngine.playerData.heightY -= 6.0 * delta;
+                        if(CoreEngine.playerData.heightY < 0.0) CoreEngine.playerData.heightY = 0.0;
                     }
                 }
 
-                // Level Transition Vector Validation Check
-                if (activeToken === 3 && CoreEngine.playerData.heightY >= 4.2) {
-                    initiateZoneTransition();
+                // Section Completion Event
+                if(token === 3 && CoreEngine.playerData.heightY >= 6.0) {
+                    executeLevelClear();
                 }
             }
 
-            // SECURE THE LENS PERSPECTIVE EXACTLY AT COMPRESSED HYBRID EYE HEIGHT
-            const structuralEyeAltitude = 0.2;
+            // Lock camera view exactly inside point-of-view eye bounds
+            const verticalEyeSocketOffset = 0.5;
             CoreEngine.camera.position.set(
-                CoreEngine.playerData.gridX * 4,
-                structuralEyeAltitude + CoreEngine.playerData.heightY,
-                CoreEngine.playerData.gridZ * 4
+                CoreEngine.playerData.gridX * 6,
+                verticalEyeSocketOffset + CoreEngine.playerData.heightY,
+                CoreEngine.playerData.gridZ * 6
             );
 
-            const lookTargetX = CoreEngine.camera.position.x + Math.sin(CoreEngine.playerData.viewAngle);
-            const lookTargetZ = CoreEngine.camera.position.z + Math.cos(CoreEngine.playerData.viewAngle);
-            
-            // Constrain look vector planes to achieve crisp retro pseudo-depth
-            CoreEngine.camera.lookAt(lookTargetX, CoreEngine.camera.position.y, lookTargetZ);
+            const tx = CoreEngine.camera.position.x + Math.sin(CoreEngine.playerData.viewAngle);
+            const tz = CoreEngine.camera.position.z + Math.cos(CoreEngine.playerData.viewAngle);
+            CoreEngine.camera.lookAt(tx, CoreEngine.camera.position.y, tz);
         }
 
-        function checkGridCollision(tx, tz) {
-            const radius = CoreEngine.playerData.playerRadius;
-            const boundaries = [
-                [0, 0], [radius, 0], [-radius, 0], [0, radius], [0, -radius]
-            ];
+        function checkWallCollisionMatrix(tx, tz) {
+            const r = CoreEngine.playerData.playerRadius;
+            const offsets = [[0,0], [r,0], [-r,0], [0,r], [0,-r]];
 
-            for (let i = 0; i < boundaries.length; i++) {
-                const cx = Math.floor(tx + boundaries[i][0]);
-                const cz = Math.floor(tz + boundaries[i][1]);
-
-                if (cx < 0 || cx >= CoreEngine.gridWidth || cz < 0 || cz >= CoreEngine.gridWidth) return true;
-                if (CoreEngine.matrixGrid[cz][cx] === 1) return true; 
+            for(let i=0; i<offsets.length; i++) {
+                const mx = Math.floor(tx + offsets[i][0]);
+                const mz = Math.floor(tz + offsets[i][1]);
+                if(mx < 0 || mx >= CoreEngine.gridWidth || mz < 0 || mz >= CoreEngine.gridWidth) return true;
+                if(CoreEngine.matrixGrid[mz][mx] === 1) return true;
             }
             return false;
         }
 
-        function simulateEntitiesAndBillboards(delta) {
-            const pWorldX = CoreEngine.playerData.gridX * 4;
-            const pWorldZ = CoreEngine.playerData.gridZ * 4;
+        function runDynamicSystemsSimulation(delta) {
+            const pWorldX = CoreEngine.playerData.gridX * 6;
+            const pWorldZ = CoreEngine.playerData.gridZ * 6;
 
-            CoreEngine.activeEntitiesArray.forEach(entity => {
-                entity.ticker += delta * entity.speed;
-                
-                // Continuous wandering path sweeps
-                const targetZOffset = Math.sin(entity.ticker) * 5.5;
-                entity.rootMesh.position.z = entity.spawnGridZ + targetZOffset;
-
-                // --- THE 2.5D Horizons Sprite Illusion ---
-                // Force the threat panels to actively update their rotational vectors to always 
-                // face the player camera flatly, mimicking 90s sprite techniques.
-                entity.rootMesh.lookAt(CoreEngine.camera.position.x, entity.rootMesh.position.y, CoreEngine.camera.position.z);
-
-                const dx = entity.rootMesh.position.x - pWorldX;
-                const dz = entity.rootMesh.position.z - pWorldZ;
-                const distance = Math.sqrt(dx*dx + dz*dz);
-
-                // Real-time Procedural Audio Threat Synthesis Scaling
-                if (CoreEngine.proximitySynth) {
-                    if (distance < 8.0) {
-                        const intensity = (1.0 - (distance / 8.0));
-                        CoreEngine.proximitySynth.gain.setValueAtTime(intensity * 0.4, CoreEngine.audioCtx.currentTime);
-                        
-                        // Apply static camera artifact shivers
-                        CoreEngine.camera.position.x += (Math.random() * 0.15 - 0.075) * intensity;
-                    } else {
-                        CoreEngine.proximitySynth.gain.setValueAtTime(0, CoreEngine.audioCtx.currentTime);
-                    }
-                }
-
-                if (distance < 2.8) {
-                    CoreEngine.playerData.vitalIntegrity -= 35.0 * delta;
-                }
-
-                if (CoreEngine.playerData.vitalIntegrity <= 0) {
-                    triggerFailureReset();
-                }
-            });
-        }
-
-        function checkDoorSensorTriggers(delta) {
-            const pWorldX = CoreEngine.playerData.gridX * 4;
-            const pWorldZ = CoreEngine.playerData.gridZ * 4;
-
+            // Animate mechanical sliding barriers
             CoreEngine.activeDoorsArray.forEach(door => {
-                const dx = door.gridCoordX - pWorldX;
-                const dz = door.gridCoordZ - pWorldZ;
-                const groundDistance = Math.sqrt(dx*dx + dz*dz);
+                const dx = door.gridX - pWorldX;
+                const dz = door.gridZ - pWorldZ;
+                const dist = Math.sqrt(dx*dx + dz*dz);
 
-                // Gate triggers open ONLY if player matches the elevated structural tier platform height
-                if (groundDistance < 4.0 && CoreEngine.playerData.heightY >= 4.0) {
-                    door.targetAnimOffset = 1.5;
-                    if(!door.hasTriggeredAudio) {
-                        triggerDoorActivationSound();
-                        door.hasTriggeredAudio = true;
+                if(dist < 6.0 && CoreEngine.playerData.heightY >= 5.5) {
+                    door.targetY = 11.0; // Slide gate upwards mechanically
+                    if(!door.audioTriggered) {
+                        playDoorGrindAudio();
+                        door.audioTriggered = true;
                     }
                 } else {
-                    door.targetAnimOffset = 0.0;
-                    if(groundDistance > 6.0 && door.hasTriggeredAudio) {
-                        door.hasTriggeredAudio = false;
-                    }
+                    door.targetY = 4.0;
+                    if(dist > 8.0) door.audioTriggered = false;
+                }
+                door.meshTarget.position.y += (door.targetY - door.meshTarget.position.y) * 4.0 * delta;
+            });
+
+            // Handle Threat Patrol Patterns and Retro-Billboard Rotations
+            CoreEngine.activeEntitiesArray.forEach(ent => {
+                ent.ticker += delta * ent.speed;
+                ent.rootMesh.position.z = ent.originZ + Math.sin(ent.ticker) * 9.0;
+                
+                // Forces the sprite mesh panels to face camera flatly to challenge spatial perspective
+                ent.rootMesh.lookAt(CoreEngine.camera.position.x, ent.rootMesh.position.y, CoreEngine.camera.position.z);
+
+                const dx = ent.rootMesh.position.x - pWorldX;
+                const dz = ent.rootMesh.position.z - pWorldZ;
+                const currentDist = Math.sqrt(dx*dx + dz*dz);
+
+                if(currentDist < 4.0) {
+                    CoreEngine.playerData.vitalIntegrity -= 40.0 * delta;
+                    CoreEngine.camera.position.x += (Math.random() * 0.2 - 0.1);
                 }
 
-                door.currentAnimOffset += (door.targetAnimOffset - door.currentAnimOffset) * 5.0 * delta;
-                door.leftPane.position.x = -0.95 - door.currentAnimOffset;
-                door.rightPane.position.x = 0.95 + door.currentAnimOffset;
+                if(CoreEngine.playerData.vitalIntegrity <= 0) {
+                    executeFailureTermination();
+                }
             });
         }
 
-        // --- HUDS & SYSTEMS TELEMETRY PANEL METRIC DRAW ---
-        function renderRadarTelemetry() {
+        function drawRadarDisplays() {
             const canvas = document.getElementById('minimap-canvas');
             const ctx = canvas.getContext('2d');
             const size = CoreEngine.gridWidth;
-            const cSize = canvas.width / size;
+            const cs = canvas.width / size;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0,0, canvas.width, canvas.height);
 
-            for (let r = 0; r < size; r++) {
-                for (let c = 0; c < size; c++) {
-                    const block = CoreEngine.matrixGrid[r][c];
-                    if (block === 1) {
-                        ctx.fillStyle = 'rgba(176, 143, 84, 0.25)';
-                        ctx.fillRect(c * cSize, r * cSize, cSize - 0.5, cSize - 0.5);
-                    } else if (block === 2) {
-                        ctx.fillStyle = '#2563eb'; // Blue staircase vector marker
-                        ctx.fillRect(c * cSize, r * cSize, cSize - 0.5, cSize - 0.5);
-                    } else if (block === 3) {
-                        ctx.fillStyle = '#10b981'; // Escape gate line indicator
-                        ctx.fillRect(c * cSize, r * cSize, cSize - 0.5, cSize - 0.5);
-                    } else if (block === 5) {
-                        ctx.fillStyle = '#a8131d'; // Security clearance door tracking token
-                        ctx.fillRect(c * cSize, r * cSize, cSize - 0.5, cSize - 0.5);
+            for(let r=0; r<size; r++) {
+                for(let c=0; c<size; c++) {
+                    const t = CoreEngine.matrixGrid[r][c];
+                    if(t === 1) {
+                        ctx.fillStyle = 'rgba(78, 83, 92, 0.3)';
+                        ctx.fillRect(c*cs, r*cs, cs-0.5, cs-0.5);
+                    } else if(t === 2) {
+                        ctx.fillStyle = '#1d4ed8';
+                        ctx.fillRect(c*cs, r*cs, cs-0.5, cs-0.5);
+                    } else if(t === 3) {
+                        ctx.fillStyle = '#10b981';
+                        ctx.fillRect(c*cs, r*cs, cs-0.5, cs-0.5);
                     }
                 }
             }
 
-            const pCanvasX = CoreEngine.playerData.gridX * cSize;
-            const pCanvasZ = CoreEngine.playerData.gridZ * cSize;
+            const px = CoreEngine.playerData.gridX * cs;
+            const pz = CoreEngine.playerData.gridZ * cs;
 
             ctx.beginPath();
-            ctx.arc(pCanvasX, pCanvasZ, 4, 0, Math.PI * 2);
+            ctx.arc(px, pz, 3.5, 0, Math.PI*2);
             ctx.fillStyle = '#fff';
             ctx.fill();
-
-            ctx.beginPath();
-            ctx.moveTo(pCanvasX, pCanvasZ);
-            ctx.lineTo(pCanvasX + Math.sin(CoreEngine.playerData.viewAngle) * 12, pCanvasZ + Math.cos(CoreEngine.playerData.viewAngle) * 12);
-            ctx.strokeStyle = '#a8131d';
-            ctx.lineWidth = 2;
-            ctx.stroke();
         }
 
-        function updateVitalsPanel() {
-            document.getElementById('vital-integrity-bar').style.width = `${Math.max(0, CoreEngine.playerData.vitalIntegrity)}%`;
-            document.getElementById('vital-percentage-lbl').innerText = `${Math.floor(CoreEngine.playerData.vitalIntegrity)}%`;
-            
-            document.getElementById('hydration-integrity-bar').style.width = `${Math.max(0, CoreEngine.playerData.hydrationReserve)}%`;
-            document.getElementById('hydrate-percentage-lbl').innerText = `${Math.floor(CoreEngine.playerData.hydrationReserve)}%`;
-        }
-
-        // --- FLOW TRANSLATIONS OVERLAY INTERACTIVITY ---
-        function initiateZoneTransition() {
-            const nextZone = CoreEngine.currentZone + 1;
-            if (ZONE_MANIFEST[nextZone]) {
-                CoreEngine.currentZone = nextZone;
-                CoreEngine.isEngineRunning = false;
-                
-                compileProceduralMatrix(nextZone);
-                instantiatePhysicalWorld(nextZone);
-                
-                resetPlayerStateData();
-                document.getElementById('hud-level-title').innerText = `ZONE: PHASE LINE ${nextZone}`;
-                document.getElementById('hud-level-motto').innerText = ZONE_MANIFEST[nextZone].motto;
-                
-                showTVDisplay(ZONE_MANIFEST[nextZone].tvRules, "INITIALIZE SYSTEM BUFFER");
-            } else {
-                CoreEngine.isEngineRunning = false;
-                triggerGlobalOverlay("CORE VECTOR MATRIX PURGED", "Reality parameters resolved completely. You successfully broken out of the simulation loops.", "RESTART MAIN BUFFER");
-            }
-        }
-
-        function triggerFailureReset() {
+        function executeLevelClear() {
             CoreEngine.isEngineRunning = false;
-            if (CoreEngine.proximitySynth) CoreEngine.proximitySynth.gain.setValueAtTime(0, CoreEngine.audioCtx.currentTime);
-            triggerGlobalOverlay("STRUCTURAL INTEGRITY CRITICAL", "Sanity thresholds collapsed completely within non-Euclidean corridors.", "RE-MATERIALIZE SIMULATION VECTOR");
+            showResetOverlay("SECTOR PURGED", "You successfully navigated the elevated structural gates.", "RE-ENTER MAZE LAYER");
         }
 
-        function resetPlayerStateData() {
-            CoreEngine.playerData.gridX = 2.5;
-            CoreEngine.playerData.gridZ = 2.5;
-            CoreEngine.playerData.heightY = 0.0;
-            CoreEngine.playerData.vitalIntegrity = 100;
-            CoreEngine.playerData.hydrationReserve = 100;
+        function executeFailureTermination() {
+            CoreEngine.isEngineRunning = false;
+            showResetOverlay("ELIMINATED", "Vitals flatlined inside the towering labyrinth channels.", "RE-MATERIALIZE SECTOR");
         }
 
-        function triggerGlobalOverlay(title, desc, btnLabel) {
+        function showResetOverlay(title, desc, btnLbl) {
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-desc').innerText = desc;
-            document.getElementById('modal-action-btn').innerText = btnLabel;
+            document.getElementById('modal-action-btn').innerText = btnLbl;
             document.getElementById('game-state-modal').style.display = 'flex';
         }
 
-        function bindTriggers() {
-            document.getElementById('tv-power-btn').addEventListener('click', () => {
-                if (CoreEngine.currentZone === 0) {
-                    compileProceduralMatrix(0);
-                    instantiatePhysicalWorld(0);
-                }
-                document.getElementById('tv-intermission-overlay').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('tv-intermission-overlay').style.display = 'none';
-                    CoreEngine.isEngineRunning = true;
-                }, 600);
-            });
-
-            document.getElementById('modal-action-btn').addEventListener('click', () => {
-                document.getElementById('game-state-modal').style.display = 'none';
-                CoreEngine.currentZone = 0;
-                compileProceduralMatrix(0);
-                instantiatePhysicalWorld(0);
-                resetPlayerStateData();
-                
-                document.getElementById('hud-level-title').innerText = `ZONE: PHASE LINE 0`;
-                document.getElementById('hud-level-motto').innerText = ZONE_MANIFEST[0].motto;
-                showTVDisplay(ZONE_MANIFEST[0].tvRules, "BOOT RENDER SEGMENT");
-            });
-        }
-
-        function showTVDisplay(htmlMarkup, btnLabel) {
-            CoreEngine.isEngineRunning = false;
-            document.getElementById('tv-terminal-display').innerHTML = htmlMarkup;
-            document.getElementById('tv-power-btn').innerText = btnLabel;
-            document.getElementById('tv-intermission-overlay').style.display = 'flex';
-            document.getElementById('tv-intermission-overlay').style.opacity = '1';
-        }
-
-        function runMasterFrameTick() {
-            requestAnimationFrame(runMasterFrameTick);
+        function runMasterLoop() {
+            requestAnimationFrame(runMasterLoop);
             const delta = CoreEngine.clock.getDelta();
 
-            if (CoreEngine.isEngineRunning) {
-                processPlayerKinematics(delta);
-                simulateEntitiesAndBillboards(delta);
-                checkDoorSensorTriggers(delta);
-                renderRadarTelemetry();
-                updateVitalsPanel();
+            if(CoreEngine.isEngineRunning) {
+                runPlayerKinematicsEngine(delta);
+                runDynamicSystemsSimulation(delta);
+                drawRadarDisplays();
+                
+                document.getElementById('vital-bar').style.width = `${Math.max(0, CoreEngine.playerData.vitalIntegrity)}%`;
+                document.getElementById('vital-lbl').innerText = `${Math.floor(CoreEngine.playerData.vitalIntegrity)}%`;
             }
             CoreEngine.renderer.render(CoreEngine.scene, CoreEngine.camera);
         }
 
+        // --- APPARATUS BOOTSTAPPING INTERFACE ---
         document.getElementById('initialize-call-trigger').addEventListener('click', () => {
             document.getElementById('engine-boot-screen').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('engine-boot-screen').style.display = 'none';
-                showTVDisplay(ZONE_MANIFEST[0].tvRules, "ENGAGE HYBRID PIPELINE");
-            }, 600);
+                CoreEngine.isEngineRunning = true;
+            }, 500);
+        });
+
+        document.getElementById('modal-action-btn').addEventListener('click', () => {
+            document.getElementById('game-state-modal').style.display = 'none';
+            CoreEngine.playerData.gridX = 2.0; CoreEngine.playerData.gridZ = 2.0; CoreEngine.playerData.heightY = 0.0;
+            CoreEngine.playerData.vitalIntegrity = 100;
+            generateProceduralMazeData();
+            constructPhysicalLabyrinth();
+            CoreEngine.isEngineRunning = true;
         });
 
         window.onload = function() {
-            initEngineContext();
-            bindTriggers();
-            runMasterFrameTick();
+            initEngineWorkspace();
+            generateProceduralMazeData();
+            constructPhysicalLabyrinth();
+            runMasterLoop();
         };
     </script>
 </body>
