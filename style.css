@@ -1,4 +1,3 @@
-/* --- CORE CSS RE-ARCHITECTURE --- */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -31,7 +30,6 @@ body {
     overflow: hidden;
 }
 
-/* Viewport Area Locks to Top Half of Portrait Screen */
 #viewport-container {
     position: relative;
     width: 100%;
@@ -47,12 +45,11 @@ canvas {
     object-fit: fill;
 }
 
-/* --- THE ARCADE CRT AMBIENCE SYSTEM --- */
 .crt-scanlines {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
-    background-size: 100% 4px, 6px 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+    background-size: 100% 4px;
     pointer-events: none;
     z-index: 15;
 }
@@ -66,7 +63,6 @@ canvas {
     transition: background 0.1s ease;
 }
 
-/* --- TACTICAL GRAPHICAL HEADS UP DISPLAY BELT --- */
 #hud-overlay {
     width: 100%;
     background: #07090d;
@@ -93,9 +89,6 @@ canvas {
     font-size: 10px;
     letter-spacing: 0.5px;
     text-shadow: 0 0 4px #ff6600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 #hp-display {
@@ -103,7 +96,6 @@ canvas {
     font-weight: 900;
 }
 
-/* --- MENU OVERLAY PANELS --- */
 #menu-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -122,13 +114,12 @@ canvas {
     width: 100%;
     max-width: 400px;
     text-align: center;
-    box-shadow: inset 0 0 20px rgba(255, 102, 0, 0.05);
 }
 
 #menu-title {
-    font-size: 28px;
+    font-size: 26px;
     color: #ff2200;
-    letter-spacing: 4px;
+    letter-spacing: 3px;
     text-shadow: 0 0 15px rgba(255, 34, 0, 0.5);
 }
 
@@ -136,30 +127,24 @@ canvas {
     font-size: 10px;
     color: #7a828a;
     margin: 8px 0 15px 0;
-    letter-spacing: 0.5px;
 }
 
 #level-indicator {
-    font-size: 13px;
+    font-size: 12px;
     color: #00ff66;
     margin-bottom: 15px;
-    text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
 }
 
 .menu-btn {
     background: #11141a;
     color: #ff6600;
     border: 1px solid #ff6600;
-    padding: 10px 20px;
-    font-size: 12px;
+    padding: 12px;
+    font-size: 11px;
     font-family: monospace;
-    font-weight: bold;
-    cursor: pointer;
-    letter-spacing: 1px;
     width: 100%;
 }
 
-/* --- ERGONOMIC PORTRAIT CONTROLS DECK --- */
 #mobile-control-deck {
     flex-grow: 1;
     background: #05070a;
@@ -168,15 +153,11 @@ canvas {
     justify-content: space-around;
     align-items: center;
     padding: 15px;
-    z-index: 18;
 }
 
 .joystick-container {
-    width: 130px;
-    height: 130px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 120px;
+    height: 120px;
 }
 
 #virtual-joystick {
@@ -188,23 +169,17 @@ canvas {
     position: relative;
 }
 
-#joystick-ring {
-    position: absolute;
-    top: 15px; left: 15px; right: 15px; bottom: 15px;
-    border: 1px dashed rgba(255, 102, 0, 0.25);
-    border-radius: 50%;
-}
-
 #joystick-handle {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     background: #ff6600;
     border-radius: 50%;
     position: absolute;
-    left: 36px; top: 36px;
-    box-shadow: 0 0 15px #ff6600;
-    transition: transform 0.05s linear;
+    left: 38px; top: 38px;
+    box-shadow: 0 0 12px #ff6600;
 }
+
+ immortality-btn { display: none; }
 
 #action-grid {
     display: grid;
@@ -218,10 +193,9 @@ canvas {
     background: #11141a;
     color: #fff;
     border: 1px solid #ff6600;
-    padding: 14px 10px;
-    font-size: 11px;
+    padding: 12px 5px;
+    font-size: 10px;
     font-family: monospace;
-    font-weight: bold;
     border-radius: 4px;
     text-align: center;
 }
