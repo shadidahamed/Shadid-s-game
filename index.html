@@ -12,8 +12,8 @@
     <style>
         :root {
             --bg-dark: #030509;
-            --glass-bg: rgba(6, 9, 16, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-bg: rgba(6, 9, 16, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.06);
             --accent-crimson: #bf1725;
             --accent-glow: rgba(191, 23, 37, 0.4);
             --gold-fine-wine: #c4a267;
@@ -60,17 +60,35 @@
             padding: 20px;
             z-index: 10;
             pointer-events: auto;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
         }
 
         .top-left-status {
             top: 25px;
             left: 25px;
-            min-width: 280px;
+            min-width: 300px;
+        }
+
+        .top-right-telemetry {
+            top: 25px;
+            right: 25px;
+            width: 160px;
+            height: 160px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #minimap-canvas {
+            width: 140px;
+            height: 140px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.4);
         }
 
         .status-header h1 {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
             letter-spacing: 2px;
             color: #fff;
@@ -83,11 +101,12 @@
             color: var(--gold-fine-wine);
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-bottom: 12px;
         }
 
         /* Resource Metric Bars */
         .metric-group {
-            margin-top: 15px;
+            margin-top: 10px;
             display: flex;
             flex-direction: column;
             gap: 6px;
@@ -95,9 +114,9 @@
 
         .metric-bar-container {
             width: 100%;
-            height: 4px;
+            height: 6px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 2px;
+            border-radius: 3px;
             overflow: hidden;
         }
 
@@ -106,11 +125,71 @@
             width: 100%;
             background: linear-gradient(90deg, var(--accent-crimson), #ff3344);
             box-shadow: 0 0 10px var(--accent-glow);
-            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: width 0.2s linear;
         }
 
-        /* Boot Loading System Overlays */
-        #engine-boot-screen {
+        .metric-fill-hydrate {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+            transition: width 0.2s linear;
+        }
+
+        /* Mobile Touch Layout Control Interface */
+        .mobile-input-matrix {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .dpad-wrapper, .action-wrapper {
+            display: grid;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .dpad-wrapper {
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(3, 60px);
+        }
+
+        .action-wrapper {
+            grid-template-columns: repeat(2, 65px);
+        }
+
+        .v-btn {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.1s, transform 0.1s;
+        }
+
+        .v-btn:active {
+            background: rgba(196, 162, 103, 0.25);
+            color: #fff;
+            transform: scale(0.95);
+            border-color: var(--gold-fine-wine);
+        }
+
+        /* Screen States Overlays Configuration */
+        .fullscreen-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #04060a;
@@ -119,38 +198,53 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            transition: opacity 1s ease;
+            transition: opacity 0.8s ease;
         }
 
-        .boot-terminal-box {
-            width: 85%;
-            max-width: 550px;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.01);
+        .terminal-box {
+            width: 90%;
+            max-width: 600px;
+            padding: 35px;
+            background: rgba(6, 9, 16, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
+            backdrop-filter: blur(30px);
+            border-radius: 16px;
             font-family: 'Courier New', Courier, monospace;
-        }
-
-        .boot-title {
-            color: var(--gold-fine-wine);
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            font-weight: bold;
-            letter-spacing: 1px;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.8);
         }
 
         .boot-logs {
             font-size: 0.8rem;
             color: #4b5563;
-            height: 150px;
+            height: 140px;
             overflow-y: auto;
-            margin-bottom: 20px;
-            line-height: 1.5;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 10px;
         }
 
-        .boot-action-btn {
-            padding: 12px 30px;
+        .tv-content {
+            color: #d1d5db;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .tv-content h2 {
+            color: var(--gold-fine-wine);
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .tv-content p {
+            margin-bottom: 10px;
+        }
+
+        .action-submit-btn {
+            width: 100%;
+            padding: 14px;
             background: transparent;
             border: 1px solid var(--gold-fine-wine);
             color: #fff;
@@ -159,27 +253,62 @@
             text-transform: uppercase;
             cursor: pointer;
             transition: all 0.3s ease;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-family: sans-serif;
         }
 
-        .boot-action-btn:hover {
+        .action-submit-btn:hover {
             background: var(--gold-fine-wine);
             color: #000;
-            box-shadow: 0 0 20px rgba(196, 162, 103, 0.3);
+            box-shadow: 0 0 25px rgba(196, 162, 103, 0.4);
+        }
+
+        /* Modal Alerts Setup */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(3, 5, 9, 0.9);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Media Queries to optimize viewport layouts */
+        @media (min-width: 769px) {
+            .mobile-input-matrix { display: none; }
         }
     </style>
 </head>
 <body>
 
-    <div id="engine-boot-screen">
-        <div class="boot-terminal-box">
-            <div class="boot-title">SYSTEM:// ORPHEUS_ENGINE_HYBRID_COREINIT</div>
+    <div id="engine-boot-screen" class="fullscreen-overlay">
+        <div class="terminal-box">
+            <div style="color: var(--gold-fine-wine); font-weight: bold; margin-bottom: 15px; letter-spacing: 1px;">SYSTEM:// ORPHEUS_ENGINE_HYBRID_COREINIT</div>
             <div class="boot-logs" id="terminal-logger">
                 [SYSTEM] Allocating WebGL Context Layers...<br>
                 [SYSTEM] Binding 2.5D Projection Pipelines...<br>
                 [SYSTEM] Ready to compile spatial parameters...
             </div>
-            <button class="boot-action-btn" id="initialize-call-trigger">Awaken Reality</button>
+            <button class="action-submit-btn" id="initialize-call-trigger">Awaken Reality</button>
+        </div>
+    </div>
+
+    <div id="tv-intermission-overlay" class="fullscreen-overlay" style="display: none; background: #020305;">
+        <div class="terminal-box" style="border-color: rgba(196, 162, 103, 0.15);">
+            <div class="tv-content" id="tv-terminal-display">
+                </div>
+            <button class="action-submit-btn" id="tv-power-btn">Load Core Matrix</button>
+        </div>
+    </div>
+
+    <div id="game-state-modal" class="modal-overlay">
+        <div class="terminal-box" style="border-color: var(--accent-crimson);">
+            <div class="tv-content">
+                <h2 id="modal-title" style="color: var(--accent-crimson);">ALERT BOUNDARY FAULT</h2>
+                <p id="modal-desc">Reality grid structural parameters collapsed.</p>
+            </div>
+            <button class="action-submit-btn" id="modal-action-btn" style="border-color: var(--accent-crimson);">RE-MATERIALIZE</button>
         </div>
     </div>
 
@@ -192,12 +321,43 @@
             </div>
             <div class="metric-group">
                 <div style="display:flex; justify-content:space-between; font-size:0.65rem; letter-spacing:1px; color:#9ca3af;">
-                    <span>HERO SYNCHRONICITY STABILITY</span>
+                    <span>SKELETAL MESH INTEGRITY</span>
                     <span id="vital-percentage-lbl">100%</span>
                 </div>
                 <div class="metric-bar-container">
                     <div class="metric-fill-vital" id="vital-integrity-bar"></div>
                 </div>
+            </div>
+            <div class="metric-group" style="margin-top: 12px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.65rem; letter-spacing:1px; color:#9ca3af;">
+                    <span>HYDRATION MATRIX FLUID</span>
+                    <span id="hydrate-percentage-lbl">100%</span>
+                </div>
+                <div class="metric-bar-container">
+                    <div class="metric-fill-hydrate" id="hydration-integrity-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-hud-panel top-right-telemetry">
+            <canvas id="minimap-canvas" width="280" height="280"></canvas>
+        </div>
+
+        <div class="mobile-input-matrix">
+            <div class="dpad-wrapper">
+                <div></div>
+                <div class="v-btn" id="m-up"><i class="fa-solid fa-chevron-up"></i></div>
+                <div></div>
+                <div class="v-btn" id="m-left"><i class="fa-solid fa-chevron-left"></i></div>
+                <div></div>
+                <div class="v-btn" id="m-right"><i class="fa-solid fa-chevron-right"></i></div>
+                <div></div>
+                <div class="v-btn" id="m-down"><i class="fa-solid fa-chevron-down"></i></div>
+                <div></div>
+            </div>
+            <div class="action-wrapper">
+                <div class="v-btn" id="m-stair" style="height:60px;"><i class="fa-solid fa-stairs"></i></div>
+                <div class="v-btn" id="m-jump" style="height:60px;"><i class="fa-solid fa-angles-up"></i></div>
             </div>
         </div>
 
@@ -206,41 +366,114 @@
     <script>
         // --- MASTER APPLICATION GAME ENGINE SCOPE ---
         const CoreEngine = {
-            // Environment Context Variables
             scene: null,
             camera: null,
             renderer: null,
             clock: null,
             
-            // Structural Render Subsets
             worldGroup: null,
-            actorGroup: null,
+            dynamicGroup: null,
             
-            // Assets Pipelines & Models Target Frame Tracking
             heroModelURI: "resident-evil-2-remake-leon-kennedy.glb",
             heroInstance: null,
             heroMixer: null,
             
-            // Engine Spatial Realtime Configurations
             currentZone: 0,
             isEngineRunning: false,
             
-            // Global Input States Tracking
+            gridWidth: 18,
+            matrixGrid: [],
+            activeDoorsArray: [],
+            activeEntitiesArray: [],
+            
+            playerData: {
+                gridX: 2.5,
+                gridZ: 2.5,
+                heightY: 0,
+                viewAngle: 0,
+                vertVelocity: 0,
+                isAirborne: false,
+                vitalIntegrity: 100,
+                hydrationReserve: 100
+            },
+            
             inputTracker: {
                 forward: false, backward: false, left: false, right: false,
                 climb: false, jump: false
             }
         };
 
-        // --- PIPELINE RUNTIME LOGIC CONSTRUCTORS ---
+        // --- LEVEL ARCHITECTURE MATRIX REGISTRY ---
+        const ZONE_MANIFEST = {
+            0: {
+                name: "Level 0: The Lobby",
+                motto: "The Infinite Maze",
+                wallColor: 0xd9c589,
+                floorColor: 0x7a6b48,
+                ceilColor: 0xeae5cc,
+                fogColor: 0x0a0c10,
+                lightIntensity: 0.45,
+                dehydrationRate: 0.1,
+                hasEntities: false,
+                tvRules: "<h2>Level 0: The Lobby</h2><p>CRITICAL PARAMETERS: Phasing out of bounds brings you here. It is structurally endless and devoid of external hostile organisms.</p><p>SURVIVAL PROTOCOL: Rely entirely on your 2D radar disc telemetry. Move to the outermost coordinate edge to find the spatial gateway leading into the concrete tiers.</p>"
+            },
+            1: {
+                name: "Level 1: The Habitable Zone",
+                motto: "Industrial Sanctuary Vaults",
+                wallColor: 0x4a4d52,
+                floorColor: 0x2b2d30,
+                ceilColor: 0x3a3d42,
+                fogColor: 0x050608,
+                lightIntensity: 0.35,
+                dehydrationRate: 0.15,
+                hasEntities: true,
+                tvRules: "<h2>Level 1: The Habitable Zone</h2><p>CRITICAL PARAMETERS: Concrete structure filled with stray utility pipes. Minor Explorer Group (M.E.G.) outposts exist within these perimeter coordinates.</p><p>SURVIVAL PROTOCOL: Hounds and Facelings navigate unlit sub-halls. Locate the concrete stairwells and press [S] or trigger the mobile panel to ascend past structural blocks.</p>"
+            },
+            2: {
+                name: "Level 2: Pipe Dreams",
+                motto: "Thermal Hazard Exhaust Corridors",
+                wallColor: 0x2b1a13,
+                floorColor: 0x140c09,
+                ceilColor: 0x21140e,
+                fogColor: 0x140a07,
+                lightIntensity: 0.25,
+                dehydrationRate: 0.65,
+                hasEntities: true,
+                tvRules: "<h2>Level 2: Pipe Dreams</h2><p>CRITICAL PARAMETERS: Closed maintenance loops reaching extreme temperatures of up to 200°F. Dehydration curves accelerate aggressively here.</p><p>SURVIVAL PROTOCOL: Do not attempt to force mechanical bulkheads open. Step cleanly into matching proximity frames to let proximity sensors disengage locks automatically.</p>"
+            },
+            3: {
+                name: "Level 3: Electrical Station",
+                motto: "Apex High-Voltage Maintenance Grid",
+                wallColor: 0x0e131a,
+                floorColor: 0x07090d,
+                ceilColor: 0x0a0e14,
+                fogColor: 0x020406,
+                lightIntensity: 0.15,
+                dehydrationRate: 0.2,
+                hasEntities: true,
+                tvRules: "<h2>Level 3: Electrical Station</h2><p>CRITICAL PARAMETERS: Heavy high-tension grid system ringing with intense, echoing electrical hums. Apex lifecycle threats spawn heavily across these boundaries.</p><p>SURVIVAL PROTOCOL: Avoid stepping into blue, sparking static arcs on the floor deck. Keep your look-vector straight and navigate by using the radar disk tracking points.</p>"
+            },
+            4: {
+                name: "Level 4: Abandoned Office",
+                motto: "Corporate Trading Hub Oasis",
+                wallColor: 0xe6edf5,
+                floorColor: 0x3b4c61,
+                ceilColor: 0xf1f5f9,
+                fogColor: 0x080c14,
+                lightIntensity: 0.9,
+                dehydrationRate: 0.12,
+                hasEntities: false,
+                tvRules: "<h2>Level 4: Abandoned Office</h2><p>CRITICAL PARAMETERS: Classic 1990s layout filled with cubicle furniture frames. Free of hostile threat matrices and acts as a major hub for human traders.</p><p>SURVIVAL PROTOCOL: Meet with mobile trading caravans to exchange scavenged goods. Locate the primary escape gateway terminal to permanently break the Backrooms simulation matrix loop.</p>"
+            }
+        };
+
+        // --- PIPELINE CORE INITIALIZATIONS ---
         function initEngineContext() {
             const container = document.getElementById('viewport-container');
             
-            // Standard WebGL Scene Initializations
             CoreEngine.scene = new THREE.Scene();
             CoreEngine.clock = new THREE.Clock();
 
-            // 2.5D / 3D Mixed Perspective Matrices Definition Formulation
             CoreEngine.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
             
             CoreEngine.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
@@ -252,29 +485,21 @@
             CoreEngine.renderer.toneMappingExposure = 1.0;
             container.appendChild(CoreEngine.renderer.domElement);
 
-            // Group Layout Instantiations
             CoreEngine.worldGroup = new THREE.Group();
-            CoreEngine.actorGroup = new THREE.Group();
+            CoreEngine.dynamicGroup = new THREE.Group();
             CoreEngine.scene.add(CoreEngine.worldGroup);
-            CoreEngine.scene.add(CoreEngine.actorGroup);
+            CoreEngine.scene.add(CoreEngine.dynamicGroup);
 
-            // Establish Cinematic Ambient and Direct Shadow Caster Lighting rigs
             setupCinematicLightingEcosystem();
-            
-            // Initialize Hardware System Input Hooks
             bindHardwareInputSystems();
-
-            // Run GLB Asset Ingestion Pipeline
             ingestHeroModelAsset();
         }
 
         function setupCinematicLightingEcosystem() {
-            // Dark fine wine ambient lighting floor limits
-            const ambient = new THREE.AmbientLight(0x0a0f1d, 0.4);
+            const ambient = new THREE.AmbientLight(0x0a0f1d, 0.45);
             CoreEngine.scene.add(ambient);
 
-            // Primary Dark Fantasy Directional Cascade Shadow Caster
-            const dirLight = new THREE.DirectionalLight(0xc4a267, 0.85); // Gold-tinted ray
+            const dirLight = new THREE.DirectionalLight(0xc4a267, 0.85); 
             dirLight.position.set(25, 45, 20);
             dirLight.castShadow = true;
             dirLight.shadow.mapSize.width = 2048;
@@ -282,7 +507,6 @@
             dirLight.shadow.bias = -0.0001;
             CoreEngine.scene.add(dirLight);
 
-            // Foggy atmosphere density tracking
             CoreEngine.scene.background = new THREE.Color(0x030509);
             CoreEngine.scene.fog = new THREE.FogExp2(0x030509, 0.025);
         }
@@ -300,12 +524,10 @@
                     
                     CoreEngine.heroInstance = gltf.scene;
                     
-                    // Traverse and inject high-end shadow maps safely over custom uploaded mesh structures
                     CoreEngine.heroInstance.traverse(function (node) {
                         if (node.isMesh) {
                             node.castShadow = true;
                             node.receiveShadow = true;
-                            // Optimize material parameters for fine-wine styling pipeline
                             if(node.material) {
                                 node.material.roughness = 0.45;
                                 node.material.metalness = 0.2;
@@ -313,15 +535,12 @@
                         }
                     });
 
-                    // Positioning baseline parameters
-                    CoreEngine.heroInstance.position.set(0, 0, 0);
+                    CoreEngine.heroInstance.position.set(10, 0, 10);
                     CoreEngine.heroInstance.scale.set(1.2, 1.2, 1.2);
-                    CoreEngine.actorGroup.add(CoreEngine.heroInstance);
+                    CoreEngine.scene.add(CoreEngine.heroInstance);
 
-                    // Track animations mapping frames if loaded
                     if(gltf.animations && gltf.animations.length > 0) {
                         CoreEngine.heroMixer = new THREE.AnimationMixer(CoreEngine.heroInstance);
-                        // Optional fallback automatic idle action trigger loop
                         const action = CoreEngine.heroMixer.clipAction(gltf.animations[0]);
                         action.play();
                     }
@@ -342,7 +561,6 @@
         }
 
         function generateFallbackProceduralHero() {
-            // High-fidelity procedural substitute capsule styling if external model mapping fails locally
             const heroGroup = new THREE.Group();
             
             const bodyGeo = new THREE.CylinderGeometry(0.4, 0.3, 1.8, 16);
@@ -359,7 +577,7 @@
             crestMesh.position.y = 2.0;
             heroGroup.add(crestMesh);
 
-            CoreEngine.actorGroup.add(heroGroup);
+            CoreEngine.scene.add(heroGroup);
             CoreEngine.heroInstance = heroGroup;
         }
 
@@ -377,26 +595,653 @@
 
         function processKeyEvent(keyString, isPressed) {
             switch(keyString) {
-                case 'ArrowUp': CoreEngine.inputTracker.forward = isPressed; break;
-                case 'ArrowDown': CoreEngine.inputTracker.backward = isPressed; break;
-                case 'ArrowLeft': CoreEngine.inputTracker.left = isPressed; break;
-                case 'ArrowRight': CoreEngine.inputTracker.right = isPressed; break;
-                case 's': case 'S': CoreEngine.inputTracker.climb = isPressed; break;
-                case 'j': case 'J': CoreEngine.inputTracker.jump = isPressed; break;
+                case 'ArrowUp': case 'w': case 'W': CoreEngine.inputTracker.forward = isPressed; break;
+                case 'ArrowDown': case 's': case 'S': CoreEngine.inputTracker.backward = isPressed; break;
+                case 'ArrowLeft': case 'a': case 'A': CoreEngine.inputTracker.left = isPressed; break;
+                case 'ArrowRight': case 'd': case 'D': CoreEngine.inputTracker.right = isPressed; break;
+                case 'Shift': CoreEngine.inputTracker.climb = isPressed; break;
+                case ' ': CoreEngine.inputTracker.jump = isPressed; break;
             }
         }
 
-        // --- REVOLUTIONARY GLOBAL PIPELINE TRANSITION EXECUTION ---
+        // --- PROCEDURAL ARCHITECTURE COMPILATION MAP ---
+        function compileProceduralZoneMatrix(zoneID) {
+            const size = CoreEngine.gridWidth;
+            CoreEngine.matrixGrid = Array(size).fill().map(() => Array(size).fill(0));
+
+            for(let i = 0; i < size; i++) {
+                CoreEngine.matrixGrid[0][i] = 1;
+                CoreEngine.matrixGrid[size-1][i] = 1;
+                CoreEngine.matrixGrid[i][0] = 1;
+                CoreEngine.matrixGrid[i][size-1] = 1;
+            }
+
+            for(let r = 2; r < size - 2; r += 2) {
+                for(let c = 2; c < size - 2; c += 2) {
+                    CoreEngine.matrixGrid[r][c] = 1;
+                    const directions = [[0,1], [1,0], [0,-1], [-1,0]];
+                    const [dr, dc] = directions[Math.floor(Math.random() * directions.length)];
+                    CoreEngine.matrixGrid[r+dr][c+dc] = 1;
+                }
+            }
+
+            CoreEngine.matrixGrid[1][1] = 0;
+            CoreEngine.matrixGrid[1][2] = 0;
+            CoreEngine.matrixGrid[2][1] = 0;
+            CoreEngine.matrixGrid[2][2] = 0;
+
+            CoreEngine.matrixGrid[size - 3][size - 2] = 2; 
+            CoreEngine.matrixGrid[size - 2][size - 3] = 3; 
+            CoreEngine.matrixGrid[4][3] = 4;
+            CoreEngine.matrixGrid[3][6] = 4;
+            CoreEngine.matrixGrid[8][5] = 4;
+        }
+
+        function instantiatePhysicalStructures(zoneID) {
+            const size = CoreEngine.gridWidth;
+            const data = ZONE_MANIFEST[zoneID];
+
+            while(CoreEngine.worldGroup.children.length > 0) { 
+                CoreEngine.worldGroup.remove(CoreEngine.worldGroup.children[0]); 
+            }
+            while(CoreEngine.dynamicGroup.children.length > 0) {
+                CoreEngine.dynamicGroup.remove(CoreEngine.dynamicGroup.children[0]);
+            }
+            
+            CoreEngine.activeDoorsArray = [];
+            CoreEngine.activeEntitiesArray = [];
+
+            CoreEngine.scene.background = new THREE.Color(data.fogColor);
+            CoreEngine.scene.fog.color.setHex(data.fogColor);
+
+            const wallMaterial = new THREE.MeshStandardMaterial({ 
+                color: data.wallColor, 
+                roughness: 0.75, 
+                metalness: zoneID === 3 ? 0.7 : 0.05 
+            });
+            const floorMaterial = new THREE.MeshStandardMaterial({ 
+                color: data.floorColor, 
+                roughness: 0.9 
+            });
+            const ceilMaterial = new THREE.MeshStandardMaterial({ 
+                color: data.ceilColor, 
+                roughness: 0.65
+            });
+
+            const blockGeo = new THREE.BoxGeometry(4, 5, 4);
+            const deckGeo = new THREE.PlaneGeometry(size * 4, size * 4);
+
+            const floorMesh = new THREE.Mesh(deckGeo, floorMaterial);
+            floorMesh.rotation.x = -Math.PI / 2;
+            floorMesh.position.set((size * 4) / 2 - 2, -2.5, (size * 4) / 2 - 2);
+            floorMesh.receiveShadow = true;
+            CoreEngine.worldGroup.add(floorMesh);
+
+            const ceilingMesh = new THREE.Mesh(deckGeo, ceilMaterial);
+            ceilingMesh.rotation.x = Math.PI / 2;
+            ceilingMesh.position.set((size * 4) / 2 - 2, 2.5, (size * 4) / 2 - 2);
+            CoreEngine.worldGroup.add(ceilingMesh);
+
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const tokenType = CoreEngine.matrixGrid[r][c];
+                    const targetX = c * 4;
+                    const targetZ = r * 4;
+
+                    if (tokenType === 1) {
+                        const wallSegment = new THREE.Mesh(blockGeo, wallMaterial);
+                        wallSegment.position.set(targetX, 0, targetZ);
+                        wallSegment.castShadow = true;
+                        wallSegment.receiveShadow = true;
+                        CoreEngine.worldGroup.add(wallSegment);
+                        
+                        if(Math.random() < 0.12) {
+                            const bayLight = new THREE.PointLight(zoneID === 3 ? 0x00a2ff : 0xfffae0, data.lightIntensity * 1.5, 12);
+                            bayLight.position.set(targetX, 2.2, targetZ);
+                            CoreEngine.worldGroup.add(bayLight);
+                        }
+                    } else if (tokenType === 2) {
+                        instantiatePhysicalStairwell(targetX, targetZ);
+                    } else if (tokenType === 3) {
+                        instantiateDimensionalGateway(targetX, targetZ);
+                    } else if (tokenType === 4) {
+                        instantiateAutomatedGlassDoor(targetX, targetZ);
+                    } else {
+                        if(Math.random() < 0.04) {
+                            spawnProceduralSceneryProps(targetX, targetZ);
+                        }
+                    }
+                }
+            }
+
+            if(data.hasEntities) {
+                spawnActiveZoneThreatEntities(size);
+            }
+        }
+
+        // --- STRUCTURAL INTERACTION PROP ASSET GENERATORS ---
+        function instantiateAutomatedGlassDoor(x, z) {
+            const doorContainer = new THREE.Group();
+            doorContainer.position.set(x, -2.5, z);
+
+            const frameMat = new THREE.MeshStandardMaterial({ 
+                color: 0x90caf9,
+                transparent: true,
+                opacity: 0.3,
+                roughness: 0.1,
+                metalness: 0.8
+            });
+
+            const leftPaneMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 5, 0.15), frameMat);
+            leftPaneMesh.position.set(-0.9, 2.5, 0);
+            
+            const rightPaneMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 5, 0.15), frameMat);
+            rightPaneMesh.position.set(0.9, 2.5, 0);
+
+            doorContainer.add(leftPaneMesh, rightPaneMesh);
+            CoreEngine.worldGroup.add(doorContainer);
+
+            CoreEngine.activeDoorsArray.push({
+                rootGroup: doorContainer,
+                leftSlidingPane: leftPaneMesh,
+                rightSlidingPane: rightPaneMesh,
+                gridCoordX: x,
+                gridCoordZ: z,
+                currentExtensionOffset: 0,
+                targetExtensionOffset: 0
+            });
+        }
+
+        function instantiatePhysicalStairwell(x, z) {
+            const stairsGroup = new THREE.Group();
+            stairsGroup.position.set(x, -2.5, z);
+            const treadMat = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.6 });
+
+            for(let i = 0; i < 10; i++) {
+                const step = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.5, 0.4), treadMat);
+                step.position.set(0, (i * 0.5) + 0.25, (i * 0.4) - 1.8);
+                step.receiveShadow = true;
+                stairsGroup.add(step);
+            }
+            CoreEngine.worldGroup.add(stairsGroup);
+        }
+
+        // --- MULTI-SHAPE PROXIMITY AI ENTITY ENGINE ---
+        function spawnActiveZoneThreatEntities(gridSize) {
+            for(let i = 0; i < 3; i++) {
+                let cellR = Math.floor(Math.random() * (gridSize - 4)) + 2;
+                let cellC = Math.floor(Math.random() * (gridSize - 4)) + 2;
+                
+                if(CoreEngine.matrixGrid[cellR][cellC] === 0) {
+                    const entityRootGroup = new THREE.Group();
+                    entityRootGroup.position.set(cellC * 4, -1.2, cellR * 4);
+
+                    const carapaceMesh = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.5, 2.2, 6),
+                        new THREE.MeshStandardMaterial({ 
+                            color: 0x090d16, 
+                            emissive: 0x990011, 
+                            emissiveIntensity: 0.4,
+                            roughness: 0.2,
+                            metalness: 0.8
+                        })
+                    );
+                    carapaceMesh.position.y = 1.1;
+                    entityRootGroup.add(carapaceMesh);
+
+                    const opticalSensorMesh = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.28, 12, 12),
+                        new THREE.MeshStandardMaterial({ 
+                            color: 0xff0033, 
+                            emissive: 0xff0033, 
+                            emissiveIntensity: 2.0 
+                        })
+                    );
+                    opticalSensorMesh.position.set(0, 2.0, 0.35);
+                    entityRootGroup.add(opticalSensorMesh);
+
+                    const stalkerLight = new THREE.PointLight(0xff0033, 1.2, 6);
+                    stalkerLight.position.set(0, 1.5, 0);
+                    entityRootGroup.add(stalkerLight);
+
+                    CoreEngine.dynamicGroup.add(entityRootGroup);
+                    
+                    CoreEngine.activeEntitiesArray.push({
+                        rootMesh: entityRootGroup,
+                        spawnGridX: cellC * 4,
+                        spawnGridZ: cellR * 4,
+                        sinePatrolTicker: Math.random() * 500,
+                        currentMovementVelocity: 1.8 + (Math.random() * 1.2)
+                    });
+                }
+            }
+        }
+
+        function processEntitiesSimulation(delta) {
+            const playerWorldPositionX = CoreEngine.playerData.gridX * 4;
+            const playerWorldPositionZ = CoreEngine.playerData.gridZ * 4;
+
+            CoreEngine.activeEntitiesArray.forEach(entity => {
+                entity.sinePatrolTicker += delta * entity.currentMovementVelocity;
+
+                const spatialOffsetZ = Math.sin(entity.sinePatrolTicker) * 4.5;
+                const theoreticalGlobalZ = entity.spawnGridZ + spatialOffsetZ;
+
+                entity.rootMesh.position.z = theoreticalGlobalZ;
+
+                const movingForward = Math.cos(entity.sinePatrolTicker) > 0;
+                entity.rootMesh.rotation.y = movingForward ? 0 : Math.PI;
+
+                const deltaDistanceX = entity.rootMesh.position.x - playerWorldPositionX;
+                const deltaDistanceZ = entity.rootMesh.position.z - playerWorldPositionZ;
+                const computedRadialScalar = Math.sqrt(deltaDistanceX * deltaDistanceX + deltaDistanceZ * deltaDistanceZ);
+
+                if (computedRadialScalar < 3.2) {
+                    CoreEngine.playerData.vitalIntegrity -= 35.0 * delta; 
+                    
+                    CoreEngine.camera.position.x += (Math.random() * 0.2 - 0.1);
+                    CoreEngine.camera.position.y += (Math.random() * 0.2 - 0.1);
+                }
+
+                if (CoreEngine.playerData.vitalIntegrity <= 0) {
+                    executeEngineFailureReset();
+                }
+            });
+        }
+
+        function instantiateDimensionalGateway(x, z) {
+            const archway = new THREE.Group();
+            archway.position.set(x, -2.5, z);
+
+            const fieldMesh = new THREE.Mesh(
+                new THREE.BoxGeometry(2.2, 4.2, 0.2),
+                new THREE.MeshStandardMaterial({ color: 0xbf1725, emissive: 0xbf1725, emissiveIntensity: 1.2 })
+            );
+            fieldMesh.position.y = 2.1;
+            archway.add(fieldMesh);
+            CoreEngine.worldGroup.add(archway);
+        }
+
+        function spawnProceduralSceneryProps(x, z) {
+            const propGroup = new THREE.Group();
+            propGroup.position.set(x + (Math.random()*1.0 - 0.5), -2.5, z + (Math.random()*1.0 - 0.5));
+            const material = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.8 });
+
+            const roll = Math.random();
+            if(roll < 0.4) {
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 3.0, 1.2), material);
+                body.position.y = 1.5;
+                body.castShadow = true;
+                propGroup.add(body);
+            } else {
+                const box = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), material);
+                box.position.y = 0.5;
+                box.castShadow = true;
+                propGroup.add(box);
+            }
+            CoreEngine.worldGroup.add(propGroup);
+        }
+
+        // --- MASTER SYSTEM MOVEMENT & KINEMATICS ENGINE ---
+        function processPlayerKinematics(delta) {
+            const currentZoneData = ZONE_MANIFEST[CoreEngine.currentZone];
+            
+            let movementSpeed = 6.5 * delta;
+            let rotationalVelocity = 2.6 * delta;
+
+            CoreEngine.playerData.hydrationReserve -= currentZoneData.dehydrationRate * 10.0 * delta;
+            if (CoreEngine.playerData.hydrationReserve <= 0) {
+                CoreEngine.playerData.hydrationReserve = 0;
+                movementSpeed *= 0.45; 
+                CoreEngine.playerData.vitalIntegrity -= 2.5 * delta; 
+            }
+
+            if (CoreEngine.inputTracker.left) {
+                CoreEngine.playerData.viewAngle += rotationalVelocity;
+            }
+            if (CoreEngine.inputTracker.right) {
+                CoreEngine.playerData.viewAngle -= rotationalVelocity;
+            }
+
+            let deltaMoveX = 0;
+            let deltaMoveZ = 0;
+
+            if (CoreEngine.inputTracker.forward) {
+                deltaMoveX = Math.sin(CoreEngine.playerData.viewAngle) * movementSpeed;
+                deltaMoveZ = Math.cos(CoreEngine.playerData.viewAngle) * movementSpeed;
+            }
+            if (CoreEngine.inputTracker.backward) {
+                deltaMoveX = -Math.sin(CoreEngine.playerData.viewAngle) * movementSpeed;
+                deltaMoveZ = -Math.cos(CoreEngine.playerData.viewAngle) * movementSpeed;
+            }
+
+            let targetTheoreticalX = CoreEngine.playerData.gridX + deltaMoveX;
+            let targetTheoreticalZ = CoreEngine.playerData.gridZ + deltaMoveZ;
+
+            if (!evaluateWallStructuralCollision(targetTheoreticalX, CoreEngine.playerData.gridZ)) {
+                CoreEngine.playerData.gridX = targetTheoreticalX;
+            }
+            if (!evaluateWallStructuralCollision(CoreEngine.playerData.gridX, targetTheoreticalZ)) {
+                CoreEngine.playerData.gridZ = targetTheoreticalZ;
+            }
+
+            const baseCurrentGridX = Math.floor(CoreEngine.playerData.gridX);
+            const baseCurrentGridZ = Math.floor(CoreEngine.playerData.gridZ);
+            
+            if (baseCurrentGridX >= 0 && baseCurrentGridX < CoreEngine.gridWidth &&
+                baseCurrentGridZ >= 0 && baseCurrentGridZ < CoreEngine.gridWidth) {
+                
+                const activeToken = CoreEngine.matrixGrid[baseCurrentGridZ][baseCurrentGridX];
+                
+                if (activeToken === 2 && CoreEngine.inputTracker.climb) {
+                    if (CoreEngine.playerData.heightY < 4.8) {
+                        CoreEngine.playerData.heightY += 3.5 * delta;
+                    }
+                } else {
+                    if (!CoreEngine.playerData.isAirborne && CoreEngine.playerData.heightY > 0) {
+                        CoreEngine.playerData.heightY -= 6.0 * delta;
+                        if (CoreEngine.playerData.heightY < 0) CoreEngine.playerData.heightY = 0;
+                    }
+                }
+            }
+
+            if (CoreEngine.inputTracker.jump && !CoreEngine.playerData.isAirborne) {
+                CoreEngine.playerData.isAirborne = true;
+                CoreEngine.playerData.vertVelocity = 7.5; 
+            }
+
+            if (CoreEngine.playerData.isAirborne) {
+                CoreEngine.playerData.heightY += CoreEngine.playerData.vertVelocity * delta;
+                CoreEngine.playerData.vertVelocity -= 18.0 * delta; 
+
+                if (CoreEngine.playerData.heightY <= 0) {
+                    CoreEngine.playerData.heightY = 0;
+                    CoreEngine.playerData.isAirborne = false;
+                    CoreEngine.playerData.vertVelocity = 0;
+                }
+            }
+
+            if (baseCurrentGridX >= 0 && baseCurrentGridX < CoreEngine.gridWidth &&
+                baseCurrentGridZ >= 0 && baseCurrentGridZ < CoreEngine.gridWidth) {
+                if (CoreEngine.matrixGrid[baseCurrentGridZ][baseCurrentGridX] === 3) {
+                    initiateZoneTransitionSequence();
+                }
+            }
+
+            if (CoreEngine.heroInstance) {
+                CoreEngine.heroInstance.position.set(
+                    CoreEngine.playerData.gridX * 4, 
+                    -2.5 + CoreEngine.playerData.heightY, 
+                    CoreEngine.playerData.gridZ * 4
+                );
+                CoreEngine.heroInstance.rotation.y = CoreEngine.playerData.viewAngle + Math.PI;
+
+                if (CoreEngine.heroMixer) {
+                    const animFactor = (CoreEngine.inputTracker.forward || CoreEngine.inputTracker.backward) ? 1.0 : 0.0;
+                    CoreEngine.heroMixer.update(delta * (animFactor > 0 ? 1.2 : 0.4));
+                }
+            }
+
+            const offsetCameraDistance = 11.0;
+            const offsetCameraHeight = 6.5;
+
+            const theoreticalCamX = CoreEngine.playerData.gridX * 4 - Math.sin(CoreEngine.playerData.viewAngle) * offsetCameraDistance;
+            const theoreticalCamZ = CoreEngine.playerData.gridZ * 4 - Math.cos(CoreEngine.playerData.viewAngle) * offsetCameraDistance;
+            const theoreticalCamY = CoreEngine.playerData.heightY + offsetCameraHeight;
+
+            CoreEngine.camera.position.x += (theoreticalCamX - CoreEngine.camera.position.x) * 8 * delta;
+            CoreEngine.camera.position.z += (theoreticalCamZ - CoreEngine.camera.position.z) * 8 * delta;
+            CoreEngine.camera.position.y += (theoreticalCamY - CoreEngine.camera.position.y) * 8 * delta;
+
+            CoreEngine.camera.lookAt(
+                CoreEngine.playerData.gridX * 4,
+                CoreEngine.playerData.heightY,
+                CoreEngine.playerData.gridZ * 4
+            );
+        }
+
+        function evaluateWallStructuralCollision(x, z) {
+            const gridCoordIntegerX = Math.floor(x);
+            const gridCoordIntegerZ = Math.floor(z);
+            if (gridCoordIntegerX < 0 || gridCoordIntegerX >= CoreEngine.gridWidth || 
+                gridCoordIntegerZ < 0 || gridCoordIntegerZ >= CoreEngine.gridWidth) {
+                return true;
+            }
+            return CoreEngine.matrixGrid[gridCoordIntegerZ][gridCoordIntegerX] === 1;
+        }
+
+        function runAutomatedDoorProximityChecks(delta) {
+            const pWorldX = CoreEngine.playerData.gridX * 4;
+            const pWorldZ = CoreEngine.playerData.gridZ * 4;
+
+            CoreEngine.activeDoorsArray.forEach(door => {
+                const distanceX = door.gridCoordX - pWorldX;
+                const distanceZ = door.gridCoordZ - pWorldZ;
+                const directRadialScalar = Math.sqrt(distanceX * distanceX + distanceZ * distanceZ);
+
+                if (directRadialScalar < 4.8) {
+                    door.targetExtensionOffset = 1.6; 
+                } else {
+                    door.targetExtensionOffset = 0;   
+                }
+
+                door.currentExtensionOffset += (door.targetExtensionOffset - door.currentExtensionOffset) * 6 * delta;
+                door.leftSlidingPane.position.x = -0.9 - door.currentExtensionOffset;
+                door.rightSlidingPane.position.x = 0.9 + door.currentExtensionOffset;
+            });
+        }
+
+        // --- HUD TELEMETRY CONTROLS ---
+        function drawMinimapTelemetry() {
+            const canvas = document.getElementById('minimap-canvas');
+            const ctx = canvas.getContext('2d');
+            const size = CoreEngine.gridWidth;
+            const cellSize = canvas.width / size;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const blockValue = CoreEngine.matrixGrid[r][c];
+                    if (blockValue === 1) {
+                        ctx.fillStyle = 'rgba(196, 162, 103, 0.12)';
+                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
+                    } else if (blockValue === 2) {
+                        ctx.fillStyle = '#3b82f6'; 
+                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
+                    } else if (blockValue === 3) {
+                        ctx.fillStyle = '#bf1725'; 
+                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
+                    } else if (blockValue === 4) {
+                        ctx.fillStyle = '#10b981'; 
+                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
+                    }
+                }
+            }
+
+            const radialPlayerX = CoreEngine.playerData.gridX * cellSize;
+            const radialPlayerZ = CoreEngine.playerData.gridZ * cellSize;
+
+            ctx.beginPath();
+            ctx.arc(radialPlayerX, radialPlayerZ, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(radialPlayerX, radialPlayerZ);
+            ctx.lineTo(
+                radialPlayerX + Math.sin(CoreEngine.playerData.viewAngle) * 14,
+                radialPlayerZ + Math.cos(CoreEngine.playerData.viewAngle) * 14
+            );
+            ctx.strokeStyle = '#bf1725';
+            ctx.lineWidth = 2.0;
+            ctx.stroke();
+        }
+
+        function updateVitalsInterface() {
+            document.getElementById('vital-integrity-bar').style.width = `${Math.max(0, CoreEngine.playerData.vitalIntegrity)}%`;
+            document.getElementById('vital-percentage-lbl').innerText = `${Math.floor(CoreEngine.playerData.vitalIntegrity)}%`;
+            
+            document.getElementById('hydration-integrity-bar').style.width = `${Math.max(0, CoreEngine.playerData.hydrationReserve)}%`;
+            document.getElementById('hydrate-percentage-lbl').innerText = `${Math.floor(CoreEngine.playerData.hydrationReserve)}%`;
+        }
+
+        // --- TRANSLATION MANAGERS & OVERLAYS ---
+        function initiateZoneTransitionSequence() {
+            const nextTargetZoneIndex = CoreEngine.currentZone + 1;
+            
+            if (ZONE_MANIFEST[nextTargetZoneIndex]) {
+                CoreEngine.currentZone = nextTargetZoneIndex;
+                CoreEngine.isEngineRunning = false;
+                
+                compileProceduralZoneMatrix(nextTargetZoneIndex);
+                instantiatePhysicalStructures(nextTargetZoneIndex);
+                
+                CoreEngine.playerData.gridX = 2.5;
+                CoreEngine.playerData.gridZ = 2.5;
+                CoreEngine.playerData.heightY = 0;
+                CoreEngine.playerData.vitalIntegrity = 100;
+                CoreEngine.playerData.hydrationReserve = 100;
+                
+                const levelData = ZONE_MANIFEST[nextTargetZoneIndex];
+                document.getElementById('hud-level-title').innerText = `ZONE: PHASE LINE ${nextTargetZoneIndex}`;
+                document.getElementById('hud-level-motto').innerText = levelData.motto;
+                
+                updateTVDisplay(levelData.tvRules, "ENGAGE NEXT PHASE");
+            } else {
+                triggerGlobalVictoryScreen();
+            }
+        }
+
+        function executeEngineFailureReset() {
+            CoreEngine.isEngineRunning = false;
+            triggerGlobalModalOverlay(
+                "CRITICAL BOUNDARY DESYNCHRONIZATION",
+                "Your vitals destabilized within the non-Euclidean grid lanes. Your configuration profile has been recycled back to Entry Phase Line 0.",
+                "RE-MATERIALIZE PROTOCOL"
+            );
+        }
+
+        function triggerGlobalVictoryScreen() {
+            CoreEngine.isEngineRunning = false;
+            triggerGlobalModalOverlay(
+                "SIMULATION MATRIX COMPLETE",
+                "Architectural vector parameters fully resolved. You successfully escaped the structural bounds of the Backrooms ecosystem.",
+                "RESTART SIMULATION SYSTEM"
+            );
+        }
+
+        function triggerGlobalModalOverlay(title, description, buttonLabel) {
+            document.getElementById('hud-level-title').innerText = "SYSTEM CRITICAL";
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = description;
+            document.getElementById('modal-action-btn').innerText = buttonLabel;
+            document.getElementById('game-state-modal').style.display = 'flex';
+        }
+
+        // --- MOBILE GLASS UI INTERFACING CONTROLLERS ---
+        function attachMobileTouchVirtualControls() {
+            bindSingleTouchElement('m-up', 'forward');
+            bindSingleTouchElement('m-down', 'backward');
+            bindSingleTouchElement('m-left', 'left');
+            bindSingleTouchElement('m-right', 'right');
+            bindSingleTouchElement('m-stair', 'climb');
+            bindSingleTouchElement('m-jump', 'jump');
+        }
+
+        function bindSingleTouchElement(elementID, trackingControlProperty) {
+            const buttonElement = document.getElementById(elementID);
+            if (!buttonElement) return;
+
+            buttonElement.addEventListener('touchstart', (event) => {
+                event.preventDefault();
+                CoreEngine.inputTracker[trackingControlProperty] = true;
+            });
+
+            buttonElement.addEventListener('touchend', (event) => {
+                event.preventDefault();
+                CoreEngine.inputTracker[trackingControlProperty] = false;
+            });
+        }
+
+        function bindStateControlInterfaceTriggers() {
+            document.getElementById('tv-power-btn').addEventListener('click', () => {
+                if (CoreEngine.currentZone === 0) {
+                    compileProceduralZoneMatrix(0);
+                    instantiatePhysicalStructures(0);
+                }
+                dismissIntermissionOverlay();
+            });
+
+            document.getElementById('modal-action-btn').addEventListener('click', () => {
+                document.getElementById('game-state-modal').style.display = 'none';
+                
+                CoreEngine.currentZone = 0;
+                compileProceduralZoneMatrix(0);
+                instantiatePhysicalStructures(0);
+                
+                CoreEngine.playerData.gridX = 2.5;
+                CoreEngine.playerData.gridZ = 2.5;
+                CoreEngine.playerData.heightY = 0;
+                CoreEngine.playerData.vitalIntegrity = 100;
+                CoreEngine.playerData.hydrationReserve = 100;
+
+                const baseLevelZeroData = ZONE_MANIFEST[0];
+                document.getElementById('hud-level-title').innerText = `ZONE: PHASE LINE 0`;
+                document.getElementById('hud-level-motto').innerText = baseLevelZeroData.motto;
+
+                updateTVDisplay(baseLevelZeroData.tvRules, "INITIALIZE REALITY MATRIX");
+            });
+        }
+
+        function updateTVDisplay(markupHTML, buttonLabelText) {
+            CoreEngine.isEngineRunning = false;
+            document.getElementById('tv-terminal-display').innerHTML = markupHTML;
+            document.getElementById('tv-power-btn').innerText = buttonLabelText;
+            document.getElementById('tv-intermission-overlay').style.display = 'flex';
+            document.getElementById('tv-intermission-overlay').style.opacity = '1';
+        }
+
+        function dismissIntermissionOverlay() {
+            document.getElementById('tv-intermission-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('tv-intermission-overlay').style.display = 'none';
+                CoreEngine.isEngineRunning = true;
+            }, 800);
+        }
+
+        // --- MASTER RUNTIME TICK PIPELINE ---
+        function executeMasterRenderTick() {
+            requestAnimationFrame(executeMasterRenderTick);
+            const deltaSeconds = CoreEngine.clock.getDelta();
+
+            if (CoreEngine.isEngineRunning) {
+                processPlayerKinematics(deltaSeconds);
+                processEntitiesSimulation(deltaSeconds);
+                runAutomatedDoorProximityChecks(deltaSeconds);
+                drawMinimapTelemetry();
+                updateVitalsInterface();
+            }
+
+            CoreEngine.renderer.render(CoreEngine.scene, CoreEngine.camera);
+        }
+
+        // --- INITIALIZATION HOOK EXECUTIONS ---
         document.getElementById('initialize-call-trigger').addEventListener('click', () => {
             document.getElementById('engine-boot-screen').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('engine-boot-screen').style.display = 'none';
-                CoreEngine.isEngineRunning = true;
-            }, 1000);
+                const initialData = ZONE_MANIFEST[0];
+                updateTVDisplay(initialData.tvRules, "INITIALIZE SYSTEM ENGINE");
+            }, 800);
         });
 
-        // Initialize Engine Systems Framework Setup execution
-        window.onload = initEngineContext;
+        window.onload = function() {
+            initEngineContext();
+            attachMobileTouchVirtualControls();
+            bindStateControlInterfaceTriggers();
+            executeMasterRenderTick();
+        };
     </script>
 </body>
 </html>
