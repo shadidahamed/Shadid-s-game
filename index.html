@@ -1,324 +1,402 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>NOCLIP // LIMINAL ECHOES</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ORPHEUS ENGINE // THE BACKROOMS HYBRID ECOSYSTEM</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        :root {
+            --bg-dark: #030509;
+            --glass-bg: rgba(6, 9, 16, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --accent-crimson: #bf1725;
+            --accent-glow: rgba(191, 23, 37, 0.4);
+            --gold-fine-wine: #c4a267;
+        }
 
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
 
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="style.css" />
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #f3f4f6;
+        }
+
+        #viewport-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* High-End Glassmorphic Layer Controls */
+        .glass-hud-panel {
+            position: absolute;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 20px;
+            z-index: 10;
+            pointer-events: auto;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .top-left-status {
+            top: 25px;
+            left: 25px;
+            min-width: 280px;
+        }
+
+        .status-header h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #fff;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .status-header p {
+            font-size: 0.75rem;
+            color: var(--gold-fine-wine);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Resource Metric Bars */
+        .metric-group {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .metric-bar-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .metric-fill-vital {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, var(--accent-crimson), #ff3344);
+            box-shadow: 0 0 10px var(--accent-glow);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Boot Loading System Overlays */
+        #engine-boot-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #04060a;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 1s ease;
+        }
+
+        .boot-terminal-box {
+            width: 85%;
+            max-width: 550px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .boot-title {
+            color: var(--gold-fine-wine);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .boot-logs {
+            font-size: 0.8rem;
+            color: #4b5563;
+            height: 150px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .boot-action-btn {
+            padding: 12px 30px;
+            background: transparent;
+            border: 1px solid var(--gold-fine-wine);
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .boot-action-btn:hover {
+            background: var(--gold-fine-wine);
+            color: #000;
+            box-shadow: 0 0 20px rgba(196, 162, 103, 0.3);
+        }
+    </style>
 </head>
-
 <body>
-    <div id="game-container">
 
-        <!-- ========================================= -->
-        <!-- GAME CANVAS -->
-        <!-- ========================================= -->
-        <canvas id="game-canvas"></canvas>
-
-        <!-- ========================================= -->
-        <!-- UI OVERLAY -->
-        <!-- ========================================= -->
-        <div id="ui-overlay">
-
-            <!-- Minimap -->
-            <canvas id="minimap" width="240" height="240"></canvas>
-
-            <!-- Top Left HUD -->
-            <div class="hud-text hud-top-left">
-                <div>
-                    LEVEL
-                    <span id="level-num">0</span>
-                    —
-                    <span id="level-name">THE LOBBY</span>
-                </div>
-
-                <div class="coords-line">
-                    X:<span id="coord-x">0000</span>
-                    Y:<span id="coord-z">0000</span>
-                </div>
+    <div id="engine-boot-screen">
+        <div class="boot-terminal-box">
+            <div class="boot-title">SYSTEM:// ORPHEUS_ENGINE_HYBRID_COREINIT</div>
+            <div class="boot-logs" id="terminal-logger">
+                [SYSTEM] Allocating WebGL Context Layers...<br>
+                [SYSTEM] Binding 2.5D Projection Pipelines...<br>
+                [SYSTEM] Ready to compile spatial parameters...
             </div>
-
-            <!-- Bottom Right HUD -->
-            <div class="hud-text hud-bottom-right">
-                <div>
-                    SANITY:
-                    <span id="sanity-text">72</span>%
-                </div>
-
-                <div>
-                    STAMINA:
-                    <span id="stamina-text">100</span>%
-                </div>
-            </div>
-
-            <!-- Sanity Bar -->
-            <div id="sanity-wrapper" class="glass-panel">
-                <div id="sanity-fill"></div>
-            </div>
-
-            <!-- Warning -->
-            <div id="warning">
-                THEY SEE YOU
-            </div>
-
-            <!-- Inventory -->
-            <div id="inventory" class="glass-panel">
-                <div class="inventory-title">
-                    INVENTORY
-                </div>
-
-                <div id="inventory-grid"></div>
-            </div>
-
-            <!-- Log -->
-            <div id="log" class="glass-panel">
-                <div class="log-title">
-                    SYSTEM LOG
-                </div>
-
-                <div id="log-content"></div>
-            </div>
-
-            <!-- Interaction -->
-            <div id="interaction-prompt">
-                PRESS E TO INTERACT
-            </div>
-
-            <!-- Crosshair -->
-            <div id="crosshair">
-                <span></span>
-                <span></span>
-            </div>
-
-            <!-- Static Overlay -->
-            <div id="static-overlay"></div>
-
-            <!-- Vignette -->
-            <div id="vignette"></div>
-
-            <!-- Mobile Controls -->
-            <div id="mobile-controls">
-
-                <div class="joystick-area">
-                    <div class="joystick-base" id="joystick-base">
-                        <div class="joystick-knob" id="joystick-knob"></div>
-                    </div>
-                </div>
-
-                <div class="mobile-buttons">
-                    <button id="mobile-run">RUN</button>
-                    <button id="mobile-inventory">INV</button>
-                </div>
-
-            </div>
-
+            <button class="boot-action-btn" id="initialize-call-trigger">Awaken Reality</button>
         </div>
+    </div>
 
-        <!-- ========================================= -->
-        <!-- INTRO SCREEN -->
-        <!-- ========================================= -->
-        <div id="intro-screen" class="screen active-screen">
-
-            <div class="crt-frame">
-
-                <div class="crt-screen">
-
-                    <div class="intro-content">
-
-                        <h1 class="main-title">
-                            NOCLIP
-                        </h1>
-
-                        <div class="subtitle">
-                            LIMINAL ECHOES
-                        </div>
-
-                        <div class="intro-description">
-                            <p>
-                                You fell through reality.
-                            </p>
-
-                            <p>
-                                The Backrooms are endless.
-                            </p>
-
-                            <p>
-                                They are searching for you.
-                            </p>
-                        </div>
-
-                        <div class="intro-warning">
-                            DO NOT TRUST THE WALLS
-                        </div>
-
-                    </div>
-
-                    <div class="scanlines"></div>
-
-                </div>
-
+    <div id="viewport-container">
+        
+        <div class="glass-hud-panel top-left-status">
+            <div class="status-header">
+                <h1 id="hud-level-title">ZONE: PHASE LINE 0</h1>
+                <p id="hud-level-motto">VECTORS MATRIX INVERSION</p>
             </div>
-
-            <button id="start-btn" class="game-btn">
-                ENTER THE VOID
-            </button>
-
-        </div>
-
-        <!-- ========================================= -->
-        <!-- LOADING SCREEN -->
-        <!-- ========================================= -->
-        <div id="loading-screen" class="screen">
-
-            <div class="loading-container">
-
-                <div class="loading-title">
-                    GENERATING REALITY
+            <div class="metric-group">
+                <div style="display:flex; justify-content:space-between; font-size:0.65rem; letter-spacing:1px; color:#9ca3af;">
+                    <span>HERO SYNCHRONICITY STABILITY</span>
+                    <span id="vital-percentage-lbl">100%</span>
                 </div>
-
-                <div class="loading-bar">
-                    <div id="loading-fill"></div>
+                <div class="metric-bar-container">
+                    <div class="metric-fill-vital" id="vital-integrity-bar"></div>
                 </div>
-
-                <div id="loading-text">
-                    INITIALIZING...
-                </div>
-
             </div>
-
-        </div>
-
-        <!-- ========================================= -->
-        <!-- TRANSITION SCREEN -->
-        <!-- ========================================= -->
-        <div id="transition-screen" class="screen">
-
-            <div class="crt-frame">
-
-                <div class="crt-screen">
-
-                    <div id="transition-content"></div>
-
-                    <div class="scanlines"></div>
-
-                </div>
-
-            </div>
-
-            <button id="continue-btn" class="game-btn">
-                CONTINUE DEEPER
-            </button>
-
-        </div>
-
-        <!-- ========================================= -->
-        <!-- DEATH SCREEN -->
-        <!-- ========================================= -->
-        <div id="death-screen" class="screen">
-
-            <div class="crt-frame">
-
-                <div class="crt-screen death-theme">
-
-                    <div class="death-content">
-
-                        <h1>
-                            YOU DIED
-                        </h1>
-
-                        <p>
-                            The Backrooms consumed another wanderer.
-                        </p>
-
-                        <div class="death-stats">
-
-                            <div>
-                                LEVEL REACHED:
-                                <span id="death-level">0</span>
-                            </div>
-
-                            <div>
-                                NOTES FOUND:
-                                <span id="death-notes">0</span>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="scanlines"></div>
-
-                </div>
-
-            </div>
-
-            <button id="restart-btn" class="game-btn">
-                RESTART REALITY
-            </button>
-
-        </div>
-
-        <!-- ========================================= -->
-        <!-- ENDING SCREEN -->
-        <!-- ========================================= -->
-        <div id="ending-screen" class="screen">
-
-            <div class="crt-frame">
-
-                <div class="crt-screen ending-theme">
-
-                    <div class="ending-content">
-
-                        <h1>
-                            YOU ESCAPED
-                        </h1>
-
-                        <p>
-                            Or maybe you never did.
-                        </p>
-
-                        <p>
-                            The static always follows.
-                        </p>
-
-                        <div class="ending-message">
-                            THANK YOU FOR PLAYING
-                        </div>
-
-                    </div>
-
-                    <div class="scanlines"></div>
-
-                </div>
-
-            </div>
-
-            <button id="play-again-btn" class="game-btn">
-                PLAY AGAIN
-            </button>
-
         </div>
 
     </div>
 
-    <!-- ========================================= -->
-    <!-- SCRIPTS -->
-    <!-- ========================================= -->
+    <script>
+        // --- MASTER APPLICATION GAME ENGINE SCOPE ---
+        const CoreEngine = {
+            // Environment Context Variables
+            scene: null,
+            camera: null,
+            renderer: null,
+            clock: null,
+            
+            // Structural Render Subsets
+            worldGroup: null,
+            actorGroup: null,
+            
+            // Assets Pipelines & Models Target Frame Tracking
+            heroModelURI: "resident-evil-2-remake-leon-kennedy.glb",
+            heroInstance: null,
+            heroMixer: null,
+            
+            // Engine Spatial Realtime Configurations
+            currentZone: 0,
+            isEngineRunning: false,
+            
+            // Global Input States Tracking
+            inputTracker: {
+                forward: false, backward: false, left: false, right: false,
+                climb: false, jump: false
+            }
+        };
 
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+        // --- PIPELINE RUNTIME LOGIC CONSTRUCTORS ---
+        function initEngineContext() {
+            const container = document.getElementById('viewport-container');
+            
+            // Standard WebGL Scene Initializations
+            CoreEngine.scene = new THREE.Scene();
+            CoreEngine.clock = new THREE.Clock();
 
-    <!-- Main JS -->
-    <script src="script.js"></script>
+            // 2.5D / 3D Mixed Perspective Matrices Definition Formulation
+            CoreEngine.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            CoreEngine.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            CoreEngine.renderer.setSize(window.innerWidth, window.innerHeight);
+            CoreEngine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            CoreEngine.renderer.shadowMap.enabled = true;
+            CoreEngine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            CoreEngine.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            CoreEngine.renderer.toneMappingExposure = 1.0;
+            container.appendChild(CoreEngine.renderer.domElement);
 
+            // Group Layout Instantiations
+            CoreEngine.worldGroup = new THREE.Group();
+            CoreEngine.actorGroup = new THREE.Group();
+            CoreEngine.scene.add(CoreEngine.worldGroup);
+            CoreEngine.scene.add(CoreEngine.actorGroup);
+
+            // Establish Cinematic Ambient and Direct Shadow Caster Lighting rigs
+            setupCinematicLightingEcosystem();
+            
+            // Initialize Hardware System Input Hooks
+            bindHardwareInputSystems();
+
+            // Run GLB Asset Ingestion Pipeline
+            ingestHeroModelAsset();
+        }
+
+        function setupCinematicLightingEcosystem() {
+            // Dark fine wine ambient lighting floor limits
+            const ambient = new THREE.AmbientLight(0x0a0f1d, 0.4);
+            CoreEngine.scene.add(ambient);
+
+            // Primary Dark Fantasy Directional Cascade Shadow Caster
+            const dirLight = new THREE.DirectionalLight(0xc4a267, 0.85); // Gold-tinted ray
+            dirLight.position.set(25, 45, 20);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.bias = -0.0001;
+            CoreEngine.scene.add(dirLight);
+
+            // Foggy atmosphere density tracking
+            CoreEngine.scene.background = new THREE.Color(0x030509);
+            CoreEngine.scene.fog = new THREE.FogExp2(0x030509, 0.025);
+        }
+
+        // --- GLB MODEL INGESTION PIPELINE ---
+        function ingestHeroModelAsset() {
+            const logger = document.getElementById('terminal-logger');
+            logger.innerHTML += "<br>[PIPELINE] Initializing GLTF/GLB Ingestion Stream...";
+
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+                CoreEngine.heroModelURI,
+                function (gltf) {
+                    logger.innerHTML += "<br>[PIPELINE] File stream compiled. Parsing meshes...";
+                    
+                    CoreEngine.heroInstance = gltf.scene;
+                    
+                    // Traverse and inject high-end shadow maps safely over custom uploaded mesh structures
+                    CoreEngine.heroInstance.traverse(function (node) {
+                        if (node.isMesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                            // Optimize material parameters for fine-wine styling pipeline
+                            if(node.material) {
+                                node.material.roughness = 0.45;
+                                node.material.metalness = 0.2;
+                            }
+                        }
+                    });
+
+                    // Positioning baseline parameters
+                    CoreEngine.heroInstance.position.set(0, 0, 0);
+                    CoreEngine.heroInstance.scale.set(1.2, 1.2, 1.2);
+                    CoreEngine.actorGroup.add(CoreEngine.heroInstance);
+
+                    // Track animations mapping frames if loaded
+                    if(gltf.animations && gltf.animations.length > 0) {
+                        CoreEngine.heroMixer = new THREE.AnimationMixer(CoreEngine.heroInstance);
+                        // Optional fallback automatic idle action trigger loop
+                        const action = CoreEngine.heroMixer.clipAction(gltf.animations[0]);
+                        action.play();
+                    }
+
+                    logger.innerHTML += "<br><span style='color:#c4a267;'>[SUCCESS] HERO GLB LINK BOUND SECURELY. Ready to launch.</span>";
+                },
+                function (xhr) {
+                    let percent = Math.floor((xhr.loaded / xhr.total) * 100);
+                    if(isNaN(percent)) percent = "Streaming";
+                    logger.innerHTML += `<br>[PIPELINE] Reading data vectors: ${percent}%`;
+                    logger.scrollTop = logger.scrollHeight;
+                },
+                function (error) {
+                    logger.innerHTML += "<br><span style='color:#bf1725;'>[WARNING] GLB structural load path skipped. Generating high-fidelity procedural substitute fallback hero asset.</span>";
+                    generateFallbackProceduralHero();
+                }
+            );
+        }
+
+        function generateFallbackProceduralHero() {
+            // High-fidelity procedural substitute capsule styling if external model mapping fails locally
+            const heroGroup = new THREE.Group();
+            
+            const bodyGeo = new THREE.CylinderGeometry(0.4, 0.3, 1.8, 16);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a2436, roughness: 0.5, metalness: 0.3 });
+            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+            bodyMesh.position.y = 0.9;
+            bodyMesh.castShadow = true;
+            bodyMesh.receiveShadow = true;
+            heroGroup.add(bodyMesh);
+
+            const crestGeo = new THREE.SphereGeometry(0.3, 16, 16);
+            const crestMat = new THREE.MeshStandardMaterial({ color: 0xbf1725, emissive: 0xbf1725, emissiveIntensity: 0.2 });
+            const crestMesh = new THREE.Mesh(crestGeo, crestMat);
+            crestMesh.position.y = 2.0;
+            heroGroup.add(crestMesh);
+
+            CoreEngine.actorGroup.add(heroGroup);
+            CoreEngine.heroInstance = heroGroup;
+        }
+
+        // --- HARDWARE BINDINGS ---
+        function bindHardwareInputSystems() {
+            window.addEventListener('keydown', (e) => { processKeyEvent(e.key, true); });
+            window.addEventListener('keyup', (e) => { processKeyEvent(e.key, false); });
+            
+            window.addEventListener('resize', () => {
+                CoreEngine.camera.aspect = window.innerWidth / window.innerHeight;
+                CoreEngine.camera.updateProjectionMatrix();
+                CoreEngine.renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        function processKeyEvent(keyString, isPressed) {
+            switch(keyString) {
+                case 'ArrowUp': CoreEngine.inputTracker.forward = isPressed; break;
+                case 'ArrowDown': CoreEngine.inputTracker.backward = isPressed; break;
+                case 'ArrowLeft': CoreEngine.inputTracker.left = isPressed; break;
+                case 'ArrowRight': CoreEngine.inputTracker.right = isPressed; break;
+                case 's': case 'S': CoreEngine.inputTracker.climb = isPressed; break;
+                case 'j': case 'J': CoreEngine.inputTracker.jump = isPressed; break;
+            }
+        }
+
+        // --- REVOLUTIONARY GLOBAL PIPELINE TRANSITION EXECUTION ---
+        document.getElementById('initialize-call-trigger').addEventListener('click', () => {
+            document.getElementById('engine-boot-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('engine-boot-screen').style.display = 'none';
+                CoreEngine.isEngineRunning = true;
+            }, 1000);
+        });
+
+        // Initialize Engine Systems Framework Setup execution
+        window.onload = initEngineContext;
+    </script>
 </body>
 </html>
