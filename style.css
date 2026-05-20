@@ -1,4 +1,4 @@
-/* --- STRUCTURAL ENCAPSULATION --- */
+/* --- ENGINE DESIGN CORE HYDRAULICS --- */
 * {
     box-sizing: border-box;
     margin: 0; padding: 0;
@@ -8,8 +8,8 @@
 }
 
 body {
-    background: #030406;
-    color: #ff6600; /* Signature High-Contrast Hazard Orange Tint */
+    background: #020406;
+    color: #ff6600;
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
     display: flex;
@@ -19,210 +19,201 @@ body {
     overflow: hidden;
 }
 
+/* --- THE ADAPTIVE RUN MATRIX CONTAINER --- */
 #master-viewport {
     position: relative;
-    width: 100vw;
-    height: 100vh;
-    max-width: 480px;
-    max-height: 860px;
-    background: #07090c;
-    border: 4px solid #12171e;
     display: flex;
     flex-direction: column;
-}
-
-@media (min-width: 768px) {
-    #master-viewport {
-        border-radius: 6px;
-        height: 94vh;
-        box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 25px rgba(255,102,0,0.12);
-    }
+    background: #06090d;
+    width: 100vw;
+    height: 100vh;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 canvas {
     width: 100%;
-    height: 56%;
-    background: #010203;
     display: block;
+    background: #010203;
 }
 
-/* --- RETRO SCANLINE & SCREEN FLARE FILTERS --- */
-.crt-overlay {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 56%;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
-    background-size: 100% 4px;
-    pointer-events: none;
-    z-index: 10;
+/* --- THE SEAMLESS SCREEN-DETECTION ENGINE --- */
+/* DESKTOP MODE: Crisp, immersive 16:9 widescreen landscape layout */
+@media (min-width: 992px) {
+    #master-viewport {
+        width: 90vw;
+        max-width: 1100px;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        border: 3px solid #141b24;
+        box-shadow: 0 0 60px rgba(0,0,0,0.95), 0 0 30px rgba(255,102,0,0.1);
+        border-radius: 8px;
+    }
+    canvas {
+        height: 100%; /* Take up the entire wrapper frame */
+    }
+    #portrait-command-deck {
+        display: none !important; /* Completely strip out mobile controls */
+    }
+    .pc-only-tip {
+        display: block !important;
+    }
 }
 
-#damage-vignette {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 56%;
-    box-shadow: inset 0 0 40px rgba(255, 0, 0, 0);
-    pointer-events: none;
-    z-index: 9;
-    transition: box-shadow 0.08s ease-in-out;
+/* SMARTPHONE MODE: Clean, stacked layout with quick touch response */
+@media (max-width: 991px) {
+    #master-viewport {
+        width: 100vw; height: 100vh;
+        max-width: 480px;
+    }
+    canvas {
+        height: 60%;
+    }
+    #portrait-command-deck {
+        display: flex !important;
+    }
+    .pc-only-tip {
+        display: none !important;
+    }
 }
 
-/* --- METRIC DATA TRANSMISSION BAR --- */
+/* --- DIAGNOSTIC TELEMETRY TRANS-BAR --- */
 #diagnostic-hud {
     position: absolute;
-    top: 14px; left: 14px; right: 14px;
+    top: 16px; left: 16px; right: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 12;
+    z-index: 15;
+    pointer-events: none;
+}
+
+.hud-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: auto;
 }
 
 .hud-item {
-    background: rgba(4, 6, 8, 0.94);
+    background: rgba(3, 5, 8, 0.92);
     border-left: 3px solid #ff6600;
-    padding: 6px 14px;
-    font-size: 13px;
+    padding: 8px 16px;
+    font-size: 14px;
     letter-spacing: 1px;
 }
 
-.label { color: #6f7c91; }
-.value { color: #ffffff; text-shadow: 0 0 4px #ff6600; }
+.label { color: #536279; }
+.value { color: #ffffff; text-shadow: 0 0 5px #ff6600; }
 .text-red { color: #ff3333 !important; }
-.text-orange { color: #ff9900 !important; }
+.text-orange { color: #ffaa00 !important; }
+
+.pc-only-tip {
+    background: rgba(10, 15, 22, 0.85);
+    border: 1px dashed #ff6600;
+    color: #ffaa00;
+    padding: 8px 14px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    display: none;
+}
 
 .mini-hud-btn {
-    background: #0a0e14;
+    background: #090d14;
     border: 1px solid #ff6600;
     color: #ff6600;
-    width: 34px; height: 34px;
+    width: 36px; height: 36px;
     cursor: pointer;
-    font-family: monospace;
     font-weight: 900;
 }
 
-/* --- OVERLAY TERMINAL CONTROL SYSTEM --- */
+/* --- CORE INTERFACE INTERACTION OVERLAYS --- */
 #modal-system-overlay {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 56%;
-    background: rgba(3, 4, 6, 0.97);
-    z-index: 25;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(2, 3, 5, 0.96);
+    z-index: 30;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 30px;
+}
+
+@media (max-width: 991px) {
+    #modal-system-overlay { height: 60%; } /* Restrict overlay to mobile canvas view area */
 }
 
 .modal-window {
-    width: 100%;
+    width: 100%; max-width: 460px;
     border: 1px solid #ff6600;
-    background: #080b0f;
-    padding: 24px;
+    background: #070a0e;
+    padding: 28px;
     text-align: center;
 }
 
-.modal-window h1 { font-size: 34px; letter-spacing: 5px; color: #ff2200; text-shadow: 0 0 10px rgba(255,34,0,0.4); }
-.modal-window h2 { font-size: 24px; letter-spacing: 2px; color: #ff3333; }
-.modal-window p { font-size: 11px; color: #7a869a; margin: 12px 0 20px 0; }
+.modal-window h1 { font-size: 36px; letter-spacing: 6px; color: #ff2200; text-shadow: 0 0 12px rgba(255,34,0,0.5); }
+.modal-window h2 { font-size: 22px; color: #ff3333; }
+.modal-window p { font-size: 12px; color: #717f96; margin: 14px 0 24px 0; line-height: 1.6; }
 
-.orange-bar, .red-bar { height: 2px; margin: 8px auto; width: 50%; }
+.orange-bar, .red-bar { height: 2px; margin: 10px auto; width: 60%; }
 .orange-bar { background: #ff6600; }
 .red-bar { background: #ff3333; }
 
 .control-btn {
     width: 100%;
-    background: #10151d;
+    background: #0f141c;
     color: #ff6600;
     border: 1px solid #ff6600;
-    padding: 14px;
-    font-family: monospace;
-    font-weight: bold;
-    font-size: 12px;
-    letter-spacing: 1px;
-    cursor: pointer;
-    margin-bottom: 8px;
+    padding: 15px;
+    font-family: monospace; font-weight: bold; font-size: 12px;
+    letter-spacing: 1px; cursor: pointer; margin-bottom: 10px;
+}
+.control-btn:hover { background: #ff6600; color: #000; }
+
+/* --- AMBIENT SCREEN FX PASSES --- */
+.crt-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+    background-size: 100% 4px; pointer-events: none; z-index: 20;
 }
 
-.control-btn:active { background: #ff6600; color: #000; }
-.modal-actions-stacked { display: flex; flex-direction: column; gap: 4px; }
+#damage-vignette {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    box-shadow: inset 0 0 50px rgba(255, 0, 0, 0);
+    pointer-events: none; z-index: 19;
+    transition: box-shadow 0.08s ease-in-out;
+}
 
-/* --- SYSTEM LOWER REAR COMMAND PANEL --- */
+/* --- PORTRAIT MOBILE MECHANICAL BASE PANEL --- */
 #portrait-command-deck {
     flex-grow: 1;
-    background: #05070a;
-    border-top: 3px solid #12171e;
-    display: flex;
+    background: #040609;
+    border-top: 3px solid #11161d;
+    display: none;
     flex-direction: column;
     justify-content: space-evenly;
     align-items: center;
-    padding: 15px 10px;
+    padding: 16px;
 }
 
-.steering-bay {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-}
-
+.steering-bay { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 #steering-wheel-disc {
-    width: 140px;
-    height: 140px;
-    background: radial-gradient(circle, #0c1017 40%, #121a24 70%);
-    border: 4px solid #ff6600;
-    border-radius: 50%;
-    position: relative;
-    box-shadow: 0 0 15px rgba(0,0,0,0.7);
-    will-change: transform;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, #0b0f15 40%, #111822 70%);
+    border: 4px solid #ff6600; border-radius: 50%; position: relative;
 }
-
-.center-core {
-    width: 20px; height: 20px;
-    top: 56px; left: 56px;
-    background: #05070a;
-    border: 2px solid #ff6600;
-    border-radius: 50%;
-    position: absolute;
-}
-
 .grip-top {
-    width: 14px; height: 14px;
-    top: 8px; left: 59px;
-    background: #ff6600;
-    border-radius: 50%;
-    position: absolute;
-    box-shadow: 0 0 8px #ff6600;
+    width: 16px; height: 16px; top: 6px; left: 48px;
+    background: #ff6600; border-radius: 50%; position: absolute;
+    box-shadow: 0 0 10px #ff6600;
 }
+.steering-readout { font-size: 11px; color: #434d5a; letter-spacing: 1px; }
 
-.steering-readout {
-    font-size: 10px;
-    color: #4b5563;
-    letter-spacing: 1px;
-}
-
-.gear-bay {
-    display: flex;
-    width: 90%;
-    gap: 8px;
-}
-
+.gear-bay { display: flex; width: 100%; gap: 10px; }
 .gear-btn {
-    flex: 1;
-    background: #0e1218;
-    border: 1px solid #1d2530;
-    color: #526075;
-    padding: 15px 0;
-    font-family: monospace;
-    font-weight: 900;
-    font-size: 11px;
-    border-radius: 4px;
+    flex: 1; background: #0b0e14; border: 1px solid #19212b;
+    color: #4a5769; padding: 14px 0; font-family: monospace; font-weight: 900;
 }
-
-.active-gear {
-    background: #141b24;
-    border: 2px solid #ff6600;
-    color: #ffffff;
-    text-shadow: 0 0 4px #ff6600;
-}
-
-.active-gear.warning-flash {
-    border-color: #ff2200;
-    text-shadow: 0 0 4px #ff2200;
-}
+.active-gear { border: 2px solid #ff6600; color: #ffffff; text-shadow: 0 0 4px #ff6600; }
+.warning-flash { border-color: #ff2200; }
