@@ -8,41 +8,39 @@
 </head>
 <body>
 
-    <!-- Main Game Container Optimized for Vertical Mobile Display -->
     <div id="display-wrapper">
-        
-        <!-- Top Half: Tactical Raycast Core Renderer Viewport -->
+        <!-- 2.5D Pseudo-3D Escape Matrix Window -->
         <div id="viewport-container">
             <div class="crt-scanlines"></div>
             <div id="damage-flash"></div>
             <canvas id="gameCanvas" width="640" height="360"></canvas>
             
-            <!-- Contextual Terminal Menu Interface System -->
+            <!-- Contextual Operational Overlays -->
             <div id="menu-overlay">
                 <div class="terminal-box">
                     <h1 id="menu-title">DEAD ZONE</h1>
                     <div class="glitch-line"></div>
-                    <p id="menu-subtitle">2.5D PSEUDO-3D STEALTH RAYCAST ENGINE</p>
+                    <p id="menu-subtitle">2.5D EXTRACTOR RAYCAST ENGINE</p>
                     <div id="level-indicator" style="display: none;"></div>
                     <div class="menu-actions">
-                        <button id="btn-primary" class="menu-btn">ENGAGE INFILTRATION</button>
+                        <button id="btn-primary" class="menu-btn">INITIALIZE INFILTRATION</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Middle Belt: Heads Up Display Data Grid Layout -->
+        <!-- System Inventory Belt -->
         <div id="hud-overlay">
             <div class="hud-group left-group">
                 <div class="hud-card bios-card">VITAL SIGN: <span id="hp-display">100</span>%</div>
-                <div class="hud-card sector-card">SECTOR: <span id="level-display">1</span> / 3</div>
+                <div class="hud-card sector-card">SECTOR MAP: <span id="level-display">1</span> / 3</div>
             </div>
             <div class="hud-group right-group">
                 <div class="hud-card task-card" id="inv-display">SYSTEM ONLINE</div>
             </div>
         </div>
 
-        <!-- Bottom Half: High-Performance Low-Latency Touch Gamepad Deck -->
+        <!-- Input Deck Interface -->
         <div id="mobile-control-deck">
             <div class="joystick-container">
                 <div id="virtual-joystick">
