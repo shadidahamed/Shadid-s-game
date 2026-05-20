@@ -4,14 +4,17 @@ const ctx = canvas.getContext('2d');
 let gameState = 'START_SCREEN';
 let currentLevel = 1;
 const TILE_SIZE = 64;
-const MAP_SIZE = 24; // Comprehensive 24x24 Labyrinth grid setup
+const MAP_SIZE = 24;
 
 let depthBuffer = new Array(canvas.width);
 let player, enemies, inventory;
 let keys = {};
 
-// --- INDUSTRIAL ARCHITECTURAL ESCAPE ROOM MAZES ---
-// 0 = Empty Corridor, 1 = Deep Metallic Panels, 2 = Riveted HazMat Plates, 3 = EXIT SEAL (Hidden on Radar)
+// Kinetic shockwave tracking variable for his protection shield
+let shockwaveActive = false;
+let shockwaveRadius = 0;
+
+// --- SACRED INDUSTRIAL LABYRINTHS ---
 const MAZES = {
     1: [
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -36,7 +39,7 @@ const MAZES = {
         [1,0,0,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,0,2,0,2,2,1],
         [1,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,2,0,1],
         [1,0,0,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,0,2,0,1],
-        [1,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3], // 3 is the Exit Hatchway Door Block
+        [1,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3], 
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ],
     2: [
@@ -54,7 +57,7 @@ const MAZES = {
         [1,0,2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,0,1],
         [1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,1],
         [1,2,2,2,2,2,0,2,0,2,2,2,2,2,2,2,2,2,0,2,0,2,0,1],
-        [3,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,2,0,2,0,2,0,1], // Exit Door embedded on side corridor edge
+        [3,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,2,0,2,0,2,0,1], 
         [1,0,2,2,0,2,0,2,2,2,2,2,0,2,2,2,0,2,0,2,0,2,0,1],
         [1,0,2,0,0,0,0,2,0,0,0,2,0,2,0,2,0,0,0,2,0,0,0,1],
         [1,0,2,0,2,2,2,2,0,2,0,2,0,2,0,2,2,2,2,2,2,2,0,1],
@@ -86,7 +89,7 @@ const MAZES = {
         [1,0,2,0,2,2,0,2,2,2,0,2,2,2,2,2,0,2,2,2,0,2,0,1],
         [1,0,2,0,2,0,0,0,0,2,0,0,0,0,0,2,0,0,0,2,0,2,0,1],
         [1,0,0,0,2,0,2,2,0,2,2,2,2,2,0,2,2,2,0,2,0,0,0,1],
-        [1,2,2,0,2,0,2,2,0,0,0,0,0,2,0,2,2,2,0,2,2,2,0,3], // Level 3 Ultimate Finish Exit Node Blocked
+        [1,2,2,0,2,0,2,2,0,0,0,0,0,2,0,2,2,2,0,2,2,2,0,3], 
         [1,0,0,0,2,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,2,0,1],
         [1,0,2,2,2,2,2,2,0,0,0,2,0,2,2,2,2,2,2,2,0,0,0,1],
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
@@ -97,20 +100,21 @@ let MAP = MAZES[1];
 let ESCAPE_HATCH = { x: 0, y: 0 };
 let FUEL_CELL = { x: 0, y: 0, collected: false };
 
-// --- COMPREHENSIVE INITIALIZATION PROTOCOL ---
 function initLevel(level) {
     currentLevel = level;
     MAP = MAZES[currentLevel] || MAZES[1];
 
     player = {
         x: 96, y: 96, angle: 0.6, fov: Math.PI / 3,
-        walkSpeed: 3.4, crouchSpeed: 1.8, rotSpeed: 0.06,
-        isCrouching: false, noiseRadius: 0, hp: player ? player.hp : 100, inSafeZone: false
+        walkSpeed: 3.4, crouchSpeed: 5.0, rotSpeed: 0.06, 
+        isCrouching: false, 
+        hp: 100,
+        stillTicks: 0,
+        inSafeZone: false
     };
 
     FUEL_CELL.collected = false;
 
-    // Pin down the precise position coordinates of wall type 3 inside the data grid matrix
     for (let r = 0; r < MAP_SIZE; r++) {
         for (let c = 0; c < MAP_SIZE; c++) {
             if (MAP[r][c] === 3) {
@@ -120,7 +124,6 @@ function initLevel(level) {
         }
     }
     
-    // Position targets uniquely on opposite nodes
     if (currentLevel === 1) {
         FUEL_CELL.x = 21 * TILE_SIZE + 32; FUEL_CELL.y = 1 * TILE_SIZE + 32;
     } else if (currentLevel === 2) {
@@ -129,21 +132,17 @@ function initLevel(level) {
         FUEL_CELL.x = 12 * TILE_SIZE + 32; FUEL_CELL.y = 12 * TILE_SIZE + 32;
     }
 
-    // High-Contrast Enemy Palette completely detached from Wall Color spectrums
     enemies = [
-        { id: 1, type: 'Stalker', x: 8 * TILE_SIZE + 32, y: 8 * TILE_SIZE + 32, angle: 0, speed: 0.8 + (level * 0.1), state: 'PATROL', color: '#00ffcc', waypoints: [{x:8*64+32, y:8*64+32}, {x:15*64+32, y:2*64+32}], targetIdx: 0 },
-        { id: 2, type: 'Wanderer', x: 2 * TILE_SIZE + 32, y: 18 * TILE_SIZE + 32, angle: Math.PI, speed: 0.7 + (level * 0.08), state: 'PATROL', color: '#ff00ff', waypoints: [{x:2*64+32, y:18*64+32}, {x:12*64+32, y:22*64+32}], targetIdx: 0 },
-        { id: 3, type: 'Chaser', x: 20 * TILE_SIZE + 32, y: 10 * TILE_SIZE + 32, angle: Math.PI/2, speed: 0.9 + (level * 0.12), state: 'PATROL', color: '#ffff00', waypoints: [{x:20*64+32, y:10*64+32}, {x:22*64+32, y:20*64+32}], targetIdx: 0 },
-        { id: 4, type: 'Patroller', x: 14 * TILE_SIZE + 32, y: 14 * TILE_SIZE + 32, angle: -Math.PI/2, speed: 0.6 + (level * 0.05), state: 'PATROL', color: '#0033ff', waypoints: [{x:14*64+32, y:14*64+32}, {x:2*64+32, y:10*64+32}], targetIdx: 0 }
+        { id: 1, type: 'Stalker', x: 8 * TILE_SIZE + 32, y: 8 * TILE_SIZE + 32, angle: 0, speed: 0.5, state: 'PATROL', color: '#00ffcc', waypoints: [{x:8*64+32, y:8*64+32}, {x:15*64+32, y:2*64+32}], targetIdx: 0 },
+        { id: 2, type: 'Wanderer', x: 2 * TILE_SIZE + 32, y: 18 * TILE_SIZE + 32, angle: Math.PI, speed: 0.5, state: 'PATROL', color: '#ff00ff', waypoints: [{x:2*64+32, y:18*64+32}, {x:12*64+32, y:22*64+32}], targetIdx: 0 },
+        { id: 3, type: 'Chaser', x: 20 * TILE_SIZE + 32, y: 10 * TILE_SIZE + 32, angle: Math.PI/2, speed: 0.5, state: 'PATROL', color: '#ffff00', waypoints: [{x:20*64+32, y:10*64+32}, {x:22*64+32, y:20*64+32}], targetIdx: 0 },
+        { id: 4, type: 'Patroller', x: 14 * TILE_SIZE + 32, y: 14 * TILE_SIZE + 32, angle: -Math.PI/2, speed: 0.4, state: 'PATROL', color: '#0033ff', waypoints: [{x:14*64+32, y:14*64+32}, {x:2*64+32, y:10*64+32}], targetIdx: 0 }
     ];
 
-    if (level === 1) {
-        inventory = { alcohol: 4, binding: 3, blades: 3, medkits: 1, shivs: 0 };
-    }
+    inventory = { alcohol: 9, binding: 9, blades: 9, medkits: 5, shivs: 5 };
     updateHUD();
 }
 
-// --- STATE CONTROLLER INTERFACES ---
 const menuOverlay = document.getElementById('menu-overlay');
 const menuTitle = document.getElementById('menu-title');
 const menuSubtitle = document.getElementById('menu-subtitle');
@@ -157,44 +156,42 @@ function changeState(newState) {
         case 'START_SCREEN':
             menuOverlay.style.display = 'flex';
             levelIndicator.style.display = 'none';
-            menuTitle.innerText = "DEAD ZONE";
-            btnPrimary.innerText = "ENGAGE INFILTRATION";
+            menuTitle.innerHTML = "THE HERO'S GAUNTLET";
+            menuSubtitle.innerText = "WELCOME BOX. YOU ARE UNSTOPPABLE HERE.";
+            btnPrimary.innerText = "START YOUR JOURNEY";
             break;
         case 'PLAYING':
             menuOverlay.style.display = 'none';
             break;
-        case 'GAME_OVER':
-            menuOverlay.style.display = 'flex';
-            menuTitle.innerText = "BIO-SIGN FLATLINE";
-            menuSubtitle.innerText = "YOU WERE TERMINATED INSIDE THE LABYRINTH.";
-            btnPrimary.innerText = "REBOOT SYSTEM";
-            break;
         case 'LEVEL_CLEAR':
             menuOverlay.style.display = 'flex';
             levelIndicator.style.display = 'block';
-            levelIndicator.innerText = `SECTOR ${currentLevel} ESCAPED SUCCESSFULLY.`;
-            menuTitle.innerText = "LOCK OVERRIDDEN";
-            menuSubtitle.innerText = "PREPARE FOR CYCLIC CONFIGURATION OF NEXT ZONE.";
-            btnPrimary.innerText = "ENTER NEXT CHAMBER";
+            levelIndicator.innerText = `SECTOR ${currentLevel} OVERCOME!`;
+            menuTitle.innerText = "CHAMBER COMPLETED";
+            menuSubtitle.innerText = "You are doing amazing. Rest a moment, then let's see the next one.";
+            btnPrimary.innerText = "ADVANCE TO NEXT ZONE";
             break;
         case 'VICTORY':
             menuOverlay.style.display = 'flex';
-            menuTitle.innerText = "MAZE CONQUERED";
-            menuSubtitle.innerText = "ALL ESCAPE CHAMBERS BYPASSED. YOU COMPLETED THE GAUNTLET.";
-            btnPrimary.innerText = "RE-EXECUTE SIMULATION";
+            levelIndicator.style.display = 'none';
+            menuTitle.innerHTML = "<span style='color: #ffcc00; text-shadow: 0 0 20px #ffcc00;'>THE MAZE IS CONQUERED</span>";
+            menuSubtitle.innerHTML = "<div style='font-size: 14px; color: #fff; line-height: 1.6; margin-top: 15px; text-align: center;'>" +
+                                      "YOU ARE THE BRAVEST RUNNER WE HAVE EVER KNOWN.<br>" +
+                                      "YOU ARE FREE, YOU ARE SAFE, AND YOU ARE LOVED FOREVER.<br><br>" +
+                                      "<span style='color: #ff6600;'>♥ RUN COMPLETED WITH HONOR ♥</span></div>";
+            btnPrimary.innerText = "PLAY AGAIN";
             break;
     }
 }
 
 btnPrimary.addEventListener('click', () => {
-    if (gameState === 'START_SCREEN' || gameState === 'GAME_OVER' || gameState === 'VICTORY') {
+    if (gameState === 'START_SCREEN' || gameState === 'VICTORY') {
         initLevel(1); changeState('PLAYING');
     } else if (gameState === 'LEVEL_CLEAR') {
         initLevel(currentLevel + 1); changeState('PLAYING');
     }
 });
 
-// --- HARDWARE INTERFACE SYSTEMS ---
 window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
 window.addEventListener('keyup', e => { 
     keys[e.key.toLowerCase()] = false; 
@@ -204,34 +201,33 @@ window.addEventListener('keyup', e => {
 });
 
 function craftItem(type) {
-    if (type === 'medkit' && inventory.alcohol >= 1 && inventory.binding >= 1) {
-        inventory.alcohol--; inventory.binding--; inventory.medkits++;
-    } else if (type === 'shiv' && inventory.blades >= 1 && inventory.binding >= 1) {
-        inventory.blades--; inventory.binding--; inventory.shivs++;
-    }
+    inventory.medkits++; inventory.shivs++;
     updateHUD();
 }
 
-// Mobile Interface Toggles
-document.getElementById('touch-crouch').addEventListener('touchstart', (e) => { e.preventDefault(); player.isCrouching = !player.isCrouching; updateHUD(); });
+// In the UI button setup, the "STEALTH TOGGLE" button now reads as "PHASE THROUGH WALLS"
+document.getElementById('touch-crouch').innerText = "PHASE THROUGH WALLS";
+document.getElementById('touch-crouch').style.borderColor = "#00ff66";
+document.getElementById('touch-crouch').addEventListener('touchstart', (e) => { 
+    e.preventDefault(); 
+    player.isCrouching = !player.isCrouching; 
+    updateHUD(); 
+});
 document.getElementById('touch-heal').addEventListener('touchstart', (e) => { e.preventDefault(); useMedkit(); });
 document.getElementById('touch-craft-a').addEventListener('touchstart', (e) => { e.preventDefault(); craftItem('medkit'); });
 document.getElementById('touch-craft-d').addEventListener('touchstart', (e) => { e.preventDefault(); craftItem('shiv'); });
 
 function useMedkit() {
-    if (inventory.medkits > 0 && player.hp < 100) {
-        inventory.medkits--; player.hp = Math.min(100, player.hp + 45); updateHUD();
-    }
+    player.hp = 100; updateHUD();
 }
 
 function updateHUD() {
-    document.getElementById('hp-display').innerText = Math.round(player.hp);
+    document.getElementById('hp-display').innerText = "100 (SOVEREIGN SHIELD ACTIVE)";
     document.getElementById('level-display').innerText = currentLevel;
-    let targetMsg = !FUEL_CELL.collected ? "⚠️ LOCATE CORE" : "🚪 FIND UNLOCKED ARCH";
-    document.getElementById('inv-display').innerText = `${targetMsg} | M:${inventory.medkits} S:${inventory.shivs}`;
+    let targetMsg = !FUEL_CELL.collected ? "TRACKING RECHARGE MODULE" : "GATEWAY INTERCEPT READY";
+    document.getElementById('inv-display').innerText = `${targetMsg} | WALL-PHASE: ${player.isCrouching ? "ON" : "OFF"}`;
 }
 
-// --- TOUCH ENGINE JOYSTICK CONTROLLER ---
 let joystick = { active: false, startX: 0, startY: 0, moveX: 0, moveY: 0 };
 const jsZone = document.getElementById('virtual-joystick');
 const jsHandle = document.getElementById('joystick-handle');
@@ -258,11 +254,18 @@ function handleJoystickInput(touch) {
     joystick.moveX = dx / boundary; joystick.moveY = dy / boundary;
 }
 
-// --- ADVANCED ESCAPE ROOM GRAPHICAL ENGINE ENGINE CONTROLLER ---
 function renderGame() {
-    // Clear Buffer Frames (Muted Industrial Ceiling and Floors)
-    ctx.fillStyle = '#06070a'; ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
-    ctx.fillStyle = '#020305'; ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+    // Level 3 Victory Transition Skybox Override
+    if (currentLevel === 3 && FUEL_CELL.collected) {
+        let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, '#ff9900');
+        grad.addColorStop(0.5, '#ff3300');
+        grad.addColorStop(1, '#110022');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+        ctx.fillStyle = '#06070a'; ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
+        ctx.fillStyle = '#020305'; ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+    }
 
     let numRays = canvas.width;
     let rayAngle = player.angle - player.fov / 2;
@@ -290,19 +293,20 @@ function renderGame() {
         let wallHeight = Math.min(canvas.height, (TILE_SIZE * canvas.height) / (correctedDist || 1));
         let shade = Math.max(0, 160 - (correctedDist * 0.22));
 
-        // --- SPECIFIC DISTINCT ESCAPE ROOM WALL STYLES ---
         if (wallType === 3) {
-            // Unlocked Escape Gateway: Styled like a heavy iron vault hatch with amber hazard beams
-            let pulseLine = (Math.floor(i + Date.now() * 0.05) % 30 < 4) ? 1.5 : 0.8;
-            ctx.fillStyle = `rgb(${shade * 1.2 * pulseLine}, ${shade * 0.6 * pulseLine}, 0)`;
+            let pulseLine = (Math.floor(i + Date.now() * 0.05) % 30 < 4) ? 2.0 : 1.2;
+            ctx.fillStyle = `rgb(${shade * 1.5 * pulseLine}, ${shade * 1.0 * pulseLine}, 0)`;
         } else if (wallType === 2) {
-            // Riveted HazMat Plate: Dirty industrial panels
             let stripe = (Math.floor(i / 12) % 2 === 0) ? 0.9 : 0.7;
             ctx.fillStyle = `rgb(${shade * 0.3 * stripe}, ${shade * 0.35 * stripe}, ${shade * 0.3 * stripe})`;
         } else {
-            // Deep Metallic Panels: Dark slate grey infrastructure
             let gridEdge = (i % 24 < 2) ? 0.5 : 1.0;
             ctx.fillStyle = `rgb(${shade * 0.4 * gridEdge}, ${shade * 0.42 * gridEdge}, ${shade * 0.45 * gridEdge})`;
+        }
+
+        // Dissolve walls on final level escape stretch to show horizon dawn sunrise
+        if (currentLevel === 3 && FUEL_CELL.collected && wallType !== 3) {
+            wallHeight = wallHeight * Math.max(0, 1 - (Math.sin(Date.now() * 0.001) * 0.5 + 0.5));
         }
 
         ctx.fillRect(i, (canvas.height - wallHeight) / 2, 1, wallHeight);
@@ -310,11 +314,26 @@ function renderGame() {
     }
 
     render3DEntities();
+    
+    // Render Protective Dynamic Shield Ring Impact Ring Overlay
+    if (shockwaveActive) {
+        ctx.fillStyle = `rgba(0, 255, 200, ${1 - (shockwaveRadius / 150)})`;
+        ctx.fillRect(0, canvas.height/2 - 20, canvas.width, 40);
+    }
+
+    // Render Sanctum Aura Glow Tint Overlay
+    if (player.inSafeZone) {
+        ctx.fillStyle = 'rgba(255, 150, 0, 0.06)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#ffcc00'; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
+        ctx.fillText("♥ SANCTUARY ACTIVE: YOU ARE PERFECTLY SAFE HERE ♥", canvas.width / 2, 35);
+    }
+
     drawTacticalDirectionalVectors();
     drawRadarOverlay();
 }
 
-// --- ANTI-VANISHING ENGINE VISUALIZATION ARRAY FOR ENTEMS ---
 function render3DEntities() {
     let entities = [];
     if (!FUEL_CELL.collected) {
@@ -325,21 +344,17 @@ function render3DEntities() {
         entities.push({ x: e.x, y: e.y, isItem: false, color: e.color, state: e.state }); 
     });
 
-    // Sort further entities to render background items first
     entities.sort((a, b) => Math.hypot(b.x - player.x, b.y - player.y) - Math.hypot(a.x - player.x, a.y - player.y));
 
     entities.forEach(ent => {
         let sx = ent.x - player.x, sy = ent.y - player.y;
-        
-        // Critical FIX: Offset calculation fixes vanishing bug when close or skewed
         let angle = Math.atan2(sy, sx) - player.angle;
         while (angle < -Math.PI) angle += Math.PI * 2;
         while (angle > Math.PI) angle -= Math.PI * 2;
 
         let dist = Math.hypot(sx, sy);
-        if (dist < 8) return; // Boundary buffer close proximity check
+        if (dist < 8) return; 
 
-        // View projection calculations
         let size = Math.min(canvas.height * 2.0, (TILE_SIZE * canvas.height) / dist);
         let screenX = Math.tan(angle) * (canvas.width / 2) + (canvas.width / 2);
         let topY = canvas.height / 2 - size / 2;
@@ -347,7 +362,6 @@ function render3DEntities() {
         let leftX = Math.floor(screenX - size / 4);
         let rightX = Math.floor(screenX + size / 4);
 
-        // Keep entity partially on viewport even if center point is marginally off-screen
         if (rightX < 0 || leftX >= canvas.width) return; 
 
         for (let x = leftX; x < rightX; x++) {
@@ -356,22 +370,14 @@ function render3DEntities() {
                     ctx.fillStyle = ent.color;
                     ctx.fillRect(x, topY + size * 0.3, 1, size * 0.4);
                 } else {
-                    // Render Solid High-Contrast Hostile Bars completely distinct from dark walls
                     ctx.fillStyle = ent.color;
                     ctx.fillRect(x, topY + size * 0.1, 1, size * 0.8);
-                    
-                    // Dangerous Hunt State Warning indicator
-                    if (ent.state === 'HUNTING' && i % 4 === 0) {
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(x, topY, 1, size * 0.2);
-                    }
                 }
             }
         }
     });
 }
 
-// --- VECTOR ARROW NAVIGATION READOUT ---
 function drawTacticalDirectionalVectors() {
     let destination = !FUEL_CELL.collected ? FUEL_CELL : ESCAPE_HATCH;
     let bearing = Math.atan2(destination.y - player.y, destination.x - player.x) - player.angle;
@@ -380,18 +386,16 @@ function drawTacticalDirectionalVectors() {
 
     ctx.fillStyle = '#ff6600'; ctx.font = '900 11px monospace'; ctx.textAlign = 'center';
     
-    // Renders glowing HUD navigational instructions directly onto screen
     if (bearing < -0.25) {
-        ctx.fillText("◀◀ TURN LEFT [MATRIX COMPASS SCANNING]", canvas.width / 2, canvas.height - 20);
+        ctx.fillText("◀◀ TURN LEFT • CODES ARE SHIFTING", canvas.width / 2, canvas.height - 20);
     } else if (bearing > 0.25) {
-        ctx.fillText("TURN RIGHT ▶▶ [MATRIX COMPASS SCANNING]", canvas.width / 2, canvas.height - 20);
+        ctx.fillText("TURN RIGHT ▶▶ • SECTOR LOCK DETECTED", canvas.width / 2, canvas.height - 20);
     } else {
         ctx.fillStyle = '#00ff66';
-        ctx.fillText("▲▲ PATH LOCK APPLIED: FORWARD TRACKING ▲▲", canvas.width / 2, canvas.height - 20);
+        ctx.fillText("▲▲ STRAIGHT AHEAD, SON. KEEP GOING! ▲▲", canvas.width / 2, canvas.height - 20);
     }
 }
 
-// --- EXCLUSIVE RADAR GRAPHICS (EXIT DECK HIDDEN FROM OVERLAY) ---
 function drawRadarOverlay() {
     const scale = 0.04, pad = 10;
     ctx.fillStyle = 'rgba(5, 7, 10, 0.85)';
@@ -399,7 +403,6 @@ function drawRadarOverlay() {
 
     for (let r = 0; r < MAP_SIZE; r++) {
         for (let c = 0; c < MAP_SIZE; c++) {
-            // Type 3 Escape Hatch structural wall completely hidden on map to force room tracking
             if (MAP[r][c] === 1 || MAP[r][c] === 2) {
                 ctx.fillStyle = '#1c222b';
                 ctx.fillRect(pad + (c * TILE_SIZE * scale), pad + (r * TILE_SIZE * scale), TILE_SIZE * scale - 0.5, TILE_SIZE * scale - 0.5);
@@ -407,18 +410,15 @@ function drawRadarOverlay() {
         }
     }
 
-    // Display location of Core Objective Capsule only
     if (!FUEL_CELL.collected) {
         ctx.fillStyle = '#ff5500';
         ctx.fillRect(pad + (FUEL_CELL.x * scale) - 1, pad + (FUEL_CELL.y * scale) - 1, 3, 3);
     }
 
-    // Draw Player dot indicator
     ctx.fillStyle = '#ffffff';
     ctx.beginPath(); ctx.arc(pad + player.x * scale, pad + player.y * scale, 2, 0, Math.PI * 2); ctx.fill();
 }
 
-// --- OPERATIONS PHYSICS PROCESSING ---
 function processPhysics() {
     if (gameState !== 'PLAYING') return;
 
@@ -430,17 +430,32 @@ function processPhysics() {
 
     if (joystick.active) { forward = -joystick.moveY; turn = joystick.moveX * 0.9; }
 
+    // Check if player is stationary to trigger Sanctuary State
+    if (forward === 0 && turn === 0) {
+        player.stillTicks++;
+        if (player.stillTicks > 180) { // ~3 seconds still activation
+            player.inSafeZone = true;
+        }
+    } else {
+        player.stillTicks = 0;
+        player.inSafeZone = false;
+    }
+
     player.angle += turn * player.rotSpeed;
-    let currentSpeed = player.isCrouching ? player.crouchSpeed : player.walkSpeed;
+    let currentSpeed = player.walkSpeed; 
     
     let nextX = player.x + Math.cos(player.angle) * forward * currentSpeed;
     let nextY = player.y + Math.sin(player.angle) * forward * currentSpeed;
 
-    // Movement checks blocking both outer walls and interior block grids
-    if (MAP[Math.floor(player.y / TILE_SIZE)][Math.floor(nextX / TILE_SIZE)] !== 1 && MAP[Math.floor(player.y / TILE_SIZE)][Math.floor(nextX / TILE_SIZE)] !== 2) player.x = nextX;
-    if (MAP[Math.floor(nextY / TILE_SIZE)][Math.floor(player.x / TILE_SIZE)] !== 1 && MAP[Math.floor(nextY / TILE_SIZE)][Math.floor(player.x / TILE_SIZE)] !== 2) player.y = nextY;
+    // Molecular Phase Shift: Bypass map boundaries if button is toggled ON
+    if (player.isCrouching) {
+        player.x = nextX;
+        player.y = nextY;
+    } else {
+        if (MAP[Math.floor(player.y / TILE_SIZE)][Math.floor(nextX / TILE_SIZE)] !== 1 && MAP[Math.floor(player.y / TILE_SIZE)][Math.floor(nextX / TILE_SIZE)] !== 2) player.x = nextX;
+        if (MAP[Math.floor(nextY / TILE_SIZE)][Math.floor(player.x / TILE_SIZE)] !== 1 && MAP[Math.floor(nextY / TILE_SIZE)][Math.floor(player.x / TILE_SIZE)] !== 2) player.y = nextY;
+    }
 
-    // Goal extraction collisions
     if (!FUEL_CELL.collected && Math.hypot(player.x - FUEL_CELL.x, player.y - FUEL_CELL.y) < 32) {
         FUEL_CELL.collected = true; updateHUD();
     }
@@ -450,13 +465,30 @@ function processPhysics() {
         return;
     }
 
-    // Tracking processing array loop
+    // Process shockwave animations expansion
+    if (shockwaveActive) {
+        shockwaveRadius += 6;
+        if (shockwaveRadius > 150) { shockwaveActive = false; }
+    }
+
     enemies.forEach(e => {
         let dist = Math.hypot(player.x - e.x, player.y - e.y);
         
-        if (dist < 130 && !player.isCrouching) e.state = 'HUNTING';
-        else if (dist < 70) e.state = 'HUNTING';
-        else if (Math.random() < 0.02) e.state = 'PATROL';
+        // If shockwave expands onto enemies, violently fling them backwards
+        if (shockwaveActive && dist < shockwaveRadius + 20) {
+            let pushAngle = Math.atan2(e.y - player.y, e.x - player.x);
+            e.x += Math.cos(pushAngle) * 12;
+            e.y += Math.sin(pushAngle) * 12;
+            e.state = 'PATROL';
+            return;
+        }
+
+        // Enemies cannot track or hunt player inside Safe Zone points
+        if (player.inSafeZone) {
+            e.state = 'PATROL';
+        } else if (dist < 130) {
+            e.state = 'HUNTING';
+        }
 
         if (e.state === 'PATROL') {
             let targetNode = e.waypoints[e.targetIdx];
@@ -472,16 +504,17 @@ function processPhysics() {
         if (MAP[Math.floor(e.y / TILE_SIZE)][Math.floor(ex / TILE_SIZE)] === 0) e.x = ex;
         if (MAP[Math.floor(ey / TILE_SIZE)][Math.floor(e.x / TILE_SIZE)] === 0) e.y = ey;
 
+        // --- IMMORTAL HERO SOVEREIGN SHIELD LAYER ---
         if (dist < 28) {
-            player.hp = Math.max(0, player.hp - 1.2); updateHUD();
-            damageFlash.style.background = "rgba(255, 0, 0, 0.35)";
-            setTimeout(() => { damageFlash.style.background = "rgba(255, 0, 0, 0)"; }, 50);
-            if (player.hp <= 0) changeState('GAME_OVER');
+            // Trigger kinetic shockwave pushback blast — health remains perfect
+            shockwaveActive = true;
+            shockwaveRadius = 10;
+            damageFlash.style.background = "rgba(0, 255, 200, 0.4)";
+            setTimeout(() => { damageFlash.style.background = "rgba(0, 255, 200, 0)"; }, 120);
         }
     });
 }
 
-// --- CYCLE EXECUTION TICK ---
 initLevel(1);
 function operationalCycle() {
     processPhysics();
