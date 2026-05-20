@@ -3,82 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>DEAD ZONE: Tactician Edition - Portrait</title>
+    <title>DEAD ZONE: Tactician Edition</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Main Game Container Optimized for Mobile Portrait Stack -->
+    <!-- Main Game Container Optimized for Vertical Mobile Display -->
     <div id="display-wrapper">
         
-        <!-- Retro CRT Monitor Scanner Screen Effect Filters Overlay -->
-        <div class="crt-scanlines"></div>
-        <div id="damage-flash"></div>
-
-        <!-- System Management Header Bar -->
-        <div id="sys-header-bar">
-            <button id="btn-pause-toggle" class="sys-icon-btn">⏸ PAUSE</button>
-            <button id="btn-quit-game" class="sys-icon-btn">✖ QUIT</button>
+        <!-- Top Half: Tactical Raycast Core Renderer Viewport -->
+        <div id="viewport-container">
+            <div class="crt-scanlines"></div>
+            <div id="damage-flash"></div>
+            <canvas id="gameCanvas" width="640" height="360"></canvas>
+            
+            <!-- Contextual Terminal Menu Interface System -->
+            <div id="menu-overlay">
+                <div class="terminal-box">
+                    <h1 id="menu-title">DEAD ZONE</h1>
+                    <div class="glitch-line"></div>
+                    <p id="menu-subtitle">2.5D PSEUDO-3D STEALTH RAYCAST ENGINE</p>
+                    <div id="level-indicator" style="display: none;"></div>
+                    <div class="menu-actions">
+                        <button id="btn-primary" class="menu-btn">ENGAGE INFILTRATION</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Heads Up Data Display -->
+        <!-- Middle Belt: Heads Up Display Data Grid Layout -->
         <div id="hud-overlay">
             <div class="hud-group left-group">
-                <div class="hud-card bios-card">VITAL: <span id="hp-display">100</span>%</div>
-                <div class="hud-card sector-card">SECTOR: <span id="level-display">1</span>/5</div>
+                <div class="hud-card bios-card">VITAL SIGN: <span id="hp-display">100</span>%</div>
+                <div class="hud-card sector-card">SECTOR: <span id="level-display">1</span> / 3</div>
             </div>
             <div class="hud-group right-group">
-                <div class="hud-card score-card">SCORE: <span id="score-display">0000</span></div>
-                <div class="hud-card comp-card">COMPANION: <span id="comp-display">ACTIVE</span></div>
+                <div class="hud-card task-card" id="inv-display">SYSTEM ONLINE</div>
             </div>
         </div>
 
-        <!-- Main Raycast Core Renderer Viewport (Portrait Aspect Ratio) -->
-        <canvas id="gameCanvas" width="400" height="480"></canvas>
-
-        <!-- Central State Contextual Terminal Menu -->
-        <div id="menu-overlay">
-            <div class="terminal-box">
-                <h1 id="menu-title">DEAD ZONE</h1>
-                <div class="glitch-line"></div>
-                <p id="menu-subtitle">2.5D STEALTH RAYCAST ENGINE • PORTRAIT V2</p>
-                <div id="level-indicator" style="display: none;"></div>
-                <div class="menu-actions">
-                    <button id="btn-primary" class="menu-btn">ENGAGE INFILTRATION</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pop-up Death Diagnostics Alert Modal Interface -->
-        <div id="death-modal" class="modal-blur-layer" style="display: none;">
-            <div class="danger-box">
-                <div class="skull-icon">☠</div>
-                <h2>BIO-SIGN FLATLINE</h2>
-                <p>SECTOR INFILTRATION MATRIX COMPROMISED.</p>
-                <div class="score-penalty-log">COMPANION LOSS / SCORE REDUCED BY 50%</div>
-                <button id="btn-modal-restart" class="menu-btn fatal-btn">RESTART SECTOR RUN</button>
-            </div>
-        </div>
-
-        <!-- Mobile High-Performance Tactician Input Deck -->
+        <!-- Bottom Half: High-Performance Low-Latency Touch Gamepad Deck -->
         <div id="mobile-control-deck">
-            
-            <!-- Analog Steering Wheel Wheel Disc Control Module -->
-            <div class="steering-wrapper">
-                <div id="steering-wheel-disc">
-                    <div class="wheel-center-hub"></div>
-                    <div class="wheel-spoke spoke-v"></div>
-                    <div class="wheel-spoke spoke-h"></div>
-                    <div id="wheel-indicator-dot"></div>
+            <div class="joystick-container">
+                <div id="virtual-joystick">
+                    <div id="joystick-ring"></div>
+                    <div id="joystick-handle"></div>
                 </div>
-                <span class="control-label">STEER ROTATION</span>
             </div>
-
-            <!-- Action Grid Matrix Buttons -->
             <div id="action-grid">
-                <button id="btn-pace-still" class="action-btn still-btn">STAND STILL</button>
-                <button id="btn-pace-run" class="action-btn pace-btn active-pace">TACTICAL WALK</button>
-                <button id="btn-pace-dash" class="action-btn dash-btn">RUN FOR LIFE</button>
+                <button id="touch-crouch" class="action-btn stealth-btn">STEALTH TOGGLE</button>
+                <button id="touch-heal" class="action-btn heal-btn">USE MED (Q)</button>
+                <button id="touch-craft-a" class="action-btn craft-btn">CRAFT MED (A)</button>
+                <button id="touch-craft-d" class="action-btn craft-btn">CRAFT SHIV (D)</button>
             </div>
         </div>
     </div>
