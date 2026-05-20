@@ -1,0 +1,340 @@
+/* ORPHEUS ENGINE — CINEMATIC HORROR UI STYLES */
+
+:root {
+  --bg: #05070c;
+  --glass: rgba(10, 14, 22, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --text: #e5e7eb;
+
+  --red: #bf1725;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --gold: #c4a267;
+
+  --danger-glow: rgba(191, 23, 37, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* CANVAS */
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* =========================
+   FULLSCREEN OVERLAYS
+========================= */
+.fullscreen-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.6s ease;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.terminal-box {
+  width: min(600px, 92%);
+  padding: 28px;
+  background: rgba(8, 12, 18, 0.85);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+  backdrop-filter: blur(20px);
+}
+
+.boot-title {
+  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.boot-log {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #9ca3af;
+  height: 140px;
+  overflow-y: auto;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 20px;
+}
+
+.main-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: 0.3s;
+}
+
+.main-btn:hover {
+  background: var(--gold);
+  color: black;
+  box-shadow: 0 0 25px rgba(196,162,103,0.3);
+}
+
+.danger-btn {
+  border-color: var(--red);
+}
+
+.danger-btn:hover {
+  background: var(--red);
+  color: white;
+}
+
+/* =========================
+   HUD PANELS
+========================= */
+.glass-panel {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.hud-top-left {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 260px;
+}
+
+.hud-top-right {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 200px;
+}
+
+.hud-bottom-left {
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+  width: 200px;
+}
+
+.minimap-panel {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  width: 200px;
+  height: 200px;
+}
+
+/* =========================
+   HUD TEXT
+========================= */
+.hud-header h1 {
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.hud-header p {
+  font-size: 11px;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+/* =========================
+   METERS
+========================= */
+.meter-block {
+  margin-top: 10px;
+}
+
+.meter-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.meter-bg {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  width: 100%;
+  transition: width 0.2s linear;
+}
+
+.health-fill {
+  background: linear-gradient(90deg, var(--red), #ff4d4d);
+}
+
+.stamina-fill {
+  background: linear-gradient(90deg, var(--blue), #60a5fa);
+}
+
+.sanity-fill {
+  background: linear-gradient(90deg, #a855f7, #ec4899);
+}
+
+.battery-fill {
+  background: linear-gradient(90deg, var(--gold), #fbbf24);
+}
+
+/* =========================
+   OBJECTIVES
+========================= */
+#objective-list {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #d1d5db;
+}
+
+#objective-list li {
+  margin-bottom: 6px;
+  opacity: 0.85;
+}
+
+/* =========================
+   INVENTORY
+========================= */
+.inventory-panel h2 {
+  font-size: 12px;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.inventory-grid {
+  display: flex;
+  gap: 10px;
+}
+
+.inventory-slot {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 12px;
+  background: rgba(255,255,255,0.03);
+}
+
+/* =========================
+   CROSSHAIR
+========================= */
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
+  border: 1px solid white;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+/* =========================
+   INTERACTION PROMPT
+========================= */
+#interaction-prompt {
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.6);
+  padding: 10px 14px;
+  border: 1px solid var(--gold);
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* =========================
+   MOBILE CONTROLS
+========================= */
+.mobile-controls {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.mobile-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mobile-btn:active {
+  background: rgba(196,162,103,0.3);
+  transform: scale(0.95);
+}
+
+.action-btn {
+  width: 55px;
+  height: 55px;
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.glass-panel {
+  animation: flicker 6s infinite ease-in-out;
+}
+
+/* =========================
+   HORROR EFFECTS BASE
+========================= */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.6) 100%);
+}
