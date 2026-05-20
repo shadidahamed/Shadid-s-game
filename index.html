@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ORPHEUS ENGINE // THE BACKROOMS FIRST-PERSON VECTORS</title>
+    <title>ORPHEUS 2.5D // THE SPIRAL BOUNDARY EXPERIMENT</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -11,12 +11,12 @@
 
     <style>
         :root {
-            --bg-dark: #030509;
-            --glass-bg: rgba(6, 9, 16, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.06);
-            --accent-crimson: #bf1725;
-            --accent-glow: rgba(191, 23, 37, 0.4);
-            --gold-fine-wine: #c4a267;
+            --bg-dark: #020406;
+            --glass-bg: rgba(7, 10, 15, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --accent-crimson: #a8131d;
+            --gold-fine-wine: #b08f54;
+            --fluorescent-buzz: #e0d5a6;
         }
 
         * {
@@ -32,8 +32,8 @@
             height: 100%;
             overflow: hidden;
             background-color: var(--bg-dark);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: #f3f4f6;
+            font-family: 'Courier New', Courier, monospace;
+            color: #e5e7eb;
         }
 
         #viewport-container {
@@ -49,247 +49,155 @@
             height: 100%;
         }
 
-        /* High-End Glassmorphic Layer Controls */
+        /* Glassmorphic Cyberpunk Interface Elements */
         .glass-hud-panel {
             position: absolute;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: 20px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 12px;
+            padding: 18px;
             z-index: 10;
-            pointer-events: auto;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
         }
 
         .top-left-status {
-            top: 25px;
-            left: 25px;
-            min-width: 300px;
+            top: 20px;
+            left: 20px;
+            min-width: 320px;
         }
 
         .top-right-telemetry {
-            top: 25px;
-            right: 25px;
-            width: 160px;
-            height: 160px;
-            padding: 10px;
+            top: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            padding: 5px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
         #minimap-canvas {
-            width: 140px;
-            height: 140px;
-            border-radius: 10px;
-            background: rgba(0, 0, 0, 0.4);
+            width: 135px;
+            height: 135px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .status-header h1 {
-            font-size: 1.1rem;
-            font-weight: 700;
+            font-size: 1rem;
+            font-weight: 900;
             letter-spacing: 2px;
             color: #fff;
-            text-transform: uppercase;
-            margin-bottom: 4px;
         }
 
         .status-header p {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--gold-fine-wine);
-            text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
-        /* Resource Metric Bars */
         .metric-group {
-            margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            margin-top: 8px;
         }
 
         .metric-bar-container {
             width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 2px;
             overflow: hidden;
+            margin-top: 4px;
         }
 
         .metric-fill-vital {
             height: 100%;
             width: 100%;
-            background: linear-gradient(90deg, var(--accent-crimson), #ff3344);
-            box-shadow: 0 0 10px var(--accent-glow);
-            transition: width 0.2s linear;
+            background: var(--accent-crimson);
+            box-shadow: 0 0 8px rgba(168, 19, 29, 0.6);
         }
 
         .metric-fill-hydrate {
             height: 100%;
             width: 100%;
-            background: linear-gradient(90deg, #1d4ed8, #3b82f6);
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
-            transition: width 0.2s linear;
+            background: #2563eb;
         }
 
-        /* Mobile Touch Layout Control Interface */
-        .mobile-input-matrix {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            right: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .dpad-wrapper, .action-wrapper {
-            display: grid;
-            gap: 10px;
-            pointer-events: auto;
-        }
-
-        .dpad-wrapper {
-            grid-template-columns: repeat(3, 60px);
-            grid-template-rows: repeat(3, 60px);
-        }
-
-        .action-wrapper {
-            grid-template-columns: repeat(2, 65px);
-        }
-
-        .v-btn {
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 14px;
-            color: rgba(255, 255, 255, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: background 0.1s, transform 0.1s;
-        }
-
-        .v-btn:active {
-            background: rgba(196, 162, 103, 0.25);
-            color: #fff;
-            transform: scale(0.95);
-            border-color: var(--gold-fine-wine);
-        }
-
-        /* Crosshair for First-Person Orientation */
+        /* 2.5D Retro Focal Reticle Crosshair */
         #crosshair {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 8px;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
+            width: 14px;
+            height: 14px;
             z-index: 100;
             pointer-events: none;
+            opacity: 0.6;
         }
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: white;
+        }
+        #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
+        #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
 
-        /* Screen States Overlays Configuration */
+        /* Fullscreen Processing Displays Overlays */
         .fullscreen-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #04060a;
+            background: #030508;
             z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            transition: opacity 0.8s ease;
+            transition: opacity 0.6s ease;
         }
 
         .terminal-box {
             width: 90%;
-            max-width: 600px;
-            padding: 35px;
-            background: rgba(6, 9, 16, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(30px);
-            border-radius: 16px;
-            font-family: 'Courier New', Courier, monospace;
-            box-shadow: 0 30px 70px rgba(0,0,0,0.8);
-        }
-
-        .boot-logs {
-            font-size: 0.8rem;
-            color: #4b5563;
-            height: 140px;
-            overflow-y: auto;
-            margin-bottom: 25px;
-            line-height: 1.6;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding-bottom: 10px;
-        }
-
-        .tv-content {
-            color: #d1d5db;
-            font-size: 0.85rem;
-            line-height: 1.7;
-            margin-bottom: 25px;
-        }
-
-        .tv-content h2 {
-            color: var(--gold-fine-wine);
-            font-size: 1.2rem;
-            margin-bottom: 12px;
-            letter-spacing: 1px;
-        }
-
-        .tv-content p {
-            margin-bottom: 10px;
+            max-width: 580px;
+            padding: 30px;
+            background: var(--glass-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 8px;
+            box-shadow: 0 40px 90px rgba(0,0,0,0.9);
         }
 
         .action-submit-btn {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             background: transparent;
             border: 1px solid var(--gold-fine-wine);
             color: #fff;
-            font-weight: 600;
+            font-weight: bold;
             letter-spacing: 2px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 6px;
-            font-family: sans-serif;
+            font-family: inherit;
+            margin-top: 15px;
         }
 
         .action-submit-btn:hover {
             background: var(--gold-fine-wine);
             color: #000;
-            box-shadow: 0 0 25px rgba(196, 162, 103, 0.4);
         }
 
-        /* Modal Alerts Setup */
         .modal-overlay {
             position: absolute;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(3, 5, 9, 0.9);
+            background: rgba(2, 3, 5, 0.95);
             z-index: 2000;
             display: none;
             justify-content: center;
             align-items: center;
-        }
-
-        @media (min-width: 769px) {
-            .mobile-input-matrix { display: none; }
         }
     </style>
 </head>
@@ -299,30 +207,26 @@
 
     <div id="engine-boot-screen" class="fullscreen-overlay">
         <div class="terminal-box">
-            <div style="color: var(--gold-fine-wine); font-weight: bold; margin-bottom: 15px; letter-spacing: 1px;">SYSTEM:// FIRST_PERSON_CORE_INIT</div>
-            <div class="boot-logs" id="terminal-logger">
-                [SYSTEM] Allocating High-Precision WebGL Viewport...<br>
-                [SYSTEM] Binding Strict Bounding Box Mesh Collision Fields...<br>
-                [SYSTEM] Setting Up Non-Euclidean Staircase Tracks...
-            </div>
-            <button class="action-submit-btn" id="initialize-call-trigger">Awaken Eye-View</button>
+            <div style="color: var(--gold-fine-wine); font-weight: bold; margin-bottom: 12px;">SYSTEM:// COGNITIVE_2.5D_HYBRID_CORE</div>
+            <p style="font-size: 0.8rem; color:#888; line-height:1.5;">
+                [STATUS] Re-compiling 3D world parameters down into parallel 2.5D scanlines. Raycaster step arrays mapped. Procedural synthesizer initialized to loop frequency layers without assets.
+            </p>
+            <button class="action-submit-btn" id="initialize-call-trigger">BOOT PHASING MATRIX</button>
         </div>
     </div>
 
-    <div id="tv-intermission-overlay" class="fullscreen-overlay" style="display: none; background: #020305;">
-        <div class="terminal-box" style="border-color: rgba(196, 162, 103, 0.15);">
-            <div class="tv-content" id="tv-terminal-display"></div>
-            <button class="action-submit-btn" id="tv-power-btn">Enter Spatial Bounds</button>
+    <div id="tv-intermission-overlay" class="fullscreen-overlay" style="display: none; background: #040507;">
+        <div class="terminal-box" style="border-color: var(--gold-fine-wine);">
+            <div id="tv-terminal-display" style="font-size: 0.85rem; line-height: 1.6; color:#ccc;"></div>
+            <button class="action-submit-btn" id="tv-power-btn">ENGAGE RENDER GRID</button>
         </div>
     </div>
 
     <div id="game-state-modal" class="modal-overlay">
         <div class="terminal-box" style="border-color: var(--accent-crimson);">
-            <div class="tv-content">
-                <h2 id="modal-title" style="color: var(--accent-crimson);">ALERT BOUNDARY FAULT</h2>
-                <p id="modal-desc">Vitals desynchronized within grid lanes.</p>
-            </div>
-            <button class="action-submit-btn" id="modal-action-btn" style="border-color: var(--accent-crimson);">RE-MATERIALIZE</button>
+            <h2 id="modal-title" style="color: var(--accent-crimson); font-size:1.1rem; margin-bottom:10px;">ALERT BOUNDARY COLLAPSE</h2>
+            <p id="modal-desc" style="font-size:0.8rem; color:#aaa; margin-bottom:15px;"></p>
+            <button class="action-submit-btn" id="modal-action-btn">RE-COMPILATION DATA ENTRY</button>
         </div>
     </div>
 
@@ -331,133 +235,152 @@
         <div class="glass-hud-panel top-left-status">
             <div class="status-header">
                 <h1 id="hud-level-title">ZONE: PHASE LINE 0</h1>
-                <p id="hud-level-motto">EYE-VIEW RADIAL SIMULATION</p>
+                <p id="hud-level-motto">PSEUDO-2.5D ARCHITECTURE INITIALIZATION</p>
             </div>
             <div class="metric-group">
-                <div style="display:flex; justify-content:space-between; font-size:0.65rem; letter-spacing:1px; color:#9ca3af;">
-                    <span>SURVIVOR SANITY METRIC</span>
+                <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:#9ca3af;">
+                    <span>SURVIVOR SANITY FREQUENCY</span>
                     <span id="vital-percentage-lbl">100%</span>
                 </div>
-                <div class="metric-bar-container">
-                    <div class="metric-fill-vital" id="vital-integrity-bar"></div>
-                </div>
+                <div class="metric-bar-container"><div class="metric-fill-vital" id="vital-integrity-bar"></div></div>
             </div>
-            <div class="metric-group" style="margin-top: 12px;">
-                <div style="display:flex; justify-content:space-between; font-size:0.65rem; letter-spacing:1px; color:#9ca3af;">
-                    <span>HYDRATION matrix RESERVE</span>
+            <div class="metric-group">
+                <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:#9ca3af;">
+                    <span>CELLULAR FLUID LEVELS</span>
                     <span id="hydrate-percentage-lbl">100%</span>
                 </div>
-                <div class="metric-bar-container">
-                    <div class="metric-fill-hydrate" id="hydration-integrity-bar"></div>
-                </div>
+                <div class="metric-bar-container"><div class="metric-fill-hydrate" id="hydration-integrity-bar"></div></div>
             </div>
         </div>
 
         <div class="glass-hud-panel top-right-telemetry">
-            <canvas id="minimap-canvas" width="280" height="280"></canvas>
+            <canvas id="minimap-canvas" width="270" height="270"></canvas>
         </div>
-
-        <div class="mobile-input-matrix">
-            <div class="dpad-wrapper">
-                <div></div>
-                <div class="v-btn" id="m-up"><i class="fa-solid fa-chevron-up"></i></div>
-                <div></div>
-                <div class="v-btn" id="m-left"><i class="fa-solid fa-chevron-left"></i></div>
-                <div></div>
-                <div class="v-btn" id="m-right"><i class="fa-solid fa-chevron-right"></i></div>
-                <div></div>
-                <div class="v-btn" id="m-down"><i class="fa-solid fa-chevron-down"></i></div>
-                <div></div>
-            </div>
-            <div class="action-wrapper">
-                <div class="v-btn" id="m-stair" style="height:60px;"><i class="fa-solid fa-stairs"></i></div>
-                <div class="v-btn" id="m-jump" style="height:60px;"><i class="fa-solid fa-angles-up"></i></div>
-            </div>
-        </div>
-
     </div>
 
     <script>
         const CoreEngine = {
-            scene: null,
-            camera: null,
-            renderer: null,
-            clock: null,
-            
-            worldGroup: null,
-            dynamicGroup: null,
-            
-            heroModelURI: "resident-evil-2-remake-leon-kennedy.glb",
-            heroInstance: null,
-            heroMixer: null,
-            
-            currentZone: 0,
-            isEngineRunning: false,
-            
-            gridWidth: 18,
-            matrixGrid: [],
-            activeDoorsArray: [],
-            activeEntitiesArray: [],
+            scene: null, camera: null, renderer: null, clock: null,
+            worldGroup: null, dynamicGroup: null,
+            currentZone: 0, isEngineRunning: false, gridWidth: 16,
+            matrixGrid: [], activeDoorsArray: [], activeEntitiesArray: [],
             
             playerData: {
-                gridX: 2.5,
-                gridZ: 2.5,
-                heightY: 0.0, // Eye elevation tracking layer
-                viewAngle: 0.0,
-                vertVelocity: 0.0,
-                isAirborne: false,
-                vitalIntegrity: 100,
-                hydrationReserve: 100,
-                playerRadius: 0.35 // Bounding cylinder thickness factor to stop clipping
+                gridX: 2.5, gridZ: 2.5, heightY: 0.0,
+                viewAngle: 0.0, vertVelocity: 0.0, isAirborne: false,
+                vitalIntegrity: 100, hydrationReserve: 100, playerRadius: 0.38,
+                isOnStairs: false
             },
             
-            inputTracker: {
-                forward: false, backward: false, left: false, right: false,
-                climb: false, jump: false
-            }
+            inputTracker: { forward: false, backward: false, left: false, right: false },
+            audioCtx: null, bzzGain: null, proximitySynth: null
         };
 
         const ZONE_MANIFEST = {
             0: {
-                name: "Level 0: The Lobby",
-                motto: "The Infinite Maze",
-                wallColor: 0xd9c589,
-                floorColor: 0x7a6b48,
-                ceilColor: 0xeae5cc,
-                fogColor: 0x0a0c10,
-                lightIntensity: 0.5,
-                dehydrationRate: 0.08,
-                hasEntities: true,
-                tvRules: "<h2>Level 0: Eye-View Lobby</h2><p>CRITICAL ADJUSTMENT: Camera is now set directly inside the explorer's head. Wall collision grids are completely locked.</p><p>SURVIVAL PROTOCOL: Move toward the Blue Staircase vector at the deep matrix coordinates. Press and hold [S] (or mobile panel) to climb up vertically to clear the locked door line.</p>"
+                name: "Level 0: Yellow Slices",
+                motto: "The Illusionary 2.5D Horizon",
+                wallColor: 0xcca854, floorColor: 0x54472b, ceilColor: 0xeae4b5, fogColor: 0x06080c,
+                lightIntensity: 0.65, dehydrationRate: 0.05,
+                tvRules: "<h2>Level 0: Pseudo Perspective Matrix</h2><p>VECTORS REMAPPED: True 3D perspective depth has been compressed to evoke vintage raycast engines. All wall intersections are strictly locked.</p><p>EXECUTION PROTOCOL: Locate the Blue Staircase corridor. Step forward upon it to automatically engage the vertical tracks, taking you up to the security clearance gate.</p>"
             },
             1: {
-                name: "Level 1: Habitable Zone Tiers",
-                motto: "Concrete Structural Vaults",
-                wallColor: 0x4a4d52,
-                floorColor: 0x2b2d30,
-                ceilColor: 0x3a3d42,
-                fogColor: 0x050608,
-                lightIntensity: 0.4,
-                dehydrationRate: 0.12,
-                hasEntities: true,
-                tvRules: "<h2>Level 1: Concrete Tiers</h2><p>CRITICAL PARAMETERS: Deformed lifeforms patrol the narrow corridor channels. Do not allow your eye-focus vector to linger near them.</p><p>SURVIVAL PROTOCOL: Ascend the structural stair loops to force proximity sensors to trigger open the access door framing points.</p>"
+                name: "Level 1: Uncanny Vault Corridors",
+                motto: "Monochrome Isolation Grid",
+                wallColor: 0x4b4f56, floorColor: 0x222529, ceilColor: 0x383c42, fogColor: 0x020305,
+                lightIntensity: 0.4, dehydrationRate: 0.08,
+                tvRules: "<h2>Level 1: The Dark Sub-Floors</h2><p>CRITICAL BOUNDARY: A multi-layered billboard entity has generated inside this sector layer. Avoid proximity contact at all costs.</p>"
             }
         };
 
+        // --- PROCEDURAL AUDIO GENERATION PLATFORM (NO AUDIO FILES REQUIRED) ---
+        function initProceduralAudioMatrix() {
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                CoreEngine.audioCtx = new AudioContextClass();
+                
+                // Track 1: Low-Frequency Fluorescent Light Hum Layer
+                const humOscillator = CoreEngine.audioCtx.createOscillator();
+                const lowFilter = CoreEngine.audioCtx.createBiquadFilter();
+                CoreEngine.bzzGain = CoreEngine.audioCtx.createGain();
+                
+                humOscillator.type = 'sawtooth';
+                humOscillator.frequency.value = 60; // 60Hz hum simulation
+                lowFilter.type = 'lowpass';
+                lowFilter.frequency.value = 120;
+                
+                CoreEngine.bzzGain.gain.value = 0.08;
+                
+                humOscillator.connect(lowFilter);
+                lowFilter.connect(CoreEngine.bzzGain);
+                CoreEngine.bzzGain.connect(CoreEngine.audioCtx.destination);
+                humOscillator.start();
+
+                // Track 2: Creature Proximity Threat Synthesizer
+                CoreEngine.proximitySynth = CoreEngine.audioCtx.createGain();
+                CoreEngine.proximitySynth.gain.value = 0;
+                
+                const scaryOsc = CoreEngine.audioCtx.createOscillator();
+                scaryOsc.type = 'triangle';
+                scaryOsc.frequency.value = 45;
+                
+                scaryOsc.connect(CoreEngine.proximitySynth);
+                CoreEngine.proximitySynth.connect(CoreEngine.audioCtx.destination);
+                scaryOsc.start();
+
+            } catch(e) {
+                console.log("Audio infrastructure generation bypassed or restricted by user permissions.");
+            }
+        }
+
+        function triggerProceduralFootstepClick() {
+            if (!CoreEngine.audioCtx) return;
+            const clickOsc = CoreEngine.audioCtx.createOscillator();
+            const clickGain = CoreEngine.audioCtx.createGain();
+            
+            clickOsc.type = 'triangle';
+            clickOsc.frequency.setValueAtTime(90, CoreEngine.audioCtx.currentTime);
+            clickOsc.frequency.exponentialRampToValueAtTime(30, CoreEngine.audioCtx.currentTime + 0.08);
+            
+            clickGain.gain.setValueAtTime(0.12, CoreEngine.audioCtx.currentTime);
+            clickGain.gain.linearRampToValueAtTime(0, CoreEngine.audioCtx.currentTime + 0.08);
+            
+            clickOsc.connect(clickGain);
+            clickGain.connect(CoreEngine.audioCtx.destination);
+            clickOsc.start();
+            clickOsc.stop(CoreEngine.audioCtx.currentTime + 0.09);
+        }
+
+        function triggerDoorActivationSound() {
+            if (!CoreEngine.audioCtx) return;
+            const gateOsc = CoreEngine.audioCtx.createOscillator();
+            const gateGain = CoreEngine.audioCtx.createGain();
+            
+            gateOsc.type = 'sine';
+            gateOsc.frequency.setValueAtTime(260, CoreEngine.audioCtx.currentTime);
+            gateOsc.frequency.linearRampToValueAtTime(140, CoreEngine.audioCtx.currentTime + 0.4);
+            
+            gateGain.gain.setValueAtTime(0.1, CoreEngine.audioCtx.currentTime);
+            gateGain.gain.linearRampToValueAtTime(0, CoreEngine.audioCtx.currentTime + 0.4);
+            
+            gateOsc.connect(gateGain);
+            gateGain.connect(CoreEngine.audioCtx.destination);
+            gateOsc.start();
+            gateOsc.stop(CoreEngine.audioCtx.currentTime + 0.42);
+        }
+
+        // --- PIPELINE INITIALIZATIONS ---
         function initEngineContext() {
             const container = document.getElementById('viewport-container');
-            
             CoreEngine.scene = new THREE.Scene();
             CoreEngine.clock = new THREE.Clock();
 
-            // Setup true first-person lens scaling ratios
-            CoreEngine.camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.05, 500);
+            // Configured perspective FOV layout to evoke flat retro retro-raycaster environments
+            CoreEngine.camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.05, 300);
             
             CoreEngine.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
             CoreEngine.renderer.setSize(window.innerWidth, window.innerHeight);
-            CoreEngine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            CoreEngine.renderer.shadowMap.enabled = true;
-            CoreEngine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            CoreEngine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
             container.appendChild(CoreEngine.renderer.domElement);
 
             CoreEngine.worldGroup = new THREE.Group();
@@ -465,74 +388,26 @@
             CoreEngine.scene.add(CoreEngine.worldGroup);
             CoreEngine.scene.add(CoreEngine.dynamicGroup);
 
-            setupCinematicLightingEcosystem();
-            bindHardwareInputSystems();
-            ingestHeroModelAsset();
+            setupEnvironmentLights();
+            bindInputMechanics();
         }
 
-        function setupCinematicLightingEcosystem() {
-            const ambient = new THREE.AmbientLight(0x111622, 0.6);
+        function setupEnvironmentLights() {
+            const ambient = new THREE.AmbientLight(0x1a2130, 0.8);
             CoreEngine.scene.add(ambient);
-
-            const dirLight = new THREE.DirectionalLight(0xc4a267, 0.7); 
-            dirLight.position.set(10, 30, 15);
-            dirLight.castShadow = true;
-            CoreEngine.scene.add(dirLight);
-
-            CoreEngine.scene.background = new THREE.Color(0x05070b);
-            CoreEngine.scene.fog = new THREE.FogExp2(0x05070b, 0.03);
-        }
-
-        function ingestHeroModelAsset() {
-            const logger = document.getElementById('terminal-logger');
-            const loader = new THREE.GLTFLoader();
             
-            loader.load(
-                CoreEngine.heroModelURI,
-                function (gltf) {
-                    CoreEngine.heroInstance = gltf.scene;
-                    CoreEngine.heroInstance.traverse(function (node) {
-                        if (node.isMesh) {
-                            node.castShadow = true;
-                            node.receiveShadow = true;
-                        }
-                    });
-                    CoreEngine.heroInstance.scale.set(1.1, 1.1, 1.1);
-                    CoreEngine.scene.add(CoreEngine.heroInstance);
-
-                    // First-person view means hiding your own head mesh elements to avoid camera obstruction
-                    CoreEngine.heroInstance.visible = false; 
-
-                    if(gltf.animations && gltf.animations.length > 0) {
-                        CoreEngine.heroMixer = new THREE.AnimationMixer(CoreEngine.heroInstance);
-                        CoreEngine.heroMixer.clipAction(gltf.animations[0]).play();
-                    }
-                    logger.innerHTML += "<br><span style='color:#c4a267;'>[SUCCESS] .GLB Asset Loaded into First-Person Socket.</span>";
-                },
-                function (xhr) {},
-                function (error) {
-                    logger.innerHTML += "<br>[INFO] First-Person mesh references stabilized.";
-                    generateFallbackProceduralHero();
-                }
-            );
+            CoreEngine.scene.background = new THREE.Color(0x020406);
+            CoreEngine.scene.fog = new THREE.FogExp2(0x020406, 0.045);
         }
 
-        function generateFallbackProceduralHero() {
-            // First person capsule tracker representation
-            const mockGroup = new THREE.Group();
-            CoreEngine.scene.add(mockGroup);
-            CoreEngine.heroInstance = mockGroup;
-            CoreEngine.heroInstance.visible = false; // Kept invisible for continuous clean eye view
-        }
-
-        function bindHardwareInputSystems() {
-            window.addEventListener('keydown', (e) => { processKeyEvent(e.key, true); });
-            window.addEventListener('keyup', (e) => { processKeyEvent(e.key, false); });
+        function bindInputMechanics() {
+            window.addEventListener('keydown', (e) => { toggleKeys(e.key, true); });
+            window.addEventListener('keyup', (e) => { toggleKeys(e.key, false); });
             
-            // Pointerlock / Swipe mechanics integration for mouse look rotations
             window.addEventListener('mousemove', (e) => {
                 if (CoreEngine.isEngineRunning) {
-                    CoreEngine.playerData.viewAngle -= e.movementX * 0.0025;
+                    // Restrict camera movement strictly to the horizontal angle axis to lock the 2.5D layout perspective
+                    CoreEngine.playerData.viewAngle -= e.movementX * 0.0035;
                 }
             });
 
@@ -543,22 +418,21 @@
             });
         }
 
-        function processKeyEvent(keyString, isPressed) {
+        function toggleKeys(keyString, activeState) {
+            if(activeState && !CoreEngine.audioCtx) initProceduralAudioMatrix();
             switch(keyString) {
-                case 'ArrowUp': case 'w': case 'W': CoreEngine.inputTracker.forward = isPressed; break;
-                case 'ArrowDown': case 's': case 'S': CoreEngine.inputTracker.backward = isPressed; break;
-                case 'ArrowLeft': case 'a': case 'A': CoreEngine.inputTracker.left = isPressed; break;
-                case 'ArrowRight': case 'd': case 'D': CoreEngine.inputTracker.right = isPressed; break;
-                case 'Shift': CoreEngine.inputTracker.climb = isPressed; break;
-                case ' ': CoreEngine.inputTracker.jump = isPressed; break;
+                case 'ArrowUp': case 'w': case 'W': CoreEngine.inputTracker.forward = activeState; break;
+                case 'ArrowDown': case 's': case 'S': CoreEngine.inputTracker.backward = activeState; break;
+                case 'ArrowLeft': case 'a': case 'A': CoreEngine.inputTracker.left = activeState; break;
+                case 'ArrowRight': case 'd': case 'D': CoreEngine.inputTracker.right = activeState; break;
             }
         }
 
-        function compileProceduralZoneMatrix(zoneID) {
+        // --- MAP CONTEXT GENERATORS ---
+        function compileProceduralMatrix(zoneID) {
             const size = CoreEngine.gridWidth;
             CoreEngine.matrixGrid = Array(size).fill().map(() => Array(size).fill(0));
 
-            // Generate absolute perimeter boundaries
             for(let i = 0; i < size; i++) {
                 CoreEngine.matrixGrid[0][i] = 1;
                 CoreEngine.matrixGrid[size-1][i] = 1;
@@ -566,418 +440,401 @@
                 CoreEngine.matrixGrid[i][size-1] = 1;
             }
 
-            // Procedural partitioning wall distributions
-            for(let r = 2; r < size - 2; r += 2) {
-                for(let c = 2; c < size - 2; c += 2) {
+            // Fixed procedural alignment walls segments
+            for(let r = 2; r < size-2; r+=3) {
+                for(let c = 2; c < size-2; c+=3) {
                     CoreEngine.matrixGrid[r][c] = 1;
-                    const directions = [[0,1], [1,0], [0,-1], [-1,0]];
-                    const [dr, dc] = directions[Math.floor(Math.random() * directions.length)];
-                    CoreEngine.matrixGrid[r+dr][c+dc] = 1;
+                    CoreEngine.matrixGrid[r][c+1] = 1;
                 }
             }
 
-            // Clear absolute player entrance points
             CoreEngine.matrixGrid[1][1] = 0; CoreEngine.matrixGrid[1][2] = 0;
-            CoreEngine.matrixGrid[2][1] = 0; CoreEngine.matrixGrid[2][2] = 0;
 
-            // Specialized architectural interaction tokens locations
-            CoreEngine.matrixGrid[10][10] = 2; // Staircase matrix coordinate cell
-            CoreEngine.matrixGrid[11][10] = 5; // STAIR ACCESSIBLE SECURITY GATEWAY LINE
-            CoreEngine.matrixGrid[12][10] = 3; // Out-of-bounds spatial progression gateway portal
+            // Specialized Interaction Target Anchors
+            CoreEngine.matrixGrid[8][8] = 2;   // THE BLUE STAIRCASE TRACK
+            CoreEngine.matrixGrid[9][8] = 5;   // UPPER BLOCK ACCESS SECURITY GATEWAY
+            CoreEngine.matrixGrid[10][8] = 3;  // DIMENSIONAL TRANSITION LOOP ENDPOINT
         }
 
-        function instantiatePhysicalStructures(zoneID) {
+        function instantiatePhysicalWorld(zoneID) {
             const size = CoreEngine.gridWidth;
             const data = ZONE_MANIFEST[zoneID];
 
-            while(CoreEngine.worldGroup.children.length > 0) { 
-                CoreEngine.worldGroup.remove(CoreEngine.worldGroup.children[0]); 
-            }
-            while(CoreEngine.dynamicGroup.children.length > 0) {
-                CoreEngine.dynamicGroup.remove(CoreEngine.dynamicGroup.children[0]);
-            }
+            while(CoreEngine.worldGroup.children.length > 0) { CoreEngine.worldGroup.remove(CoreEngine.worldGroup.children[0]); }
+            while(CoreEngine.dynamicGroup.children.length > 0) { CoreEngine.dynamicGroup.remove(CoreEngine.dynamicGroup.children[0]); }
             
             CoreEngine.activeDoorsArray = [];
             CoreEngine.activeEntitiesArray = [];
 
-            CoreEngine.scene.background = new THREE.Color(data.fogColor);
             CoreEngine.scene.fog.color.setHex(data.fogColor);
 
-            const wallMaterial = new THREE.MeshStandardMaterial({ color: data.wallColor, roughness: 0.8 });
+            const wallMaterial = new THREE.MeshStandardMaterial({ color: data.wallColor, roughness: 0.85, metalness: 0.1 });
             const floorMaterial = new THREE.MeshStandardMaterial({ color: data.floorColor, roughness: 0.9 });
-            const ceilMaterial = new THREE.MeshStandardMaterial({ color: data.ceilColor, roughness: 0.7 });
+            const ceilMaterial = new THREE.MeshStandardMaterial({ color: data.ceilColor, roughness: 0.6 });
 
-            const blockGeo = new THREE.BoxGeometry(4, 10, 4); // Increased wall heights to block visibility leaks
-            const deckGeo = new THREE.PlaneGeometry(size * 4, size * 4);
+            const wallGeo = new THREE.BoxGeometry(4, 8, 4);
+            const planeGeo = new THREE.PlaneGeometry(size * 4, size * 4);
 
-            // Base Floor Segment
-            const floorMesh = new THREE.Mesh(deckGeo, floorMaterial);
+            const floorMesh = new THREE.Mesh(planeGeo, floorMaterial);
             floorMesh.rotation.x = -Math.PI / 2;
-            floorMesh.position.set((size * 4) / 2 - 2, -2.5, (size * 4) / 2 - 2);
-            floorMesh.receiveShadow = true;
+            floorMesh.position.set((size * 4) / 2 - 2, -2.0, (size * 4) / 2 - 2);
             CoreEngine.worldGroup.add(floorMesh);
 
-            // Ceiling Framework Cap
-            const ceilingMesh = new THREE.Mesh(deckGeo, ceilMaterial);
+            const ceilingMesh = new THREE.Mesh(planeGeo, ceilMaterial);
             ceilingMesh.rotation.x = Math.PI / 2;
-            ceilingMesh.position.set((size * 4) / 2 - 2, 7.5, (size * 4) / 2 - 2);
+            ceilingMesh.position.set((size * 4) / 2 - 2, 6.0, (size * 4) / 2 - 2);
             CoreEngine.worldGroup.add(ceilingMesh);
 
             for (let r = 0; r < size; r++) {
                 for (let c = 0; c < size; c++) {
-                    const tokenType = CoreEngine.matrixGrid[r][c];
-                    const targetX = c * 4;
-                    const targetZ = r * 4;
+                    const token = CoreEngine.matrixGrid[r][c];
+                    const tx = c * 4;
+                    const tz = r * 4;
 
-                    if (tokenType === 1) {
-                        const wallSegment = new THREE.Mesh(blockGeo, wallMaterial);
-                        wallSegment.position.set(targetX, 2.5, targetZ);
-                        wallSegment.castShadow = true;
-                        wallSegment.receiveShadow = true;
-                        CoreEngine.worldGroup.add(wallSegment);
-                    } else if (tokenType === 2) {
-                        instantiatePhysicalStairwell(targetX, targetZ);
-                    } else if (tokenType === 3) {
-                        instantiateDimensionalGateway(targetX, targetZ);
-                    } else if (tokenType === 5) {
-                        instantiateAutomatedGlassDoor(targetX, targetZ, true); // Staircase validation door
+                    if (token === 1) {
+                        const wall = new THREE.Mesh(wallGeo, wallMaterial);
+                        wall.position.set(tx, 2.0, tz);
+                        CoreEngine.worldGroup.add(wall);
+                        
+                        // Add vintage overhead tube light fixtures to cast flickering highlights
+                        if(Math.random() < 0.1) {
+                            const lightFixture = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.8), new THREE.MeshBasicMaterial({color: 0xfffee0}));
+                            lightFixture.position.set(tx, 5.8, tz);
+                            lightFixture.rotation.z = Math.PI / 2;
+                            CoreEngine.worldGroup.add(lightFixture);
+
+                            const bulbLight = new THREE.PointLight(0xfffcd1, data.lightIntensity, 10);
+                            bulbLight.position.set(tx, 5.5, tz);
+                            CoreEngine.worldGroup.add(bulbLight);
+                        }
+                    } else if (token === 2) {
+                        instantiateStableStaircase(tx, tz);
+                    } else if (token === 3) {
+                        instantiateExitGateway(tx, tz);
+                    } else if (token === 5) {
+                        instantiateElevatedSecurityDoor(tx, tz);
                     }
                 }
             }
 
-            if(data.hasEntities) {
-                spawnSuspenseDeformedEntity(size);
-            }
+            // Always instantiate threats across simulation corridors
+            spawnProcedural25DBillboardEntity();
         }
 
-        function instantiateAutomatedGlassDoor(x, z, requiresStairsHeight) {
-            const doorContainer = new THREE.Group();
-            doorContainer.position.set(x, requiresStairsHeight ? 2.5 : -2.5, z);
+        function instantiateStableStaircase(x, z) {
+            const stairs = new THREE.Group();
+            stairs.position.set(x, -2.0, z);
+            const stepMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.4, emissive: 0x1d4ed8, emissiveIntensity: 0.3 });
 
-            const frameMat = new THREE.MeshStandardMaterial({ 
-                color: 0xbf1725, transparent: true, opacity: 0.4, metalness: 0.9, roughness: 0.1 
+            // Renders 16 solid steps rising up to an elevated height platform of 4.5 units
+            for(let i = 0; i < 16; i++) {
+                const step = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.3, 0.25), stepMat);
+                step.position.set(0, (i * 0.28) + 0.15, (i * 0.24) - 1.8);
+                stairs.add(step);
+            }
+            CoreEngine.worldGroup.add(stairs);
+        }
+
+        function instantiateElevatedSecurityDoor(x, z) {
+            const doorGroup = new THREE.Group();
+            doorGroup.position.set(x, 2.5, z); // Fixed exactly at the upper vertical tier height line
+
+            const panelMat = new THREE.MeshStandardMaterial({ 
+                color: 0xa8131d, transparent: true, opacity: 0.6, roughness: 0.1, metalness: 0.9 
             });
 
-            const leftPaneMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 5, 0.2), frameMat);
-            leftPaneMesh.position.set(-0.9, 0, 0);
+            const leftPane = new THREE.Mesh(new THREE.BoxGeometry(1.9, 4.0, 0.15), panelMat);
+            leftPane.position.set(-0.95, 0, 0);
             
-            const rightPaneMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 5, 0.2), frameMat);
-            rightPaneMesh.position.set(0.9, 0, 0);
+            const rightPane = new THREE.Mesh(new THREE.BoxGeometry(1.9, 4.0, 0.15), panelMat);
+            rightPane.position.set(0.95, 0, 0);
 
-            doorContainer.add(leftPaneMesh, rightPaneMesh);
-            CoreEngine.worldGroup.add(doorContainer);
+            doorGroup.add(leftPane, rightPane);
+            CoreEngine.worldGroup.add(doorGroup);
 
             CoreEngine.activeDoorsArray.push({
-                leftSlidingPane: leftPaneMesh,
-                rightSlidingPane: rightPaneMesh,
-                gridCoordX: x,
-                gridCoordZ: z,
-                elevationTargetY: requiresStairsHeight ? 5.0 : 0.0,
-                isLockedToStaircase: requiresStairsHeight,
-                currentExtensionOffset: 0,
-                targetExtensionOffset: 0
+                leftPane: leftPane, rightPane: rightPane,
+                gridCoordX: x, gridCoordZ: z,
+                currentAnimOffset: 0, targetAnimOffset: 0,
+                hasTriggeredAudio: false
             });
         }
 
-        function instantiatePhysicalStairwell(x, z) {
-            const stairsGroup = new THREE.Group();
-            stairsGroup.position.set(x, -2.5, z);
-            const treadMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.5 }); // High visibility blue staircase indicator
+        function instantiateExitGateway(x, z) {
+            const gateway = new THREE.Group();
+            gateway.position.set(x, 2.5, z);
 
-            // 15 structural incremental steps rising cleanly up to 5.0 units altitude height
-            for(let i = 0; i < 15; i++) {
-                const step = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.35, 0.28), treadMat);
-                step.position.set(0, (i * 0.35) + 0.175, (i * 0.26) - 1.8);
-                step.receiveShadow = true;
-                stairsGroup.add(step);
-            }
-            CoreEngine.worldGroup.add(stairsGroup);
-        }
-
-        // --- DEFORMED SUSPENSE ORGANISM INSTANTIATION ---
-        function spawnSuspenseDeformedEntity(gridSize) {
-            const entityRootGroup = new THREE.Group();
-            entityRootGroup.position.set(6 * 4, -1.5, 6 * 4);
-
-            const creatureMat = new THREE.MeshStandardMaterial({ 
-                color: 0x261114, roughness: 0.1, metalness: 0.9, bumpScale: 0.5
-            });
-
-            // Asymmetrical, deformed compound structural shapes setup
-            const torsoBase = new THREE.Mesh(new THREE.SphereGeometry(0.8, 8, 8), creatureMat);
-            torsoBase.scale.set(1.4, 0.7, 1.1);
-            torsoBase.position.y = 1.2;
-            entityRootGroup.add(torsoBase);
-
-            // Protruding malformed dynamic nodes modules
-            for (let i = 0; i < 5; i++) {
-                const growthNode = new THREE.Mesh(new THREE.SphereGeometry(0.38, 6, 6), creatureMat);
-                growthNode.position.set(Math.sin(i) * 0.6, 1.5 + (Math.cos(i) * 0.4), Math.cos(i) * 0.5);
-                entityRootGroup.add(growthNode);
-            }
-
-            const scanningLens = new THREE.Mesh(
-                new THREE.SphereGeometry(0.2, 8, 8),
-                new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 3.0 })
+            const vortex = new THREE.Mesh(
+                new THREE.BoxGeometry(2.5, 4.0, 0.1),
+                new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 1.8 })
             );
-            scanningLens.position.set(0, 1.8, 0.8);
-            entityRootGroup.add(scanningLens);
-
-            const auraLight = new THREE.PointLight(0xff0022, 1.5, 8);
-            auraLight.position.set(0, 2.0, 0);
-            entityRootGroup.add(auraLight);
-
-            CoreEngine.dynamicGroup.add(entityRootGroup);
+            gateway.add(vortex);
             
-            CoreEngine.activeEntitiesArray.push({
-                rootMesh: entityRootGroup,
-                spawnGridX: 6 * 4,
-                spawnGridZ: 6 * 4,
-                runtimeTicker: 0.0,
-                movementVelocity: 2.2
-            });
+            const alertLight = new THREE.PointLight(0x10b981, 2, 8);
+            alertLight.position.set(0, 1, 0);
+            gateway.add(alertLight);
+
+            CoreEngine.worldGroup.add(gateway);
         }
 
-        function processEntitiesSimulation(delta) {
-            const pWorldX = CoreEngine.playerData.gridX * 4;
-            const pWorldZ = CoreEngine.playerData.gridZ * 4;
+        // --- CREATION OF THE CREATING MULTI-LAYERED 2.5D BILLBOARD THREAT ---
+        function spawnProcedural25DBillboardEntity() {
+            const billboardContainer = new THREE.Group();
+            billboardContainer.position.set(5 * 4, -0.5, 5 * 4);
 
-            CoreEngine.activeEntitiesArray.forEach(entity => {
-                entity.runtimeTicker += delta * entity.movementVelocity;
-
-                // Continuous non-Euclidean patrolling tracking patterns loops
-                const nextZ = entity.spawnGridZ + Math.sin(entity.runtimeTicker) * 7.0;
-                entity.rootMesh.position.z = nextZ;
-                entity.rootMesh.position.y = -1.5 + Math.abs(Math.cos(entity.runtimeTicker * 2.0)) * 0.35; // Creepy organic bobbing movement
-
-                const deltaX = entity.rootMesh.position.x - pWorldX;
-                const deltaZ = entity.rootMesh.position.z - pWorldZ;
-                const radialScalar = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
-
-                // Severe close range proximity sanity field corrosion
-                if (radialScalar < 4.0) {
-                    CoreEngine.playerData.vitalIntegrity -= 45.0 * delta;
-                    // Induce heavy eye lens camera jitter shake
-                    CoreEngine.camera.position.x += (Math.random() * 0.35 - 0.175);
-                    CoreEngine.camera.position.y += (Math.random() * 0.35 - 0.175);
-                }
-
-                if (CoreEngine.playerData.vitalIntegrity <= 0) {
-                    executeEngineFailureReset();
-                }
+            // Constructing an unsettling retro entity using asymmetrical, flat sprite panels 
+            // that keep players guessing whether they are 2D or 3D meshes
+            const entityMat = new THREE.MeshStandardMaterial({ 
+                color: 0x111111, roughness: 0.1, metalness: 0.9, side: THREE.DoubleSide 
             });
-        }
 
-        function instantiateDimensionalGateway(x, z) {
-            const portal = new THREE.Group();
-            portal.position.set(x, 2.5, z); // Positioned exactly at the upper tier height line
+            const spinePanel = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 3.5), entityMat);
+            spinePanel.position.y = 1.75;
+            billboardContainer.add(spinePanel);
 
-            const glowMesh = new THREE.Mesh(
-                new THREE.BoxGeometry(2.5, 4.5, 0.2),
-                new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 1.5 })
+            // Append floating malformed horizontal visual blocks
+            const crossPanel = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.6), new THREE.MeshStandardMaterial({color: 0x2a080c, side: THREE.DoubleSide}));
+            crossPanel.position.set(0, 2.2, 0.05);
+            billboardContainer.add(crossPanel);
+
+            const coreEye = new THREE.Mesh(
+                new THREE.SphereGeometry(0.18, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0xff0033 })
             );
-            portal.add(glowMesh);
-            CoreEngine.worldGroup.add(portal);
+            coreEye.position.set(0, 2.2, 0.15);
+            billboardContainer.add(coreEye);
+
+            CoreEngine.dynamicGroup.add(billboardContainer);
+
+            CoreEngine.activeEntitiesArray.push({
+                rootMesh: billboardContainer,
+                spawnGridX: 5 * 4, spawnGridZ: 5 * 4,
+                ticker: 0.0, speed: 2.5
+            });
         }
 
-        // --- EYE LENS MOVEMENT & COLLISION FILTERS ENGINE ---
+        // --- CORE MOVEMENT KINEMATICS ENGINE ---
         function processPlayerKinematics(delta) {
             const currentZoneData = ZONE_MANIFEST[CoreEngine.currentZone];
-            let currentMoveSpeed = 6.0 * delta;
-            let rotationalSpeed = 2.4 * delta;
+            let currentMoveSpeed = 5.8 * delta;
+            let currentTurnSpeed = 2.4 * delta;
 
-            // Fluid resource drainage analytics tracking loops
-            CoreEngine.playerData.hydrationReserve -= currentZoneData.dehydrationRate * 8.0 * delta;
+            // Resource Depletion Loops
+            CoreEngine.playerData.hydrationReserve -= currentZoneData.dehydrationRate * 6.0 * delta;
             if (CoreEngine.playerData.hydrationReserve <= 0) {
                 CoreEngine.playerData.hydrationReserve = 0;
-                currentMoveSpeed *= 0.45;
-                CoreEngine.playerData.vitalIntegrity -= 3.0 * delta;
+                currentMoveSpeed *= 0.5;
+                CoreEngine.playerData.vitalIntegrity -= 4.0 * delta;
             }
 
-            // Continuous input track evaluation updates
-            if (CoreEngine.inputTracker.left) CoreEngine.playerData.viewAngle += rotationalSpeed;
-            if (CoreEngine.inputTracker.right) CoreEngine.playerData.viewAngle -= rotationalSpeed;
+            // Continuous Rotation Analysis
+            if (CoreEngine.inputTracker.left) CoreEngine.playerData.viewAngle += currentTurnSpeed;
+            if (CoreEngine.inputTracker.right) CoreEngine.playerData.viewAngle -= currentTurnSpeed;
 
-            let stepMoveX = 0;
-            let stepMoveZ = 0;
+            let moveVectorX = 0;
+            let moveVectorZ = 0;
 
             if (CoreEngine.inputTracker.forward) {
-                stepMoveX = Math.sin(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
-                stepMoveZ = Math.cos(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
+                moveVectorX = Math.sin(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
+                moveVectorZ = Math.cos(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
             }
             if (CoreEngine.inputTracker.backward) {
-                stepMoveX = -Math.sin(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
-                stepMoveZ = -Math.cos(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
+                moveVectorX = -Math.sin(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
+                moveVectorZ = -Math.cos(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
             }
 
-            // Theoretical Target Footprint calculations
-            let nextPredictedGridX = CoreEngine.playerData.gridX + stepMoveX;
-            let nextPredictedGridZ = CoreEngine.playerData.gridZ + stepMoveZ;
-
-            // STRICT WALL BLOCK CHECK: Stops all forward clipping and boundary phase leaks
-            if (!evaluateWallStructuralCollision(nextPredictedGridX, CoreEngine.playerData.gridZ)) {
-                CoreEngine.playerData.gridX = nextPredictedGridX;
-            }
-            if (!evaluateWallStructuralCollision(CoreEngine.playerData.gridX, nextPredictedGridZ)) {
-                CoreEngine.playerData.gridZ = nextPredictedGridZ;
+            if (moveVectorX !== 0 || moveVectorZ !== 0) {
+                // Generate procedural footstep resonance sound updates
+                if (Math.floor(CoreEngine.clock.getElapsedTime() * 4.5) % 2 === 0) {
+                    triggerProceduralFootstepClick();
+                }
             }
 
-            // STAIRCASE ALIGNMENT TRACKING: Resolves the issue of moving straight instead of climbing upward
-            const currentTileX = Math.floor(CoreEngine.playerData.gridX);
-            const currentTileZ = Math.floor(CoreEngine.playerData.gridZ);
+            let nextX = CoreEngine.playerData.gridX + moveVectorX;
+            let nextZ = CoreEngine.playerData.gridZ + moveVectorZ;
 
-            if (currentTileX >= 0 && currentTileX < CoreEngine.gridWidth && currentTileZ >= 0 && currentTileZ < CoreEngine.gridWidth) {
-                const activeToken = CoreEngine.matrixGrid[currentTileZ][currentTileX];
+            // Apply Strict Collision Boundary Checks
+            if (!checkGridCollision(nextX, CoreEngine.playerData.gridZ)) CoreEngine.playerData.gridX = nextX;
+            if (!checkGridCollision(CoreEngine.playerData.gridX, nextZ)) CoreEngine.playerData.gridZ = nextZ;
+
+            // REAL-TIME FIXED STAIRCASE TRACK LINK SYSTEM
+            const cellX = Math.floor(CoreEngine.playerData.gridX);
+            const cellZ = Math.floor(CoreEngine.playerData.gridZ);
+
+            if (cellX >= 0 && cellX < CoreEngine.gridWidth && cellZ >= 0 && cellZ < CoreEngine.gridWidth) {
+                const activeToken = CoreEngine.matrixGrid[cellZ][cellX];
                 
-                if (activeToken === 2) { // Stand on staircase field
-                    // Automatically scale elevation height smoothly if climbing keys are engaged
-                    if (CoreEngine.inputTracker.forward || CoreEngine.inputTracker.climb) {
-                        if (CoreEngine.playerData.heightY < 5.0) {
-                            CoreEngine.playerData.heightY += 3.2 * delta;
+                if (activeToken === 2) { 
+                    // When crossing onto a staircase cell, smoothly increment height index along the diagonal pitch path
+                    CoreEngine.playerData.isOnStairs = true;
+                    if (CoreEngine.inputTracker.forward) {
+                        if (CoreEngine.playerData.heightY < 4.5) {
+                            CoreEngine.playerData.heightY += 2.8 * delta;
                         }
                     }
                 } else {
-                    // Pull back down to foundation layer if stepping away from active staircase structures
-                    if (!CoreEngine.playerData.isAirborne && CoreEngine.playerData.heightY > 0.0 && CoreEngine.playerData.heightY < 4.8) {
-                        CoreEngine.playerData.heightY -= 5.0 * delta;
+                    CoreEngine.playerData.isOnStairs = false;
+                    // Return back smoothly if player retreats off active stair boundaries
+                    if (CoreEngine.playerData.heightY > 0.0 && CoreEngine.playerData.heightY < 4.2) {
+                        CoreEngine.playerData.heightY -= 4.5 * delta;
                         if (CoreEngine.playerData.heightY < 0.0) CoreEngine.playerData.heightY = 0.0;
                     }
                 }
-            }
 
-            // JUMP VERTICAL PHYSICS LOOPS MATRIX
-            if (CoreEngine.inputTracker.jump && !CoreEngine.playerData.isAirborne) {
-                CoreEngine.playerData.isAirborne = true;
-                CoreEngine.playerData.vertVelocity = 6.5;
-            }
-            if (CoreEngine.playerData.isAirborne) {
-                CoreEngine.playerData.heightY += CoreEngine.playerData.vertVelocity * delta;
-                CoreEngine.playerData.vertVelocity -= 18.0 * delta;
-                if (CoreEngine.playerData.heightY <= 0.0) {
-                    CoreEngine.playerData.heightY = 0.0;
-                    CoreEngine.playerData.isAirborne = false;
+                // Level Transition Vector Validation Check
+                if (activeToken === 3 && CoreEngine.playerData.heightY >= 4.2) {
+                    initiateZoneTransition();
                 }
             }
 
-            // PROGRESSION GATEWAY TRIGGER VALIDATION
-            if (currentTileX === 10 && currentTileZ === 12 && CoreEngine.playerData.heightY >= 4.5) {
-                initiateZoneTransitionSequence();
-            }
-
-            // SECURE THE LENS CAMERA EXACTLY TO EYE ELEVATION BENCHMARKS
-            const baseEyeHeightOffset = -0.5; // Positions camera perspective perfectly inside look socket parameters
+            // SECURE THE LENS PERSPECTIVE EXACTLY AT COMPRESSED HYBRID EYE HEIGHT
+            const structuralEyeAltitude = 0.2;
             CoreEngine.camera.position.set(
                 CoreEngine.playerData.gridX * 4,
-                baseEyeHeightOffset + CoreEngine.playerData.heightY,
+                structuralEyeAltitude + CoreEngine.playerData.heightY,
                 CoreEngine.playerData.gridZ * 4
             );
 
-            // Compute targeted focal look vectors projections ahead
-            const forwardLookTargetX = CoreEngine.camera.position.x + Math.sin(CoreEngine.playerData.viewAngle);
-            const forwardLookTargetZ = CoreEngine.camera.position.z + Math.cos(CoreEngine.playerData.viewAngle);
+            const lookTargetX = CoreEngine.camera.position.x + Math.sin(CoreEngine.playerData.viewAngle);
+            const lookTargetZ = CoreEngine.camera.position.z + Math.cos(CoreEngine.playerData.viewAngle);
             
-            CoreEngine.camera.lookAt(forwardLookTargetX, CoreEngine.camera.position.y, forwardLookTargetZ);
+            // Constrain look vector planes to achieve crisp retro pseudo-depth
+            CoreEngine.camera.lookAt(lookTargetX, CoreEngine.camera.position.y, lookTargetZ);
         }
 
-        function evaluateWallStructuralCollision(targetX, targetZ) {
-            const boundRadius = CoreEngine.playerData.playerRadius;
-            
-            // Check bounding offsets around player radius bounds box
-            const checkOffsets = [
-                [0, 0], [boundRadius, 0], [-boundRadius, 0], 
-                [0, boundRadius], [0, -boundRadius]
+        function checkGridCollision(tx, tz) {
+            const radius = CoreEngine.playerData.playerRadius;
+            const boundaries = [
+                [0, 0], [radius, 0], [-radius, 0], [0, radius], [0, -radius]
             ];
 
-            for (let i = 0; i < checkOffsets.length; i++) {
-                const evalGridX = Math.floor(targetX + checkOffsets[i][0]);
-                const evalGridZ = Math.floor(targetZ + checkOffsets[i][1]);
+            for (let i = 0; i < boundaries.length; i++) {
+                const cx = Math.floor(tx + boundaries[i][0]);
+                const cz = Math.floor(tz + boundaries[i][1]);
 
-                if (evalGridX < 0 || evalGridX >= CoreEngine.gridWidth || evalGridZ < 0 || evalGridZ >= CoreEngine.gridWidth) {
-                    return true;
-                }
-                if (CoreEngine.matrixGrid[evalGridZ][evalGridX] === 1) {
-                    return true; // Immovable structural block intersection detected
-                }
+                if (cx < 0 || cx >= CoreEngine.gridWidth || cz < 0 || cz >= CoreEngine.gridWidth) return true;
+                if (CoreEngine.matrixGrid[cz][cx] === 1) return true; 
             }
             return false;
         }
 
-        function runAutomatedDoorProximityChecks(delta) {
+        function simulateEntitiesAndBillboards(delta) {
+            const pWorldX = CoreEngine.playerData.gridX * 4;
+            const pWorldZ = CoreEngine.playerData.gridZ * 4;
+
+            CoreEngine.activeEntitiesArray.forEach(entity => {
+                entity.ticker += delta * entity.speed;
+                
+                // Continuous wandering path sweeps
+                const targetZOffset = Math.sin(entity.ticker) * 5.5;
+                entity.rootMesh.position.z = entity.spawnGridZ + targetZOffset;
+
+                // --- THE 2.5D Horizons Sprite Illusion ---
+                // Force the threat panels to actively update their rotational vectors to always 
+                // face the player camera flatly, mimicking 90s sprite techniques.
+                entity.rootMesh.lookAt(CoreEngine.camera.position.x, entity.rootMesh.position.y, CoreEngine.camera.position.z);
+
+                const dx = entity.rootMesh.position.x - pWorldX;
+                const dz = entity.rootMesh.position.z - pWorldZ;
+                const distance = Math.sqrt(dx*dx + dz*dz);
+
+                // Real-time Procedural Audio Threat Synthesis Scaling
+                if (CoreEngine.proximitySynth) {
+                    if (distance < 8.0) {
+                        const intensity = (1.0 - (distance / 8.0));
+                        CoreEngine.proximitySynth.gain.setValueAtTime(intensity * 0.4, CoreEngine.audioCtx.currentTime);
+                        
+                        // Apply static camera artifact shivers
+                        CoreEngine.camera.position.x += (Math.random() * 0.15 - 0.075) * intensity;
+                    } else {
+                        CoreEngine.proximitySynth.gain.setValueAtTime(0, CoreEngine.audioCtx.currentTime);
+                    }
+                }
+
+                if (distance < 2.8) {
+                    CoreEngine.playerData.vitalIntegrity -= 35.0 * delta;
+                }
+
+                if (CoreEngine.playerData.vitalIntegrity <= 0) {
+                    triggerFailureReset();
+                }
+            });
+        }
+
+        function checkDoorSensorTriggers(delta) {
             const pWorldX = CoreEngine.playerData.gridX * 4;
             const pWorldZ = CoreEngine.playerData.gridZ * 4;
 
             CoreEngine.activeDoorsArray.forEach(door => {
-                const distanceX = door.gridCoordX - pWorldX;
-                const distanceZ = door.gridCoordZ - pWorldZ;
-                const groundRadialDistance = Math.sqrt(distanceX * distanceX + distanceZ * distanceZ);
+                const dx = door.gridCoordX - pWorldX;
+                const dz = door.gridCoordZ - pWorldZ;
+                const groundDistance = Math.sqrt(dx*dx + dz*dz);
 
-                let isAuthorizedPassCondition = true;
-                
-                // Door checking pass requires matching the elevated staircase tier line
-                if (door.isLockedToStaircase && CoreEngine.playerData.heightY < 4.0) {
-                    isAuthorizedPassCondition = false;
-                }
-
-                if (groundRadialDistance < 4.5 && isAuthorizedPassCondition) {
-                    door.targetExtensionOffset = 1.6; // Pan panes dynamically clear to sides
+                // Gate triggers open ONLY if player matches the elevated structural tier platform height
+                if (groundDistance < 4.0 && CoreEngine.playerData.heightY >= 4.0) {
+                    door.targetAnimOffset = 1.5;
+                    if(!door.hasTriggeredAudio) {
+                        triggerDoorActivationSound();
+                        door.hasTriggeredAudio = true;
+                    }
                 } else {
-                    door.targetExtensionOffset = 0.0;
+                    door.targetAnimOffset = 0.0;
+                    if(groundDistance > 6.0 && door.hasTriggeredAudio) {
+                        door.hasTriggeredAudio = false;
+                    }
                 }
 
-                door.currentExtensionOffset += (door.targetExtensionOffset - door.currentExtensionOffset) * 6.0 * delta;
-                door.leftSlidingPane.position.x = -0.9 - door.currentExtensionOffset;
-                door.rightSlidingPane.position.x = 0.9 + door.currentExtensionOffset;
+                door.currentAnimOffset += (door.targetAnimOffset - door.currentAnimOffset) * 5.0 * delta;
+                door.leftPane.position.x = -0.95 - door.currentAnimOffset;
+                door.rightPane.position.x = 0.95 + door.currentAnimOffset;
             });
         }
 
-        // --- HUD TELEMETRY CONTROLS ---
-        function drawMinimapTelemetry() {
+        // --- HUDS & SYSTEMS TELEMETRY PANEL METRIC DRAW ---
+        function renderRadarTelemetry() {
             const canvas = document.getElementById('minimap-canvas');
             const ctx = canvas.getContext('2d');
             const size = CoreEngine.gridWidth;
-            const cellSize = canvas.width / size;
+            const cSize = canvas.width / size;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             for (let r = 0; r < size; r++) {
                 for (let c = 0; c < size; c++) {
-                    const blockValue = CoreEngine.matrixGrid[r][c];
-                    if (blockValue === 1) {
-                        ctx.fillStyle = 'rgba(196, 162, 103, 0.15)';
-                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
-                    } else if (blockValue === 2) {
-                        ctx.fillStyle = '#1d4ed8'; // Blue staircase track marker vector
-                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
-                    } else if (blockValue === 3) {
-                        ctx.fillStyle = '#10b981'; // Green escape gateway checkpoint line
-                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
-                    } else if (blockValue === 5) {
-                        ctx.fillStyle = '#bf1725'; // Locked access door tracking segment
-                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
+                    const block = CoreEngine.matrixGrid[r][c];
+                    if (block === 1) {
+                        ctx.fillStyle = 'rgba(176, 143, 84, 0.25)';
+                        ctx.fillRect(c * cSize, r * cSize, cSize - 0.5, cSize - 0.5);
+                    } else if (block === 2) {
+                        ctx.fillStyle = '#2563eb'; // Blue staircase vector marker
+                        ctx.fillRect(c * cSize, r * cSize, cSize - 0.5, cSize - 0.5);
+                    } else if (block === 3) {
+                        ctx.fillStyle = '#10b981'; // Escape gate line indicator
+                        ctx.fillRect(c * cSize, r * cSize, cSize - 0.5, cSize - 0.5);
+                    } else if (block === 5) {
+                        ctx.fillStyle = '#a8131d'; // Security clearance door tracking token
+                        ctx.fillRect(c * cSize, r * cSize, cSize - 0.5, cSize - 0.5);
                     }
                 }
             }
 
-            const radialPlayerX = CoreEngine.playerData.gridX * cellSize;
-            const radialPlayerZ = CoreEngine.playerData.gridZ * cellSize;
+            const pCanvasX = CoreEngine.playerData.gridX * cSize;
+            const pCanvasZ = CoreEngine.playerData.gridZ * cSize;
 
             ctx.beginPath();
-            ctx.arc(radialPlayerX, radialPlayerZ, 5, 0, Math.PI * 2);
-            ctx.fillStyle = '#ffffff';
+            ctx.arc(pCanvasX, pCanvasZ, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
             ctx.fill();
 
             ctx.beginPath();
-            ctx.moveTo(radialPlayerX, radialPlayerZ);
-            ctx.lineTo(
-                radialPlayerX + Math.sin(CoreEngine.playerData.viewAngle) * 15,
-                radialPlayerZ + Math.cos(CoreEngine.playerData.viewAngle) * 15
-            );
-            ctx.strokeStyle = '#bf1725';
-            ctx.lineWidth = 2.0;
+            ctx.moveTo(pCanvasX, pCanvasZ);
+            ctx.lineTo(pCanvasX + Math.sin(CoreEngine.playerData.viewAngle) * 12, pCanvasZ + Math.cos(CoreEngine.playerData.viewAngle) * 12);
+            ctx.strokeStyle = '#a8131d';
+            ctx.lineWidth = 2;
             ctx.stroke();
         }
 
-        function updateVitalsInterface() {
+        function updateVitalsPanel() {
             document.getElementById('vital-integrity-bar').style.width = `${Math.max(0, CoreEngine.playerData.vitalIntegrity)}%`;
             document.getElementById('vital-percentage-lbl').innerText = `${Math.floor(CoreEngine.playerData.vitalIntegrity)}%`;
             
@@ -985,114 +842,92 @@
             document.getElementById('hydrate-percentage-lbl').innerText = `${Math.floor(CoreEngine.playerData.hydrationReserve)}%`;
         }
 
-        function initiateZoneTransitionSequence() {
-            const nextTargetZoneIndex = CoreEngine.currentZone + 1;
-            
-            if (ZONE_MANIFEST[nextTargetZoneIndex]) {
-                CoreEngine.currentZone = nextTargetZoneIndex;
+        // --- FLOW TRANSLATIONS OVERLAY INTERACTIVITY ---
+        function initiateZoneTransition() {
+            const nextZone = CoreEngine.currentZone + 1;
+            if (ZONE_MANIFEST[nextZone]) {
+                CoreEngine.currentZone = nextZone;
                 CoreEngine.isEngineRunning = false;
                 
-                compileProceduralZoneMatrix(nextTargetZoneIndex);
-                instantiatePhysicalStructures(nextTargetZoneIndex);
+                compileProceduralMatrix(nextZone);
+                instantiatePhysicalWorld(nextZone);
                 
-                CoreEngine.playerData.gridX = 2.5;
-                CoreEngine.playerData.gridZ = 2.5;
-                CoreEngine.playerData.heightY = 0.0;
-                CoreEngine.playerData.vitalIntegrity = 100;
-                CoreEngine.playerData.hydrationReserve = 100;
+                resetPlayerStateData();
+                document.getElementById('hud-level-title').innerText = `ZONE: PHASE LINE ${nextZone}`;
+                document.getElementById('hud-level-motto').innerText = ZONE_MANIFEST[nextZone].motto;
                 
-                const levelData = ZONE_MANIFEST[nextTargetZoneIndex];
-                document.getElementById('hud-level-title').innerText = `ZONE: PHASE LINE ${nextTargetZoneIndex}`;
-                document.getElementById('hud-level-motto').innerText = levelData.motto;
-                
-                updateTVDisplay(levelData.tvRules, "ENGAGE SEQUENCING STEP");
+                showTVDisplay(ZONE_MANIFEST[nextZone].tvRules, "INITIALIZE SYSTEM BUFFER");
             } else {
                 CoreEngine.isEngineRunning = false;
-                triggerGlobalModalOverlay("SIMULATION MATRIX RESOLVED", "You successfully cleared all spatial corridors.", "RESTART SYSTEM BUILD");
+                triggerGlobalOverlay("CORE VECTOR MATRIX PURGED", "Reality parameters resolved completely. You successfully broken out of the simulation loops.", "RESTART MAIN BUFFER");
             }
         }
 
-        function executeEngineFailureReset() {
+        function triggerFailureReset() {
             CoreEngine.isEngineRunning = false;
-            triggerGlobalModalOverlay("CRITICAL OVERLOAD", "Sanity integrity desynchronized completely.", "RE-MATERIALIZE TERMINAL");
+            if (CoreEngine.proximitySynth) CoreEngine.proximitySynth.gain.setValueAtTime(0, CoreEngine.audioCtx.currentTime);
+            triggerGlobalOverlay("STRUCTURAL INTEGRITY CRITICAL", "Sanity thresholds collapsed completely within non-Euclidean corridors.", "RE-MATERIALIZE SIMULATION VECTOR");
         }
 
-        function triggerGlobalModalOverlay(title, description, buttonLabel) {
-            document.getElementById('hud-level-title').innerText = "SYSTEM RECYCLE";
+        function resetPlayerStateData() {
+            CoreEngine.playerData.gridX = 2.5;
+            CoreEngine.playerData.gridZ = 2.5;
+            CoreEngine.playerData.heightY = 0.0;
+            CoreEngine.playerData.vitalIntegrity = 100;
+            CoreEngine.playerData.hydrationReserve = 100;
+        }
+
+        function triggerGlobalOverlay(title, desc, btnLabel) {
             document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-desc').innerText = description;
-            document.getElementById('modal-action-btn').innerText = buttonLabel;
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('modal-action-btn').innerText = btnLabel;
             document.getElementById('game-state-modal').style.display = 'flex';
         }
 
-        // --- MOBILE TOUCH virtuales CONTROL MATRIX ---
-        function attachMobileTouchVirtualControls() {
-            bindSingleTouchElement('m-up', 'forward');
-            bindSingleTouchElement('m-down', 'backward');
-            bindSingleTouchElement('m-left', 'left');
-            bindSingleTouchElement('m-right', 'right');
-            bindSingleTouchElement('m-stair', 'climb');
-            bindSingleTouchElement('m-jump', 'jump');
-        }
-
-        function bindSingleTouchElement(elementID, trackingControlProperty) {
-            const btn = document.getElementById(elementID);
-            if (!btn) return;
-            btn.addEventListener('touchstart', (e) => { e.preventDefault(); CoreEngine.inputTracker[trackingControlProperty] = true; });
-            btn.addEventListener('touchend', (e) => { e.preventDefault(); CoreEngine.inputTracker[trackingControlProperty] = false; });
-        }
-
-        function bindStateControlInterfaceTriggers() {
+        function bindTriggers() {
             document.getElementById('tv-power-btn').addEventListener('click', () => {
                 if (CoreEngine.currentZone === 0) {
-                    compileProceduralZoneMatrix(0);
-                    instantiatePhysicalStructures(0);
+                    compileProceduralMatrix(0);
+                    instantiatePhysicalWorld(0);
                 }
-                dismissIntermissionOverlay();
+                document.getElementById('tv-intermission-overlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('tv-intermission-overlay').style.display = 'none';
+                    CoreEngine.isEngineRunning = true;
+                }, 600);
             });
 
             document.getElementById('modal-action-btn').addEventListener('click', () => {
                 document.getElementById('game-state-modal').style.display = 'none';
                 CoreEngine.currentZone = 0;
-                compileProceduralZoneMatrix(0);
-                instantiatePhysicalStructures(0);
+                compileProceduralMatrix(0);
+                instantiatePhysicalWorld(0);
+                resetPlayerStateData();
                 
-                CoreEngine.playerData.gridX = 2.5; CoreEngine.playerData.gridZ = 2.5; CoreEngine.playerData.heightY = 0.0;
-                CoreEngine.playerData.vitalIntegrity = 100; CoreEngine.playerData.hydrationReserve = 100;
-
-                const bData = ZONE_MANIFEST[0];
                 document.getElementById('hud-level-title').innerText = `ZONE: PHASE LINE 0`;
-                document.getElementById('hud-level-motto').innerText = bData.motto;
-                updateTVDisplay(bData.tvRules, "INITIALIZE REALITY MATRIX");
+                document.getElementById('hud-level-motto').innerText = ZONE_MANIFEST[0].motto;
+                showTVDisplay(ZONE_MANIFEST[0].tvRules, "BOOT RENDER SEGMENT");
             });
         }
 
-        function updateTVDisplay(markupHTML, buttonLabelText) {
+        function showTVDisplay(htmlMarkup, btnLabel) {
             CoreEngine.isEngineRunning = false;
-            document.getElementById('tv-terminal-display').innerHTML = markupHTML;
-            document.getElementById('tv-power-btn').innerText = buttonLabelText;
+            document.getElementById('tv-terminal-display').innerHTML = htmlMarkup;
+            document.getElementById('tv-power-btn').innerText = btnLabel;
             document.getElementById('tv-intermission-overlay').style.display = 'flex';
             document.getElementById('tv-intermission-overlay').style.opacity = '1';
         }
 
-        function dismissIntermissionOverlay() {
-            document.getElementById('tv-intermission-overlay').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('tv-intermission-overlay').style.display = 'none';
-                CoreEngine.isEngineRunning = true;
-            }, 800);
-        }
-
-        function executeMasterRenderTick() {
-            requestAnimationFrame(executeMasterRenderTick);
-            const deltaSeconds = CoreEngine.clock.getDelta();
+        function runMasterFrameTick() {
+            requestAnimationFrame(runMasterFrameTick);
+            const delta = CoreEngine.clock.getDelta();
 
             if (CoreEngine.isEngineRunning) {
-                processPlayerKinematics(deltaSeconds);
-                processEntitiesSimulation(deltaSeconds);
-                runAutomatedDoorProximityChecks(deltaSeconds);
-                drawMinimapTelemetry();
-                updateVitalsInterface();
+                processPlayerKinematics(delta);
+                simulateEntitiesAndBillboards(delta);
+                checkDoorSensorTriggers(delta);
+                renderRadarTelemetry();
+                updateVitalsPanel();
             }
             CoreEngine.renderer.render(CoreEngine.scene, CoreEngine.camera);
         }
@@ -1101,15 +936,14 @@
             document.getElementById('engine-boot-screen').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('engine-boot-screen').style.display = 'none';
-                updateTVDisplay(ZONE_MANIFEST[0].tvRules, "INITIALIZE SYSTEM SYSTEM");
-            }, 800);
+                showTVDisplay(ZONE_MANIFEST[0].tvRules, "ENGAGE HYBRID PIPELINE");
+            }, 600);
         });
 
         window.onload = function() {
             initEngineContext();
-            attachMobileTouchVirtualControls();
-            bindStateControlInterfaceTriggers();
-            executeMasterRenderTick();
+            bindTriggers();
+            runMasterFrameTick();
         };
     </script>
 </body>
