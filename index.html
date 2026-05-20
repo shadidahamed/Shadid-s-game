@@ -3,65 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>DEAD ZONE: HORIZON RUNNER</title>
+    <title>DEAD ZONE: Tactician Edition - Portrait</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="master-viewport">
-        <!-- Arcade Ambient FX Layer -->
-        <div class="crt-overlay"></div>
-        <div id="damage-vignette"></div>
+    <!-- Main Game Container Optimized for Mobile Portrait Stack -->
+    <div id="display-wrapper">
         
-        <!-- The Core 3D Render Engine Viewport -->
-        <canvas id="runnerCanvas" width="800" height="450"></canvas>
+        <!-- Retro CRT Monitor Scanner Screen Effect Filters Overlay -->
+        <div class="crt-scanlines"></div>
+        <div id="damage-flash"></div>
 
-        <!-- Tactical Real-Time Telemetry Overlays -->
-        <div id="diagnostic-hud">
-            <div class="hud-group">
-                <div class="hud-item"><span class="label">VITAL:</span> <span id="hud-hp" class="value text-red">100%</span></div>
-                <div class="hud-item"><span class="label">SCORE:</span> <span id="hud-score" class="value text-orange">0000</span></div>
+        <!-- System Management Header Bar -->
+        <div id="sys-header-bar">
+            <button id="btn-pause-toggle" class="sys-icon-btn">⏸ PAUSE</button>
+            <button id="btn-quit-game" class="sys-icon-btn">✖ QUIT</button>
+        </div>
+
+        <!-- Heads Up Data Display -->
+        <div id="hud-overlay">
+            <div class="hud-group left-group">
+                <div class="hud-card bios-card">VITAL: <span id="hp-display">100</span>%</div>
+                <div class="hud-card sector-card">SECTOR: <span id="level-display">1</span>/5</div>
             </div>
-            <div class="hud-group">
-                <div id="desktop-controls-legend" class="pc-only-tip">KEYS: ←/→ TO MOVE | ↑ TO JUMP | ↓ TO SLIDE | 1/2/3 GEARS</div>
-                <button id="pause-trigger-btn" class="mini-hud-btn">II</button>
+            <div class="hud-group right-group">
+                <div class="hud-card score-card">SCORE: <span id="score-display">0000</span></div>
+                <div class="hud-card comp-card">COMPANION: <span id="comp-display">ACTIVE</span></div>
             </div>
         </div>
 
-        <!-- Interactive System State Overlays -->
-        <div id="modal-system-overlay">
-            <div class="modal-window main-box" id="menu-start">
-                <h1>DEAD ZONE</h1>
-                <div class="orange-bar"></div>
-                <p>3D HYPER-VELOCITY LABYRINTH RUNNER</p>
-                <button class="control-btn run-btn" onclick="triggerEngineState('START_GAME')">ENGAGE RUN PLATFORM</button>
-            </div>
+        <!-- Main Raycast Core Renderer Viewport (Portrait Aspect Ratio) -->
+        <canvas id="gameCanvas" width="400" height="480"></canvas>
 
-            <div class="modal-window death-box" id="menu-death" style="display: none;">
-                <h2>VITAL CORRUPTION DETECTED</h2>
-                <div class="red-bar"></div>
-                <p id="death-penalty-msg">SYSTEM CRASH. DATA STORAGE PENALIZED BY 50%</p>
-                <button class="control-btn reset-btn" onclick="triggerEngineState('RESTART_RUN')">RE-INITIALIZE RUNNER SYSTEM</button>
-            </div>
-
-            <div class="modal-window break-box" id="menu-pause" style="display: none;">
-                <h2>SIMULATION ON STANDBY</h2>
-                <div class="orange-bar"></div>
-                <button class="control-btn run-btn" onclick="triggerEngineState('RESUME_RUN')">RESUME INTERACTIVE STREAM</button>
-                <button class="control-btn quit-btn" onclick="triggerEngineState('QUIT_TO_MAIN')">TERMINATE RUN PROCESS</button>
+        <!-- Central State Contextual Terminal Menu -->
+        <div id="menu-overlay">
+            <div class="terminal-box">
+                <h1 id="menu-title">DEAD ZONE</h1>
+                <div class="glitch-line"></div>
+                <p id="menu-subtitle">2.5D STEALTH RAYCAST ENGINE • PORTRAIT V2</p>
+                <div id="level-indicator" style="display: none;"></div>
+                <div class="menu-actions">
+                    <button id="btn-primary" class="menu-btn">ENGAGE INFILTRATION</button>
+                </div>
             </div>
         </div>
 
-        <!-- Mobile-Only Physical Controller Deck (Automatically Drops to 0px height on PC) -->
-        <div id="portrait-command-deck">
-            <div class="steering-bay">
-                <div id="steering-wheel-disc"><div class="grip-top"></div></div>
-                <div class="steering-readout">TOUCH-STEER RAILWAY</div>
+        <!-- Pop-up Death Diagnostics Alert Modal Interface -->
+        <div id="death-modal" class="modal-blur-layer" style="display: none;">
+            <div class="danger-box">
+                <div class="skull-icon">☠</div>
+                <h2>BIO-SIGN FLATLINE</h2>
+                <p>SECTOR INFILTRATION MATRIX COMPROMISED.</p>
+                <div class="score-penalty-log">COMPANION LOSS / SCORE REDUCED BY 50%</div>
+                <button id="btn-modal-restart" class="menu-btn fatal-btn">RESTART SECTOR RUN</button>
             </div>
-            <div class="gear-bay">
-                <button id="gear-still" class="gear-btn">STILL</button>
-                <button id="gear-scout" class="gear-btn active-gear">SCOUT</button>
-                <button id="gear-blitz" class="gear-btn warning-flash">BLITZ</button>
+        </div>
+
+        <!-- Mobile High-Performance Tactician Input Deck -->
+        <div id="mobile-control-deck">
+            
+            <!-- Analog Steering Wheel Wheel Disc Control Module -->
+            <div class="steering-wrapper">
+                <div id="steering-wheel-disc">
+                    <div class="wheel-center-hub"></div>
+                    <div class="wheel-spoke spoke-v"></div>
+                    <div class="wheel-spoke spoke-h"></div>
+                    <div id="wheel-indicator-dot"></div>
+                </div>
+                <span class="control-label">STEER ROTATION</span>
+            </div>
+
+            <!-- Action Grid Matrix Buttons -->
+            <div id="action-grid">
+                <button id="btn-pace-still" class="action-btn still-btn">STAND STILL</button>
+                <button id="btn-pace-run" class="action-btn pace-btn active-pace">TACTICAL WALK</button>
+                <button id="btn-pace-dash" class="action-btn dash-btn">RUN FOR LIFE</button>
             </div>
         </div>
     </div>
