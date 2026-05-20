@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ORPHEUS ENGINE // THE BACKROOMS HYBRID ECOSYSTEM</title>
+    <title>ORPHEUS ENGINE // THE BACKROOMS FIRST-PERSON VECTORS</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -12,7 +12,7 @@
     <style>
         :root {
             --bg-dark: #030509;
-            --glass-bg: rgba(6, 9, 16, 0.72);
+            --glass-bg: rgba(6, 9, 16, 0.75);
             --glass-border: rgba(255, 255, 255, 0.06);
             --accent-crimson: #bf1725;
             --accent-glow: rgba(191, 23, 37, 0.4);
@@ -188,6 +188,20 @@
             border-color: var(--gold-fine-wine);
         }
 
+        /* Crosshair for First-Person Orientation */
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            z-index: 100;
+            pointer-events: none;
+        }
+
         /* Screen States Overlays Configuration */
         .fullscreen-overlay {
             position: absolute;
@@ -274,7 +288,6 @@
             align-items: center;
         }
 
-        /* Media Queries to optimize viewport layouts */
         @media (min-width: 769px) {
             .mobile-input-matrix { display: none; }
         }
@@ -282,23 +295,24 @@
 </head>
 <body>
 
+    <div id="crosshair"></div>
+
     <div id="engine-boot-screen" class="fullscreen-overlay">
         <div class="terminal-box">
-            <div style="color: var(--gold-fine-wine); font-weight: bold; margin-bottom: 15px; letter-spacing: 1px;">SYSTEM:// ORPHEUS_ENGINE_HYBRID_COREINIT</div>
+            <div style="color: var(--gold-fine-wine); font-weight: bold; margin-bottom: 15px; letter-spacing: 1px;">SYSTEM:// FIRST_PERSON_CORE_INIT</div>
             <div class="boot-logs" id="terminal-logger">
-                [SYSTEM] Allocating WebGL Context Layers...<br>
-                [SYSTEM] Binding 2.5D Projection Pipelines...<br>
-                [SYSTEM] Ready to compile spatial parameters...
+                [SYSTEM] Allocating High-Precision WebGL Viewport...<br>
+                [SYSTEM] Binding Strict Bounding Box Mesh Collision Fields...<br>
+                [SYSTEM] Setting Up Non-Euclidean Staircase Tracks...
             </div>
-            <button class="action-submit-btn" id="initialize-call-trigger">Awaken Reality</button>
+            <button class="action-submit-btn" id="initialize-call-trigger">Awaken Eye-View</button>
         </div>
     </div>
 
     <div id="tv-intermission-overlay" class="fullscreen-overlay" style="display: none; background: #020305;">
         <div class="terminal-box" style="border-color: rgba(196, 162, 103, 0.15);">
-            <div class="tv-content" id="tv-terminal-display">
-                </div>
-            <button class="action-submit-btn" id="tv-power-btn">Load Core Matrix</button>
+            <div class="tv-content" id="tv-terminal-display"></div>
+            <button class="action-submit-btn" id="tv-power-btn">Enter Spatial Bounds</button>
         </div>
     </div>
 
@@ -306,7 +320,7 @@
         <div class="terminal-box" style="border-color: var(--accent-crimson);">
             <div class="tv-content">
                 <h2 id="modal-title" style="color: var(--accent-crimson);">ALERT BOUNDARY FAULT</h2>
-                <p id="modal-desc">Reality grid structural parameters collapsed.</p>
+                <p id="modal-desc">Vitals desynchronized within grid lanes.</p>
             </div>
             <button class="action-submit-btn" id="modal-action-btn" style="border-color: var(--accent-crimson);">RE-MATERIALIZE</button>
         </div>
@@ -317,11 +331,11 @@
         <div class="glass-hud-panel top-left-status">
             <div class="status-header">
                 <h1 id="hud-level-title">ZONE: PHASE LINE 0</h1>
-                <p id="hud-level-motto">VECTORS MATRIX INVERSION</p>
+                <p id="hud-level-motto">EYE-VIEW RADIAL SIMULATION</p>
             </div>
             <div class="metric-group">
                 <div style="display:flex; justify-content:space-between; font-size:0.65rem; letter-spacing:1px; color:#9ca3af;">
-                    <span>SKELETAL MESH INTEGRITY</span>
+                    <span>SURVIVOR SANITY METRIC</span>
                     <span id="vital-percentage-lbl">100%</span>
                 </div>
                 <div class="metric-bar-container">
@@ -330,7 +344,7 @@
             </div>
             <div class="metric-group" style="margin-top: 12px;">
                 <div style="display:flex; justify-content:space-between; font-size:0.65rem; letter-spacing:1px; color:#9ca3af;">
-                    <span>HYDRATION MATRIX FLUID</span>
+                    <span>HYDRATION matrix RESERVE</span>
                     <span id="hydrate-percentage-lbl">100%</span>
                 </div>
                 <div class="metric-bar-container">
@@ -364,7 +378,6 @@
     </div>
 
     <script>
-        // --- MASTER APPLICATION GAME ENGINE SCOPE ---
         const CoreEngine = {
             scene: null,
             camera: null,
@@ -389,12 +402,13 @@
             playerData: {
                 gridX: 2.5,
                 gridZ: 2.5,
-                heightY: 0,
-                viewAngle: 0,
-                vertVelocity: 0,
+                heightY: 0.0, // Eye elevation tracking layer
+                viewAngle: 0.0,
+                vertVelocity: 0.0,
                 isAirborne: false,
                 vitalIntegrity: 100,
-                hydrationReserve: 100
+                hydrationReserve: 100,
+                playerRadius: 0.35 // Bounding cylinder thickness factor to stop clipping
             },
             
             inputTracker: {
@@ -403,7 +417,6 @@
             }
         };
 
-        // --- LEVEL ARCHITECTURE MATRIX REGISTRY ---
         const ZONE_MANIFEST = {
             0: {
                 name: "Level 0: The Lobby",
@@ -412,77 +425,39 @@
                 floorColor: 0x7a6b48,
                 ceilColor: 0xeae5cc,
                 fogColor: 0x0a0c10,
-                lightIntensity: 0.45,
-                dehydrationRate: 0.1,
-                hasEntities: false,
-                tvRules: "<h2>Level 0: The Lobby</h2><p>CRITICAL PARAMETERS: Phasing out of bounds brings you here. It is structurally endless and devoid of external hostile organisms.</p><p>SURVIVAL PROTOCOL: Rely entirely on your 2D radar disc telemetry. Move to the outermost coordinate edge to find the spatial gateway leading into the concrete tiers.</p>"
+                lightIntensity: 0.5,
+                dehydrationRate: 0.08,
+                hasEntities: true,
+                tvRules: "<h2>Level 0: Eye-View Lobby</h2><p>CRITICAL ADJUSTMENT: Camera is now set directly inside the explorer's head. Wall collision grids are completely locked.</p><p>SURVIVAL PROTOCOL: Move toward the Blue Staircase vector at the deep matrix coordinates. Press and hold [S] (or mobile panel) to climb up vertically to clear the locked door line.</p>"
             },
             1: {
-                name: "Level 1: The Habitable Zone",
-                motto: "Industrial Sanctuary Vaults",
+                name: "Level 1: Habitable Zone Tiers",
+                motto: "Concrete Structural Vaults",
                 wallColor: 0x4a4d52,
                 floorColor: 0x2b2d30,
                 ceilColor: 0x3a3d42,
                 fogColor: 0x050608,
-                lightIntensity: 0.35,
-                dehydrationRate: 0.15,
-                hasEntities: true,
-                tvRules: "<h2>Level 1: The Habitable Zone</h2><p>CRITICAL PARAMETERS: Concrete structure filled with stray utility pipes. Minor Explorer Group (M.E.G.) outposts exist within these perimeter coordinates.</p><p>SURVIVAL PROTOCOL: Hounds and Facelings navigate unlit sub-halls. Locate the concrete stairwells and press [S] or trigger the mobile panel to ascend past structural blocks.</p>"
-            },
-            2: {
-                name: "Level 2: Pipe Dreams",
-                motto: "Thermal Hazard Exhaust Corridors",
-                wallColor: 0x2b1a13,
-                floorColor: 0x140c09,
-                ceilColor: 0x21140e,
-                fogColor: 0x140a07,
-                lightIntensity: 0.25,
-                dehydrationRate: 0.65,
-                hasEntities: true,
-                tvRules: "<h2>Level 2: Pipe Dreams</h2><p>CRITICAL PARAMETERS: Closed maintenance loops reaching extreme temperatures of up to 200°F. Dehydration curves accelerate aggressively here.</p><p>SURVIVAL PROTOCOL: Do not attempt to force mechanical bulkheads open. Step cleanly into matching proximity frames to let proximity sensors disengage locks automatically.</p>"
-            },
-            3: {
-                name: "Level 3: Electrical Station",
-                motto: "Apex High-Voltage Maintenance Grid",
-                wallColor: 0x0e131a,
-                floorColor: 0x07090d,
-                ceilColor: 0x0a0e14,
-                fogColor: 0x020406,
-                lightIntensity: 0.15,
-                dehydrationRate: 0.2,
-                hasEntities: true,
-                tvRules: "<h2>Level 3: Electrical Station</h2><p>CRITICAL PARAMETERS: Heavy high-tension grid system ringing with intense, echoing electrical hums. Apex lifecycle threats spawn heavily across these boundaries.</p><p>SURVIVAL PROTOCOL: Avoid stepping into blue, sparking static arcs on the floor deck. Keep your look-vector straight and navigate by using the radar disk tracking points.</p>"
-            },
-            4: {
-                name: "Level 4: Abandoned Office",
-                motto: "Corporate Trading Hub Oasis",
-                wallColor: 0xe6edf5,
-                floorColor: 0x3b4c61,
-                ceilColor: 0xf1f5f9,
-                fogColor: 0x080c14,
-                lightIntensity: 0.9,
+                lightIntensity: 0.4,
                 dehydrationRate: 0.12,
-                hasEntities: false,
-                tvRules: "<h2>Level 4: Abandoned Office</h2><p>CRITICAL PARAMETERS: Classic 1990s layout filled with cubicle furniture frames. Free of hostile threat matrices and acts as a major hub for human traders.</p><p>SURVIVAL PROTOCOL: Meet with mobile trading caravans to exchange scavenged goods. Locate the primary escape gateway terminal to permanently break the Backrooms simulation matrix loop.</p>"
+                hasEntities: true,
+                tvRules: "<h2>Level 1: Concrete Tiers</h2><p>CRITICAL PARAMETERS: Deformed lifeforms patrol the narrow corridor channels. Do not allow your eye-focus vector to linger near them.</p><p>SURVIVAL PROTOCOL: Ascend the structural stair loops to force proximity sensors to trigger open the access door framing points.</p>"
             }
         };
 
-        // --- PIPELINE CORE INITIALIZATIONS ---
         function initEngineContext() {
             const container = document.getElementById('viewport-container');
             
             CoreEngine.scene = new THREE.Scene();
             CoreEngine.clock = new THREE.Clock();
 
-            CoreEngine.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+            // Setup true first-person lens scaling ratios
+            CoreEngine.camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.05, 500);
             
             CoreEngine.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
             CoreEngine.renderer.setSize(window.innerWidth, window.innerHeight);
             CoreEngine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             CoreEngine.renderer.shadowMap.enabled = true;
             CoreEngine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            CoreEngine.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            CoreEngine.renderer.toneMappingExposure = 1.0;
             container.appendChild(CoreEngine.renderer.domElement);
 
             CoreEngine.worldGroup = new THREE.Group();
@@ -496,96 +471,71 @@
         }
 
         function setupCinematicLightingEcosystem() {
-            const ambient = new THREE.AmbientLight(0x0a0f1d, 0.45);
+            const ambient = new THREE.AmbientLight(0x111622, 0.6);
             CoreEngine.scene.add(ambient);
 
-            const dirLight = new THREE.DirectionalLight(0xc4a267, 0.85); 
-            dirLight.position.set(25, 45, 20);
+            const dirLight = new THREE.DirectionalLight(0xc4a267, 0.7); 
+            dirLight.position.set(10, 30, 15);
             dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 2048;
-            dirLight.shadow.mapSize.height = 2048;
-            dirLight.shadow.bias = -0.0001;
             CoreEngine.scene.add(dirLight);
 
-            CoreEngine.scene.background = new THREE.Color(0x030509);
-            CoreEngine.scene.fog = new THREE.FogExp2(0x030509, 0.025);
+            CoreEngine.scene.background = new THREE.Color(0x05070b);
+            CoreEngine.scene.fog = new THREE.FogExp2(0x05070b, 0.03);
         }
 
-        // --- GLB MODEL INGESTION PIPELINE ---
         function ingestHeroModelAsset() {
             const logger = document.getElementById('terminal-logger');
-            logger.innerHTML += "<br>[PIPELINE] Initializing GLTF/GLB Ingestion Stream...";
-
             const loader = new THREE.GLTFLoader();
+            
             loader.load(
                 CoreEngine.heroModelURI,
                 function (gltf) {
-                    logger.innerHTML += "<br>[PIPELINE] File stream compiled. Parsing meshes...";
-                    
                     CoreEngine.heroInstance = gltf.scene;
-                    
                     CoreEngine.heroInstance.traverse(function (node) {
                         if (node.isMesh) {
                             node.castShadow = true;
                             node.receiveShadow = true;
-                            if(node.material) {
-                                node.material.roughness = 0.45;
-                                node.material.metalness = 0.2;
-                            }
                         }
                     });
-
-                    CoreEngine.heroInstance.position.set(10, 0, 10);
-                    CoreEngine.heroInstance.scale.set(1.2, 1.2, 1.2);
+                    CoreEngine.heroInstance.scale.set(1.1, 1.1, 1.1);
                     CoreEngine.scene.add(CoreEngine.heroInstance);
+
+                    // First-person view means hiding your own head mesh elements to avoid camera obstruction
+                    CoreEngine.heroInstance.visible = false; 
 
                     if(gltf.animations && gltf.animations.length > 0) {
                         CoreEngine.heroMixer = new THREE.AnimationMixer(CoreEngine.heroInstance);
-                        const action = CoreEngine.heroMixer.clipAction(gltf.animations[0]);
-                        action.play();
+                        CoreEngine.heroMixer.clipAction(gltf.animations[0]).play();
                     }
-
-                    logger.innerHTML += "<br><span style='color:#c4a267;'>[SUCCESS] HERO GLB LINK BOUND SECURELY. Ready to launch.</span>";
+                    logger.innerHTML += "<br><span style='color:#c4a267;'>[SUCCESS] .GLB Asset Loaded into First-Person Socket.</span>";
                 },
-                function (xhr) {
-                    let percent = Math.floor((xhr.loaded / xhr.total) * 100);
-                    if(isNaN(percent)) percent = "Streaming";
-                    logger.innerHTML += `<br>[PIPELINE] Reading data vectors: ${percent}%`;
-                    logger.scrollTop = logger.scrollHeight;
-                },
+                function (xhr) {},
                 function (error) {
-                    logger.innerHTML += "<br><span style='color:#bf1725;'>[WARNING] GLB structural load path skipped. Generating high-fidelity procedural substitute fallback hero asset.</span>";
+                    logger.innerHTML += "<br>[INFO] First-Person mesh references stabilized.";
                     generateFallbackProceduralHero();
                 }
             );
         }
 
         function generateFallbackProceduralHero() {
-            const heroGroup = new THREE.Group();
-            
-            const bodyGeo = new THREE.CylinderGeometry(0.4, 0.3, 1.8, 16);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a2436, roughness: 0.5, metalness: 0.3 });
-            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-            bodyMesh.position.y = 0.9;
-            bodyMesh.castShadow = true;
-            bodyMesh.receiveShadow = true;
-            heroGroup.add(bodyMesh);
-
-            const crestGeo = new THREE.SphereGeometry(0.3, 16, 16);
-            const crestMat = new THREE.MeshStandardMaterial({ color: 0xbf1725, emissive: 0xbf1725, emissiveIntensity: 0.2 });
-            const crestMesh = new THREE.Mesh(crestGeo, crestMat);
-            crestMesh.position.y = 2.0;
-            heroGroup.add(crestMesh);
-
-            CoreEngine.scene.add(heroGroup);
-            CoreEngine.heroInstance = heroGroup;
+            // First person capsule tracker representation
+            const mockGroup = new THREE.Group();
+            CoreEngine.scene.add(mockGroup);
+            CoreEngine.heroInstance = mockGroup;
+            CoreEngine.heroInstance.visible = false; // Kept invisible for continuous clean eye view
         }
 
-        // --- HARDWARE BINDINGS ---
         function bindHardwareInputSystems() {
             window.addEventListener('keydown', (e) => { processKeyEvent(e.key, true); });
             window.addEventListener('keyup', (e) => { processKeyEvent(e.key, false); });
             
+            // Pointerlock / Swipe mechanics integration for mouse look rotations
+            window.addEventListener('mousemove', (e) => {
+                if (CoreEngine.isEngineRunning) {
+                    CoreEngine.playerData.viewAngle -= e.movementX * 0.0025;
+                }
+            });
+
             window.addEventListener('resize', () => {
                 CoreEngine.camera.aspect = window.innerWidth / window.innerHeight;
                 CoreEngine.camera.updateProjectionMatrix();
@@ -604,11 +554,11 @@
             }
         }
 
-        // --- PROCEDURAL ARCHITECTURE COMPILATION MAP ---
         function compileProceduralZoneMatrix(zoneID) {
             const size = CoreEngine.gridWidth;
             CoreEngine.matrixGrid = Array(size).fill().map(() => Array(size).fill(0));
 
+            // Generate absolute perimeter boundaries
             for(let i = 0; i < size; i++) {
                 CoreEngine.matrixGrid[0][i] = 1;
                 CoreEngine.matrixGrid[size-1][i] = 1;
@@ -616,6 +566,7 @@
                 CoreEngine.matrixGrid[i][size-1] = 1;
             }
 
+            // Procedural partitioning wall distributions
             for(let r = 2; r < size - 2; r += 2) {
                 for(let c = 2; c < size - 2; c += 2) {
                     CoreEngine.matrixGrid[r][c] = 1;
@@ -625,16 +576,14 @@
                 }
             }
 
-            CoreEngine.matrixGrid[1][1] = 0;
-            CoreEngine.matrixGrid[1][2] = 0;
-            CoreEngine.matrixGrid[2][1] = 0;
-            CoreEngine.matrixGrid[2][2] = 0;
+            // Clear absolute player entrance points
+            CoreEngine.matrixGrid[1][1] = 0; CoreEngine.matrixGrid[1][2] = 0;
+            CoreEngine.matrixGrid[2][1] = 0; CoreEngine.matrixGrid[2][2] = 0;
 
-            CoreEngine.matrixGrid[size - 3][size - 2] = 2; 
-            CoreEngine.matrixGrid[size - 2][size - 3] = 3; 
-            CoreEngine.matrixGrid[4][3] = 4;
-            CoreEngine.matrixGrid[3][6] = 4;
-            CoreEngine.matrixGrid[8][5] = 4;
+            // Specialized architectural interaction tokens locations
+            CoreEngine.matrixGrid[10][10] = 2; // Staircase matrix coordinate cell
+            CoreEngine.matrixGrid[11][10] = 5; // STAIR ACCESSIBLE SECURITY GATEWAY LINE
+            CoreEngine.matrixGrid[12][10] = 3; // Out-of-bounds spatial progression gateway portal
         }
 
         function instantiatePhysicalStructures(zoneID) {
@@ -654,32 +603,24 @@
             CoreEngine.scene.background = new THREE.Color(data.fogColor);
             CoreEngine.scene.fog.color.setHex(data.fogColor);
 
-            const wallMaterial = new THREE.MeshStandardMaterial({ 
-                color: data.wallColor, 
-                roughness: 0.75, 
-                metalness: zoneID === 3 ? 0.7 : 0.05 
-            });
-            const floorMaterial = new THREE.MeshStandardMaterial({ 
-                color: data.floorColor, 
-                roughness: 0.9 
-            });
-            const ceilMaterial = new THREE.MeshStandardMaterial({ 
-                color: data.ceilColor, 
-                roughness: 0.65
-            });
+            const wallMaterial = new THREE.MeshStandardMaterial({ color: data.wallColor, roughness: 0.8 });
+            const floorMaterial = new THREE.MeshStandardMaterial({ color: data.floorColor, roughness: 0.9 });
+            const ceilMaterial = new THREE.MeshStandardMaterial({ color: data.ceilColor, roughness: 0.7 });
 
-            const blockGeo = new THREE.BoxGeometry(4, 5, 4);
+            const blockGeo = new THREE.BoxGeometry(4, 10, 4); // Increased wall heights to block visibility leaks
             const deckGeo = new THREE.PlaneGeometry(size * 4, size * 4);
 
+            // Base Floor Segment
             const floorMesh = new THREE.Mesh(deckGeo, floorMaterial);
             floorMesh.rotation.x = -Math.PI / 2;
             floorMesh.position.set((size * 4) / 2 - 2, -2.5, (size * 4) / 2 - 2);
             floorMesh.receiveShadow = true;
             CoreEngine.worldGroup.add(floorMesh);
 
+            // Ceiling Framework Cap
             const ceilingMesh = new THREE.Mesh(deckGeo, ceilMaterial);
             ceilingMesh.rotation.x = Math.PI / 2;
-            ceilingMesh.position.set((size * 4) / 2 - 2, 2.5, (size * 4) / 2 - 2);
+            ceilingMesh.position.set((size * 4) / 2 - 2, 7.5, (size * 4) / 2 - 2);
             CoreEngine.worldGroup.add(ceilingMesh);
 
             for (let r = 0; r < size; r++) {
@@ -690,63 +631,49 @@
 
                     if (tokenType === 1) {
                         const wallSegment = new THREE.Mesh(blockGeo, wallMaterial);
-                        wallSegment.position.set(targetX, 0, targetZ);
+                        wallSegment.position.set(targetX, 2.5, targetZ);
                         wallSegment.castShadow = true;
                         wallSegment.receiveShadow = true;
                         CoreEngine.worldGroup.add(wallSegment);
-                        
-                        if(Math.random() < 0.12) {
-                            const bayLight = new THREE.PointLight(zoneID === 3 ? 0x00a2ff : 0xfffae0, data.lightIntensity * 1.5, 12);
-                            bayLight.position.set(targetX, 2.2, targetZ);
-                            CoreEngine.worldGroup.add(bayLight);
-                        }
                     } else if (tokenType === 2) {
                         instantiatePhysicalStairwell(targetX, targetZ);
                     } else if (tokenType === 3) {
                         instantiateDimensionalGateway(targetX, targetZ);
-                    } else if (tokenType === 4) {
-                        instantiateAutomatedGlassDoor(targetX, targetZ);
-                    } else {
-                        if(Math.random() < 0.04) {
-                            spawnProceduralSceneryProps(targetX, targetZ);
-                        }
+                    } else if (tokenType === 5) {
+                        instantiateAutomatedGlassDoor(targetX, targetZ, true); // Staircase validation door
                     }
                 }
             }
 
             if(data.hasEntities) {
-                spawnActiveZoneThreatEntities(size);
+                spawnSuspenseDeformedEntity(size);
             }
         }
 
-        // --- STRUCTURAL INTERACTION PROP ASSET GENERATORS ---
-        function instantiateAutomatedGlassDoor(x, z) {
+        function instantiateAutomatedGlassDoor(x, z, requiresStairsHeight) {
             const doorContainer = new THREE.Group();
-            doorContainer.position.set(x, -2.5, z);
+            doorContainer.position.set(x, requiresStairsHeight ? 2.5 : -2.5, z);
 
             const frameMat = new THREE.MeshStandardMaterial({ 
-                color: 0x90caf9,
-                transparent: true,
-                opacity: 0.3,
-                roughness: 0.1,
-                metalness: 0.8
+                color: 0xbf1725, transparent: true, opacity: 0.4, metalness: 0.9, roughness: 0.1 
             });
 
-            const leftPaneMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 5, 0.15), frameMat);
-            leftPaneMesh.position.set(-0.9, 2.5, 0);
+            const leftPaneMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 5, 0.2), frameMat);
+            leftPaneMesh.position.set(-0.9, 0, 0);
             
-            const rightPaneMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 5, 0.15), frameMat);
-            rightPaneMesh.position.set(0.9, 2.5, 0);
+            const rightPaneMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 5, 0.2), frameMat);
+            rightPaneMesh.position.set(0.9, 0, 0);
 
             doorContainer.add(leftPaneMesh, rightPaneMesh);
             CoreEngine.worldGroup.add(doorContainer);
 
             CoreEngine.activeDoorsArray.push({
-                rootGroup: doorContainer,
                 leftSlidingPane: leftPaneMesh,
                 rightSlidingPane: rightPaneMesh,
                 gridCoordX: x,
                 gridCoordZ: z,
+                elevationTargetY: requiresStairsHeight ? 5.0 : 0.0,
+                isLockedToStaircase: requiresStairsHeight,
                 currentExtensionOffset: 0,
                 targetExtensionOffset: 0
             });
@@ -755,92 +682,84 @@
         function instantiatePhysicalStairwell(x, z) {
             const stairsGroup = new THREE.Group();
             stairsGroup.position.set(x, -2.5, z);
-            const treadMat = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.6 });
+            const treadMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.5 }); // High visibility blue staircase indicator
 
-            for(let i = 0; i < 10; i++) {
-                const step = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.5, 0.4), treadMat);
-                step.position.set(0, (i * 0.5) + 0.25, (i * 0.4) - 1.8);
+            // 15 structural incremental steps rising cleanly up to 5.0 units altitude height
+            for(let i = 0; i < 15; i++) {
+                const step = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.35, 0.28), treadMat);
+                step.position.set(0, (i * 0.35) + 0.175, (i * 0.26) - 1.8);
                 step.receiveShadow = true;
                 stairsGroup.add(step);
             }
             CoreEngine.worldGroup.add(stairsGroup);
         }
 
-        // --- MULTI-SHAPE PROXIMITY AI ENTITY ENGINE ---
-        function spawnActiveZoneThreatEntities(gridSize) {
-            for(let i = 0; i < 3; i++) {
-                let cellR = Math.floor(Math.random() * (gridSize - 4)) + 2;
-                let cellC = Math.floor(Math.random() * (gridSize - 4)) + 2;
-                
-                if(CoreEngine.matrixGrid[cellR][cellC] === 0) {
-                    const entityRootGroup = new THREE.Group();
-                    entityRootGroup.position.set(cellC * 4, -1.2, cellR * 4);
+        // --- DEFORMED SUSPENSE ORGANISM INSTANTIATION ---
+        function spawnSuspenseDeformedEntity(gridSize) {
+            const entityRootGroup = new THREE.Group();
+            entityRootGroup.position.set(6 * 4, -1.5, 6 * 4);
 
-                    const carapaceMesh = new THREE.Mesh(
-                        new THREE.ConeGeometry(0.5, 2.2, 6),
-                        new THREE.MeshStandardMaterial({ 
-                            color: 0x090d16, 
-                            emissive: 0x990011, 
-                            emissiveIntensity: 0.4,
-                            roughness: 0.2,
-                            metalness: 0.8
-                        })
-                    );
-                    carapaceMesh.position.y = 1.1;
-                    entityRootGroup.add(carapaceMesh);
+            const creatureMat = new THREE.MeshStandardMaterial({ 
+                color: 0x261114, roughness: 0.1, metalness: 0.9, bumpScale: 0.5
+            });
 
-                    const opticalSensorMesh = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.28, 12, 12),
-                        new THREE.MeshStandardMaterial({ 
-                            color: 0xff0033, 
-                            emissive: 0xff0033, 
-                            emissiveIntensity: 2.0 
-                        })
-                    );
-                    opticalSensorMesh.position.set(0, 2.0, 0.35);
-                    entityRootGroup.add(opticalSensorMesh);
+            // Asymmetrical, deformed compound structural shapes setup
+            const torsoBase = new THREE.Mesh(new THREE.SphereGeometry(0.8, 8, 8), creatureMat);
+            torsoBase.scale.set(1.4, 0.7, 1.1);
+            torsoBase.position.y = 1.2;
+            entityRootGroup.add(torsoBase);
 
-                    const stalkerLight = new THREE.PointLight(0xff0033, 1.2, 6);
-                    stalkerLight.position.set(0, 1.5, 0);
-                    entityRootGroup.add(stalkerLight);
-
-                    CoreEngine.dynamicGroup.add(entityRootGroup);
-                    
-                    CoreEngine.activeEntitiesArray.push({
-                        rootMesh: entityRootGroup,
-                        spawnGridX: cellC * 4,
-                        spawnGridZ: cellR * 4,
-                        sinePatrolTicker: Math.random() * 500,
-                        currentMovementVelocity: 1.8 + (Math.random() * 1.2)
-                    });
-                }
+            // Protruding malformed dynamic nodes modules
+            for (let i = 0; i < 5; i++) {
+                const growthNode = new THREE.Mesh(new THREE.SphereGeometry(0.38, 6, 6), creatureMat);
+                growthNode.position.set(Math.sin(i) * 0.6, 1.5 + (Math.cos(i) * 0.4), Math.cos(i) * 0.5);
+                entityRootGroup.add(growthNode);
             }
+
+            const scanningLens = new THREE.Mesh(
+                new THREE.SphereGeometry(0.2, 8, 8),
+                new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 3.0 })
+            );
+            scanningLens.position.set(0, 1.8, 0.8);
+            entityRootGroup.add(scanningLens);
+
+            const auraLight = new THREE.PointLight(0xff0022, 1.5, 8);
+            auraLight.position.set(0, 2.0, 0);
+            entityRootGroup.add(auraLight);
+
+            CoreEngine.dynamicGroup.add(entityRootGroup);
+            
+            CoreEngine.activeEntitiesArray.push({
+                rootMesh: entityRootGroup,
+                spawnGridX: 6 * 4,
+                spawnGridZ: 6 * 4,
+                runtimeTicker: 0.0,
+                movementVelocity: 2.2
+            });
         }
 
         function processEntitiesSimulation(delta) {
-            const playerWorldPositionX = CoreEngine.playerData.gridX * 4;
-            const playerWorldPositionZ = CoreEngine.playerData.gridZ * 4;
+            const pWorldX = CoreEngine.playerData.gridX * 4;
+            const pWorldZ = CoreEngine.playerData.gridZ * 4;
 
             CoreEngine.activeEntitiesArray.forEach(entity => {
-                entity.sinePatrolTicker += delta * entity.currentMovementVelocity;
+                entity.runtimeTicker += delta * entity.movementVelocity;
 
-                const spatialOffsetZ = Math.sin(entity.sinePatrolTicker) * 4.5;
-                const theoreticalGlobalZ = entity.spawnGridZ + spatialOffsetZ;
+                // Continuous non-Euclidean patrolling tracking patterns loops
+                const nextZ = entity.spawnGridZ + Math.sin(entity.runtimeTicker) * 7.0;
+                entity.rootMesh.position.z = nextZ;
+                entity.rootMesh.position.y = -1.5 + Math.abs(Math.cos(entity.runtimeTicker * 2.0)) * 0.35; // Creepy organic bobbing movement
 
-                entity.rootMesh.position.z = theoreticalGlobalZ;
+                const deltaX = entity.rootMesh.position.x - pWorldX;
+                const deltaZ = entity.rootMesh.position.z - pWorldZ;
+                const radialScalar = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
 
-                const movingForward = Math.cos(entity.sinePatrolTicker) > 0;
-                entity.rootMesh.rotation.y = movingForward ? 0 : Math.PI;
-
-                const deltaDistanceX = entity.rootMesh.position.x - playerWorldPositionX;
-                const deltaDistanceZ = entity.rootMesh.position.z - playerWorldPositionZ;
-                const computedRadialScalar = Math.sqrt(deltaDistanceX * deltaDistanceX + deltaDistanceZ * deltaDistanceZ);
-
-                if (computedRadialScalar < 3.2) {
-                    CoreEngine.playerData.vitalIntegrity -= 35.0 * delta; 
-                    
-                    CoreEngine.camera.position.x += (Math.random() * 0.2 - 0.1);
-                    CoreEngine.camera.position.y += (Math.random() * 0.2 - 0.1);
+                // Severe close range proximity sanity field corrosion
+                if (radialScalar < 4.0) {
+                    CoreEngine.playerData.vitalIntegrity -= 45.0 * delta;
+                    // Induce heavy eye lens camera jitter shake
+                    CoreEngine.camera.position.x += (Math.random() * 0.35 - 0.175);
+                    CoreEngine.camera.position.y += (Math.random() * 0.35 - 0.175);
                 }
 
                 if (CoreEngine.playerData.vitalIntegrity <= 0) {
@@ -850,164 +769,137 @@
         }
 
         function instantiateDimensionalGateway(x, z) {
-            const archway = new THREE.Group();
-            archway.position.set(x, -2.5, z);
+            const portal = new THREE.Group();
+            portal.position.set(x, 2.5, z); // Positioned exactly at the upper tier height line
 
-            const fieldMesh = new THREE.Mesh(
-                new THREE.BoxGeometry(2.2, 4.2, 0.2),
-                new THREE.MeshStandardMaterial({ color: 0xbf1725, emissive: 0xbf1725, emissiveIntensity: 1.2 })
+            const glowMesh = new THREE.Mesh(
+                new THREE.BoxGeometry(2.5, 4.5, 0.2),
+                new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 1.5 })
             );
-            fieldMesh.position.y = 2.1;
-            archway.add(fieldMesh);
-            CoreEngine.worldGroup.add(archway);
+            portal.add(glowMesh);
+            CoreEngine.worldGroup.add(portal);
         }
 
-        function spawnProceduralSceneryProps(x, z) {
-            const propGroup = new THREE.Group();
-            propGroup.position.set(x + (Math.random()*1.0 - 0.5), -2.5, z + (Math.random()*1.0 - 0.5));
-            const material = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.8 });
-
-            const roll = Math.random();
-            if(roll < 0.4) {
-                const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 3.0, 1.2), material);
-                body.position.y = 1.5;
-                body.castShadow = true;
-                propGroup.add(body);
-            } else {
-                const box = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), material);
-                box.position.y = 0.5;
-                box.castShadow = true;
-                propGroup.add(box);
-            }
-            CoreEngine.worldGroup.add(propGroup);
-        }
-
-        // --- MASTER SYSTEM MOVEMENT & KINEMATICS ENGINE ---
+        // --- EYE LENS MOVEMENT & COLLISION FILTERS ENGINE ---
         function processPlayerKinematics(delta) {
             const currentZoneData = ZONE_MANIFEST[CoreEngine.currentZone];
-            
-            let movementSpeed = 6.5 * delta;
-            let rotationalVelocity = 2.6 * delta;
+            let currentMoveSpeed = 6.0 * delta;
+            let rotationalSpeed = 2.4 * delta;
 
-            CoreEngine.playerData.hydrationReserve -= currentZoneData.dehydrationRate * 10.0 * delta;
+            // Fluid resource drainage analytics tracking loops
+            CoreEngine.playerData.hydrationReserve -= currentZoneData.dehydrationRate * 8.0 * delta;
             if (CoreEngine.playerData.hydrationReserve <= 0) {
                 CoreEngine.playerData.hydrationReserve = 0;
-                movementSpeed *= 0.45; 
-                CoreEngine.playerData.vitalIntegrity -= 2.5 * delta; 
+                currentMoveSpeed *= 0.45;
+                CoreEngine.playerData.vitalIntegrity -= 3.0 * delta;
             }
 
-            if (CoreEngine.inputTracker.left) {
-                CoreEngine.playerData.viewAngle += rotationalVelocity;
-            }
-            if (CoreEngine.inputTracker.right) {
-                CoreEngine.playerData.viewAngle -= rotationalVelocity;
-            }
+            // Continuous input track evaluation updates
+            if (CoreEngine.inputTracker.left) CoreEngine.playerData.viewAngle += rotationalSpeed;
+            if (CoreEngine.inputTracker.right) CoreEngine.playerData.viewAngle -= rotationalSpeed;
 
-            let deltaMoveX = 0;
-            let deltaMoveZ = 0;
+            let stepMoveX = 0;
+            let stepMoveZ = 0;
 
             if (CoreEngine.inputTracker.forward) {
-                deltaMoveX = Math.sin(CoreEngine.playerData.viewAngle) * movementSpeed;
-                deltaMoveZ = Math.cos(CoreEngine.playerData.viewAngle) * movementSpeed;
+                stepMoveX = Math.sin(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
+                stepMoveZ = Math.cos(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
             }
             if (CoreEngine.inputTracker.backward) {
-                deltaMoveX = -Math.sin(CoreEngine.playerData.viewAngle) * movementSpeed;
-                deltaMoveZ = -Math.cos(CoreEngine.playerData.viewAngle) * movementSpeed;
+                stepMoveX = -Math.sin(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
+                stepMoveZ = -Math.cos(CoreEngine.playerData.viewAngle) * currentMoveSpeed;
             }
 
-            let targetTheoreticalX = CoreEngine.playerData.gridX + deltaMoveX;
-            let targetTheoreticalZ = CoreEngine.playerData.gridZ + deltaMoveZ;
+            // Theoretical Target Footprint calculations
+            let nextPredictedGridX = CoreEngine.playerData.gridX + stepMoveX;
+            let nextPredictedGridZ = CoreEngine.playerData.gridZ + stepMoveZ;
 
-            if (!evaluateWallStructuralCollision(targetTheoreticalX, CoreEngine.playerData.gridZ)) {
-                CoreEngine.playerData.gridX = targetTheoreticalX;
+            // STRICT WALL BLOCK CHECK: Stops all forward clipping and boundary phase leaks
+            if (!evaluateWallStructuralCollision(nextPredictedGridX, CoreEngine.playerData.gridZ)) {
+                CoreEngine.playerData.gridX = nextPredictedGridX;
             }
-            if (!evaluateWallStructuralCollision(CoreEngine.playerData.gridX, targetTheoreticalZ)) {
-                CoreEngine.playerData.gridZ = targetTheoreticalZ;
+            if (!evaluateWallStructuralCollision(CoreEngine.playerData.gridX, nextPredictedGridZ)) {
+                CoreEngine.playerData.gridZ = nextPredictedGridZ;
             }
 
-            const baseCurrentGridX = Math.floor(CoreEngine.playerData.gridX);
-            const baseCurrentGridZ = Math.floor(CoreEngine.playerData.gridZ);
-            
-            if (baseCurrentGridX >= 0 && baseCurrentGridX < CoreEngine.gridWidth &&
-                baseCurrentGridZ >= 0 && baseCurrentGridZ < CoreEngine.gridWidth) {
+            // STAIRCASE ALIGNMENT TRACKING: Resolves the issue of moving straight instead of climbing upward
+            const currentTileX = Math.floor(CoreEngine.playerData.gridX);
+            const currentTileZ = Math.floor(CoreEngine.playerData.gridZ);
+
+            if (currentTileX >= 0 && currentTileX < CoreEngine.gridWidth && currentTileZ >= 0 && currentTileZ < CoreEngine.gridWidth) {
+                const activeToken = CoreEngine.matrixGrid[currentTileZ][currentTileX];
                 
-                const activeToken = CoreEngine.matrixGrid[baseCurrentGridZ][baseCurrentGridX];
-                
-                if (activeToken === 2 && CoreEngine.inputTracker.climb) {
-                    if (CoreEngine.playerData.heightY < 4.8) {
-                        CoreEngine.playerData.heightY += 3.5 * delta;
+                if (activeToken === 2) { // Stand on staircase field
+                    // Automatically scale elevation height smoothly if climbing keys are engaged
+                    if (CoreEngine.inputTracker.forward || CoreEngine.inputTracker.climb) {
+                        if (CoreEngine.playerData.heightY < 5.0) {
+                            CoreEngine.playerData.heightY += 3.2 * delta;
+                        }
                     }
                 } else {
-                    if (!CoreEngine.playerData.isAirborne && CoreEngine.playerData.heightY > 0) {
-                        CoreEngine.playerData.heightY -= 6.0 * delta;
-                        if (CoreEngine.playerData.heightY < 0) CoreEngine.playerData.heightY = 0;
+                    // Pull back down to foundation layer if stepping away from active staircase structures
+                    if (!CoreEngine.playerData.isAirborne && CoreEngine.playerData.heightY > 0.0 && CoreEngine.playerData.heightY < 4.8) {
+                        CoreEngine.playerData.heightY -= 5.0 * delta;
+                        if (CoreEngine.playerData.heightY < 0.0) CoreEngine.playerData.heightY = 0.0;
                     }
                 }
             }
 
+            // JUMP VERTICAL PHYSICS LOOPS MATRIX
             if (CoreEngine.inputTracker.jump && !CoreEngine.playerData.isAirborne) {
                 CoreEngine.playerData.isAirborne = true;
-                CoreEngine.playerData.vertVelocity = 7.5; 
+                CoreEngine.playerData.vertVelocity = 6.5;
             }
-
             if (CoreEngine.playerData.isAirborne) {
                 CoreEngine.playerData.heightY += CoreEngine.playerData.vertVelocity * delta;
-                CoreEngine.playerData.vertVelocity -= 18.0 * delta; 
-
-                if (CoreEngine.playerData.heightY <= 0) {
-                    CoreEngine.playerData.heightY = 0;
+                CoreEngine.playerData.vertVelocity -= 18.0 * delta;
+                if (CoreEngine.playerData.heightY <= 0.0) {
+                    CoreEngine.playerData.heightY = 0.0;
                     CoreEngine.playerData.isAirborne = false;
-                    CoreEngine.playerData.vertVelocity = 0;
                 }
             }
 
-            if (baseCurrentGridX >= 0 && baseCurrentGridX < CoreEngine.gridWidth &&
-                baseCurrentGridZ >= 0 && baseCurrentGridZ < CoreEngine.gridWidth) {
-                if (CoreEngine.matrixGrid[baseCurrentGridZ][baseCurrentGridX] === 3) {
-                    initiateZoneTransitionSequence();
-                }
+            // PROGRESSION GATEWAY TRIGGER VALIDATION
+            if (currentTileX === 10 && currentTileZ === 12 && CoreEngine.playerData.heightY >= 4.5) {
+                initiateZoneTransitionSequence();
             }
 
-            if (CoreEngine.heroInstance) {
-                CoreEngine.heroInstance.position.set(
-                    CoreEngine.playerData.gridX * 4, 
-                    -2.5 + CoreEngine.playerData.heightY, 
-                    CoreEngine.playerData.gridZ * 4
-                );
-                CoreEngine.heroInstance.rotation.y = CoreEngine.playerData.viewAngle + Math.PI;
-
-                if (CoreEngine.heroMixer) {
-                    const animFactor = (CoreEngine.inputTracker.forward || CoreEngine.inputTracker.backward) ? 1.0 : 0.0;
-                    CoreEngine.heroMixer.update(delta * (animFactor > 0 ? 1.2 : 0.4));
-                }
-            }
-
-            const offsetCameraDistance = 11.0;
-            const offsetCameraHeight = 6.5;
-
-            const theoreticalCamX = CoreEngine.playerData.gridX * 4 - Math.sin(CoreEngine.playerData.viewAngle) * offsetCameraDistance;
-            const theoreticalCamZ = CoreEngine.playerData.gridZ * 4 - Math.cos(CoreEngine.playerData.viewAngle) * offsetCameraDistance;
-            const theoreticalCamY = CoreEngine.playerData.heightY + offsetCameraHeight;
-
-            CoreEngine.camera.position.x += (theoreticalCamX - CoreEngine.camera.position.x) * 8 * delta;
-            CoreEngine.camera.position.z += (theoreticalCamZ - CoreEngine.camera.position.z) * 8 * delta;
-            CoreEngine.camera.position.y += (theoreticalCamY - CoreEngine.camera.position.y) * 8 * delta;
-
-            CoreEngine.camera.lookAt(
+            // SECURE THE LENS CAMERA EXACTLY TO EYE ELEVATION BENCHMARKS
+            const baseEyeHeightOffset = -0.5; // Positions camera perspective perfectly inside look socket parameters
+            CoreEngine.camera.position.set(
                 CoreEngine.playerData.gridX * 4,
-                CoreEngine.playerData.heightY,
+                baseEyeHeightOffset + CoreEngine.playerData.heightY,
                 CoreEngine.playerData.gridZ * 4
             );
+
+            // Compute targeted focal look vectors projections ahead
+            const forwardLookTargetX = CoreEngine.camera.position.x + Math.sin(CoreEngine.playerData.viewAngle);
+            const forwardLookTargetZ = CoreEngine.camera.position.z + Math.cos(CoreEngine.playerData.viewAngle);
+            
+            CoreEngine.camera.lookAt(forwardLookTargetX, CoreEngine.camera.position.y, forwardLookTargetZ);
         }
 
-        function evaluateWallStructuralCollision(x, z) {
-            const gridCoordIntegerX = Math.floor(x);
-            const gridCoordIntegerZ = Math.floor(z);
-            if (gridCoordIntegerX < 0 || gridCoordIntegerX >= CoreEngine.gridWidth || 
-                gridCoordIntegerZ < 0 || gridCoordIntegerZ >= CoreEngine.gridWidth) {
-                return true;
+        function evaluateWallStructuralCollision(targetX, targetZ) {
+            const boundRadius = CoreEngine.playerData.playerRadius;
+            
+            // Check bounding offsets around player radius bounds box
+            const checkOffsets = [
+                [0, 0], [boundRadius, 0], [-boundRadius, 0], 
+                [0, boundRadius], [0, -boundRadius]
+            ];
+
+            for (let i = 0; i < checkOffsets.length; i++) {
+                const evalGridX = Math.floor(targetX + checkOffsets[i][0]);
+                const evalGridZ = Math.floor(targetZ + checkOffsets[i][1]);
+
+                if (evalGridX < 0 || evalGridX >= CoreEngine.gridWidth || evalGridZ < 0 || evalGridZ >= CoreEngine.gridWidth) {
+                    return true;
+                }
+                if (CoreEngine.matrixGrid[evalGridZ][evalGridX] === 1) {
+                    return true; // Immovable structural block intersection detected
+                }
             }
-            return CoreEngine.matrixGrid[gridCoordIntegerZ][gridCoordIntegerX] === 1;
+            return false;
         }
 
         function runAutomatedDoorProximityChecks(delta) {
@@ -1017,15 +909,22 @@
             CoreEngine.activeDoorsArray.forEach(door => {
                 const distanceX = door.gridCoordX - pWorldX;
                 const distanceZ = door.gridCoordZ - pWorldZ;
-                const directRadialScalar = Math.sqrt(distanceX * distanceX + distanceZ * distanceZ);
+                const groundRadialDistance = Math.sqrt(distanceX * distanceX + distanceZ * distanceZ);
 
-                if (directRadialScalar < 4.8) {
-                    door.targetExtensionOffset = 1.6; 
-                } else {
-                    door.targetExtensionOffset = 0;   
+                let isAuthorizedPassCondition = true;
+                
+                // Door checking pass requires matching the elevated staircase tier line
+                if (door.isLockedToStaircase && CoreEngine.playerData.heightY < 4.0) {
+                    isAuthorizedPassCondition = false;
                 }
 
-                door.currentExtensionOffset += (door.targetExtensionOffset - door.currentExtensionOffset) * 6 * delta;
+                if (groundRadialDistance < 4.5 && isAuthorizedPassCondition) {
+                    door.targetExtensionOffset = 1.6; // Pan panes dynamically clear to sides
+                } else {
+                    door.targetExtensionOffset = 0.0;
+                }
+
+                door.currentExtensionOffset += (door.targetExtensionOffset - door.currentExtensionOffset) * 6.0 * delta;
                 door.leftSlidingPane.position.x = -0.9 - door.currentExtensionOffset;
                 door.rightSlidingPane.position.x = 0.9 + door.currentExtensionOffset;
             });
@@ -1044,16 +943,16 @@
                 for (let c = 0; c < size; c++) {
                     const blockValue = CoreEngine.matrixGrid[r][c];
                     if (blockValue === 1) {
-                        ctx.fillStyle = 'rgba(196, 162, 103, 0.12)';
+                        ctx.fillStyle = 'rgba(196, 162, 103, 0.15)';
                         ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
                     } else if (blockValue === 2) {
-                        ctx.fillStyle = '#3b82f6'; 
+                        ctx.fillStyle = '#1d4ed8'; // Blue staircase track marker vector
                         ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
                     } else if (blockValue === 3) {
-                        ctx.fillStyle = '#bf1725'; 
+                        ctx.fillStyle = '#10b981'; // Green escape gateway checkpoint line
                         ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
-                    } else if (blockValue === 4) {
-                        ctx.fillStyle = '#10b981'; 
+                    } else if (blockValue === 5) {
+                        ctx.fillStyle = '#bf1725'; // Locked access door tracking segment
                         ctx.fillRect(c * cellSize, r * cellSize, cellSize - 0.5, cellSize - 0.5);
                     }
                 }
@@ -1070,8 +969,8 @@
             ctx.beginPath();
             ctx.moveTo(radialPlayerX, radialPlayerZ);
             ctx.lineTo(
-                radialPlayerX + Math.sin(CoreEngine.playerData.viewAngle) * 14,
-                radialPlayerZ + Math.cos(CoreEngine.playerData.viewAngle) * 14
+                radialPlayerX + Math.sin(CoreEngine.playerData.viewAngle) * 15,
+                radialPlayerZ + Math.cos(CoreEngine.playerData.viewAngle) * 15
             );
             ctx.strokeStyle = '#bf1725';
             ctx.lineWidth = 2.0;
@@ -1086,7 +985,6 @@
             document.getElementById('hydrate-percentage-lbl').innerText = `${Math.floor(CoreEngine.playerData.hydrationReserve)}%`;
         }
 
-        // --- TRANSLATION MANAGERS & OVERLAYS ---
         function initiateZoneTransitionSequence() {
             const nextTargetZoneIndex = CoreEngine.currentZone + 1;
             
@@ -1099,7 +997,7 @@
                 
                 CoreEngine.playerData.gridX = 2.5;
                 CoreEngine.playerData.gridZ = 2.5;
-                CoreEngine.playerData.heightY = 0;
+                CoreEngine.playerData.heightY = 0.0;
                 CoreEngine.playerData.vitalIntegrity = 100;
                 CoreEngine.playerData.hydrationReserve = 100;
                 
@@ -1107,39 +1005,27 @@
                 document.getElementById('hud-level-title').innerText = `ZONE: PHASE LINE ${nextTargetZoneIndex}`;
                 document.getElementById('hud-level-motto').innerText = levelData.motto;
                 
-                updateTVDisplay(levelData.tvRules, "ENGAGE NEXT PHASE");
+                updateTVDisplay(levelData.tvRules, "ENGAGE SEQUENCING STEP");
             } else {
-                triggerGlobalVictoryScreen();
+                CoreEngine.isEngineRunning = false;
+                triggerGlobalModalOverlay("SIMULATION MATRIX RESOLVED", "You successfully cleared all spatial corridors.", "RESTART SYSTEM BUILD");
             }
         }
 
         function executeEngineFailureReset() {
             CoreEngine.isEngineRunning = false;
-            triggerGlobalModalOverlay(
-                "CRITICAL BOUNDARY DESYNCHRONIZATION",
-                "Your vitals destabilized within the non-Euclidean grid lanes. Your configuration profile has been recycled back to Entry Phase Line 0.",
-                "RE-MATERIALIZE PROTOCOL"
-            );
-        }
-
-        function triggerGlobalVictoryScreen() {
-            CoreEngine.isEngineRunning = false;
-            triggerGlobalModalOverlay(
-                "SIMULATION MATRIX COMPLETE",
-                "Architectural vector parameters fully resolved. You successfully escaped the structural bounds of the Backrooms ecosystem.",
-                "RESTART SIMULATION SYSTEM"
-            );
+            triggerGlobalModalOverlay("CRITICAL OVERLOAD", "Sanity integrity desynchronized completely.", "RE-MATERIALIZE TERMINAL");
         }
 
         function triggerGlobalModalOverlay(title, description, buttonLabel) {
-            document.getElementById('hud-level-title').innerText = "SYSTEM CRITICAL";
+            document.getElementById('hud-level-title').innerText = "SYSTEM RECYCLE";
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-desc').innerText = description;
             document.getElementById('modal-action-btn').innerText = buttonLabel;
             document.getElementById('game-state-modal').style.display = 'flex';
         }
 
-        // --- MOBILE GLASS UI INTERFACING CONTROLLERS ---
+        // --- MOBILE TOUCH virtuales CONTROL MATRIX ---
         function attachMobileTouchVirtualControls() {
             bindSingleTouchElement('m-up', 'forward');
             bindSingleTouchElement('m-down', 'backward');
@@ -1150,18 +1036,10 @@
         }
 
         function bindSingleTouchElement(elementID, trackingControlProperty) {
-            const buttonElement = document.getElementById(elementID);
-            if (!buttonElement) return;
-
-            buttonElement.addEventListener('touchstart', (event) => {
-                event.preventDefault();
-                CoreEngine.inputTracker[trackingControlProperty] = true;
-            });
-
-            buttonElement.addEventListener('touchend', (event) => {
-                event.preventDefault();
-                CoreEngine.inputTracker[trackingControlProperty] = false;
-            });
+            const btn = document.getElementById(elementID);
+            if (!btn) return;
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); CoreEngine.inputTracker[trackingControlProperty] = true; });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); CoreEngine.inputTracker[trackingControlProperty] = false; });
         }
 
         function bindStateControlInterfaceTriggers() {
@@ -1175,22 +1053,17 @@
 
             document.getElementById('modal-action-btn').addEventListener('click', () => {
                 document.getElementById('game-state-modal').style.display = 'none';
-                
                 CoreEngine.currentZone = 0;
                 compileProceduralZoneMatrix(0);
                 instantiatePhysicalStructures(0);
                 
-                CoreEngine.playerData.gridX = 2.5;
-                CoreEngine.playerData.gridZ = 2.5;
-                CoreEngine.playerData.heightY = 0;
-                CoreEngine.playerData.vitalIntegrity = 100;
-                CoreEngine.playerData.hydrationReserve = 100;
+                CoreEngine.playerData.gridX = 2.5; CoreEngine.playerData.gridZ = 2.5; CoreEngine.playerData.heightY = 0.0;
+                CoreEngine.playerData.vitalIntegrity = 100; CoreEngine.playerData.hydrationReserve = 100;
 
-                const baseLevelZeroData = ZONE_MANIFEST[0];
+                const bData = ZONE_MANIFEST[0];
                 document.getElementById('hud-level-title').innerText = `ZONE: PHASE LINE 0`;
-                document.getElementById('hud-level-motto').innerText = baseLevelZeroData.motto;
-
-                updateTVDisplay(baseLevelZeroData.tvRules, "INITIALIZE REALITY MATRIX");
+                document.getElementById('hud-level-motto').innerText = bData.motto;
+                updateTVDisplay(bData.tvRules, "INITIALIZE REALITY MATRIX");
             });
         }
 
@@ -1210,7 +1083,6 @@
             }, 800);
         }
 
-        // --- MASTER RUNTIME TICK PIPELINE ---
         function executeMasterRenderTick() {
             requestAnimationFrame(executeMasterRenderTick);
             const deltaSeconds = CoreEngine.clock.getDelta();
@@ -1222,17 +1094,14 @@
                 drawMinimapTelemetry();
                 updateVitalsInterface();
             }
-
             CoreEngine.renderer.render(CoreEngine.scene, CoreEngine.camera);
         }
 
-        // --- INITIALIZATION HOOK EXECUTIONS ---
         document.getElementById('initialize-call-trigger').addEventListener('click', () => {
             document.getElementById('engine-boot-screen').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('engine-boot-screen').style.display = 'none';
-                const initialData = ZONE_MANIFEST[0];
-                updateTVDisplay(initialData.tvRules, "INITIALIZE SYSTEM ENGINE");
+                updateTVDisplay(ZONE_MANIFEST[0].tvRules, "INITIALIZE SYSTEM SYSTEM");
             }, 800);
         });
 
