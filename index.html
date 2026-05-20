@@ -1,61 +1,324 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>NOCLIP // LIMINAL ECHOES</title>
-    <link rel="stylesheet" href="styles.css">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
     <div id="game-container">
-        <canvas id="game-canvas" width="1280" height="720"></canvas>
-        
+
+        <!-- ========================================= -->
+        <!-- GAME CANVAS -->
+        <!-- ========================================= -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- ========================================= -->
+        <!-- UI OVERLAY -->
+        <!-- ========================================= -->
         <div id="ui-overlay">
+
+            <!-- Minimap -->
             <canvas id="minimap" width="240" height="240"></canvas>
-            
-            <div id="sanity-bar" class="glass-panel">
+
+            <!-- Top Left HUD -->
+            <div class="hud-text hud-top-left">
+                <div>
+                    LEVEL
+                    <span id="level-num">0</span>
+                    —
+                    <span id="level-name">THE LOBBY</span>
+                </div>
+
+                <div class="coords-line">
+                    X:<span id="coord-x">0000</span>
+                    Y:<span id="coord-z">0000</span>
+                </div>
+            </div>
+
+            <!-- Bottom Right HUD -->
+            <div class="hud-text hud-bottom-right">
+                <div>
+                    SANITY:
+                    <span id="sanity-text">72</span>%
+                </div>
+
+                <div>
+                    STAMINA:
+                    <span id="stamina-text">100</span>%
+                </div>
+            </div>
+
+            <!-- Sanity Bar -->
+            <div id="sanity-wrapper" class="glass-panel">
                 <div id="sanity-fill"></div>
             </div>
-            
-            <div class="hud-text top-left">
-                LEVEL <span id="level-num">0</span> — <span id="level-name">THE LOBBY</span><br>
-                <span id="coords">X:0000 Y:0000</span>
-            </div>
-            
-            <div class="hud-text bottom-right">
-                SANITY: <span id="sanity-text">72</span>%<br>
-                STAMINA: <span id="stamina-text">100</span>%
+
+            <!-- Warning -->
+            <div id="warning">
+                THEY SEE YOU
             </div>
 
-            <div id="warning" class="hud-text warning"></div>
+            <!-- Inventory -->
+            <div id="inventory" class="glass-panel">
+                <div class="inventory-title">
+                    INVENTORY
+                </div>
 
-            <div id="inventory" class="glass-panel"></div>
-            <div id="log" class="glass-panel"></div>
+                <div id="inventory-grid"></div>
+            </div>
 
+            <!-- Log -->
+            <div id="log" class="glass-panel">
+                <div class="log-title">
+                    SYSTEM LOG
+                </div>
+
+                <div id="log-content"></div>
+            </div>
+
+            <!-- Interaction -->
+            <div id="interaction-prompt">
+                PRESS E TO INTERACT
+            </div>
+
+            <!-- Crosshair -->
+            <div id="crosshair">
+                <span></span>
+                <span></span>
+            </div>
+
+            <!-- Static Overlay -->
+            <div id="static-overlay"></div>
+
+            <!-- Vignette -->
+            <div id="vignette"></div>
+
+            <!-- Mobile Controls -->
             <div id="mobile-controls">
-                <div class="joy" id="joystick">
-                    <div class="joy-knob" id="knob"></div>
+
+                <div class="joystick-area">
+                    <div class="joystick-base" id="joystick-base">
+                        <div class="joystick-knob" id="joystick-knob"></div>
+                    </div>
                 </div>
+
+                <div class="mobile-buttons">
+                    <button id="mobile-run">RUN</button>
+                    <button id="mobile-inventory">INV</button>
+                </div>
+
             </div>
+
         </div>
 
-        <!-- Screens -->
-        <div id="intro-screen" class="screen">
-            <div class="crt">
-                <div class="tv-inner">
-                    <h1>NOCLIP</h1>
-                    <p>You fell through reality.</p>
+        <!-- ========================================= -->
+        <!-- INTRO SCREEN -->
+        <!-- ========================================= -->
+        <div id="intro-screen" class="screen active-screen">
+
+            <div class="crt-frame">
+
+                <div class="crt-screen">
+
+                    <div class="intro-content">
+
+                        <h1 class="main-title">
+                            NOCLIP
+                        </h1>
+
+                        <div class="subtitle">
+                            LIMINAL ECHOES
+                        </div>
+
+                        <div class="intro-description">
+                            <p>
+                                You fell through reality.
+                            </p>
+
+                            <p>
+                                The Backrooms are endless.
+                            </p>
+
+                            <p>
+                                They are searching for you.
+                            </p>
+                        </div>
+
+                        <div class="intro-warning">
+                            DO NOT TRUST THE WALLS
+                        </div>
+
+                    </div>
+
+                    <div class="scanlines"></div>
+
                 </div>
+
             </div>
-            <button onclick="startGame()">ENTER THE VOID</button>
+
+            <button id="start-btn" class="game-btn">
+                ENTER THE VOID
+            </button>
+
         </div>
 
-        <div id="transition-screen" class="screen" style="display:none;"></div>
-        <div id="death-screen" class="screen" style="display:none;"></div>
-        <div id="ending-screen" class="screen" style="display:none;"></div>
+        <!-- ========================================= -->
+        <!-- LOADING SCREEN -->
+        <!-- ========================================= -->
+        <div id="loading-screen" class="screen">
+
+            <div class="loading-container">
+
+                <div class="loading-title">
+                    GENERATING REALITY
+                </div>
+
+                <div class="loading-bar">
+                    <div id="loading-fill"></div>
+                </div>
+
+                <div id="loading-text">
+                    INITIALIZING...
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- TRANSITION SCREEN -->
+        <!-- ========================================= -->
+        <div id="transition-screen" class="screen">
+
+            <div class="crt-frame">
+
+                <div class="crt-screen">
+
+                    <div id="transition-content"></div>
+
+                    <div class="scanlines"></div>
+
+                </div>
+
+            </div>
+
+            <button id="continue-btn" class="game-btn">
+                CONTINUE DEEPER
+            </button>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- DEATH SCREEN -->
+        <!-- ========================================= -->
+        <div id="death-screen" class="screen">
+
+            <div class="crt-frame">
+
+                <div class="crt-screen death-theme">
+
+                    <div class="death-content">
+
+                        <h1>
+                            YOU DIED
+                        </h1>
+
+                        <p>
+                            The Backrooms consumed another wanderer.
+                        </p>
+
+                        <div class="death-stats">
+
+                            <div>
+                                LEVEL REACHED:
+                                <span id="death-level">0</span>
+                            </div>
+
+                            <div>
+                                NOTES FOUND:
+                                <span id="death-notes">0</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="scanlines"></div>
+
+                </div>
+
+            </div>
+
+            <button id="restart-btn" class="game-btn">
+                RESTART REALITY
+            </button>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- ENDING SCREEN -->
+        <!-- ========================================= -->
+        <div id="ending-screen" class="screen">
+
+            <div class="crt-frame">
+
+                <div class="crt-screen ending-theme">
+
+                    <div class="ending-content">
+
+                        <h1>
+                            YOU ESCAPED
+                        </h1>
+
+                        <p>
+                            Or maybe you never did.
+                        </p>
+
+                        <p>
+                            The static always follows.
+                        </p>
+
+                        <div class="ending-message">
+                            THANK YOU FOR PLAYING
+                        </div>
+
+                    </div>
+
+                    <div class="scanlines"></div>
+
+                </div>
+
+            </div>
+
+            <button id="play-again-btn" class="game-btn">
+                PLAY AGAIN
+            </button>
+
+        </div>
+
     </div>
 
+    <!-- ========================================= -->
+    <!-- SCRIPTS -->
+    <!-- ========================================= -->
+
+    <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="game.js"></script>
+
+    <!-- Main JS -->
+    <script src="script.js"></script>
+
 </body>
 </html>
