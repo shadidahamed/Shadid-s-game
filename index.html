@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BRAC ARCHI // BACKROOMS HYBRID ECOSYSTEM</title>
+    <title>ORPHEUS ENGINE // THE BACKROOMS HYBRID ECOSYSTEM</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
-            --bg-dark: #070a12;
-            --glass-bg: rgba(11, 15, 25, 0.45);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --accent-red: rgba(239, 68, 68, 0.85);
-            --accent-glow: rgba(239, 68, 68, 0.3);
-            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --bg-dark: #030509;
+            --glass-bg: rgba(6, 9, 16, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --accent-crimson: #bf1725;
+            --accent-glow: rgba(191, 23, 37, 0.4);
+            --gold-fine-wine: #c4a267;
         }
 
         * {
@@ -29,15 +32,15 @@
             height: 100%;
             overflow: hidden;
             background-color: var(--bg-dark);
-            font-family: var(--font-stack);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #f3f4f6;
         }
 
-        /* --- SCREEN ORIENTATION MANAGER --- */
-        #game-container {
+        #viewport-container {
             position: relative;
             width: 100vw;
             height: 100vh;
+            z-index: 1;
         }
 
         canvas {
@@ -46,1036 +49,354 @@
             height: 100%;
         }
 
-        /* --- PRE-GAME INTRO & INTERMISSION ROOM (TV SETUP) --- */
-        #tv-intermission-overlay {
+        /* High-End Glassmorphic Layer Controls */
+        .glass-hud-panel {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #151b26 0%, #05070b 100%);
-            z-index: 500;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            transition: opacity 0.8s ease;
-        }
-
-        .tv-wrapper {
-            width: 80%;
-            max-width: 650px;
-            aspect-ratio: 4/3;
-            background: #111;
-            border: 18px solid #2a221b;
-            border-radius: 24px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 30px #000;
-            position: relative;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .tv-screen {
-            flex: 1;
-            background: #141911;
-            border-radius: 8px;
-            border: 4px solid #1a1a1a;
-            box-shadow: inset 0 0 40px rgba(0,0,0,1);
-            position: relative;
-            overflow: hidden;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        /* Scanlines and static noise animation effect on terminal screen */
-        .tv-screen::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 4px, 6px 100%;
-            pointer-events: none;
-        }
-
-        .tv-content h2 {
-            color: #ef4444;
-            font-size: 1.6rem;
-            letter-spacing: 2px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
-        }
-
-        .tv-content p {
-            color: #a7f3d0;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 12px;
-            font-family: monospace;
-        }
-
-        .tv-controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 15px;
-        }
-
-        .tv-btn {
-            padding: 10px 24px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            transition: all 0.2s ease;
-        }
-
-        .tv-btn:hover {
-            background: var(--accent-red);
-            border-color: transparent;
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
-
-        .ambient-chair-shadow {
-            width: 160px;
-            height: 40px;
-            background: rgba(0,0,0,0.6);
-            border-radius: 50%;
-            margin-top: -10px;
-            filter: blur(8px);
-        }
-
-        /* --- FLOATING MODERN GLASS HUD ENGINE --- */
-        .hud-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 100;
-        }
-
-        /* Top Bar Indicators containing live map disk */
-        .top-hud-bar {
-            position: absolute;
-            top: 20px; left: 20px; right: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .glass-panel {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 12px;
-            padding: 12px 20px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 20px;
+            z-index: 10;
             pointer-events: auto;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
         }
 
-        .level-card h1 {
-            font-size: 1.1rem;
-            letter-spacing: 1px;
+        .top-left-status {
+            top: 25px;
+            left: 25px;
+            min-width: 280px;
+        }
+
+        .status-header h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #fff;
+            text-transform: uppercase;
             margin-bottom: 4px;
         }
 
-        .level-card p {
+        .status-header p {
             font-size: 0.75rem;
-            color: #9ca3af;
-            text-transform: uppercase;
-        }
-
-        /* Circular Disk Radar Map Layout */
-        .minimap-disk-container {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            background: rgba(7, 10, 18, 0.6);
-            border: 2px solid var(--glass-border);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        #minimap-canvas {
-            width: 100%;
-            height: 100%;
-        }
-
-        .radar-sweep {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: conic-gradient(from 0deg, transparent 70%, rgba(239, 68, 68, 0.15) 100%);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: radar-spin 4s linear infinite;
-        }
-
-        @keyframes radar-spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Vital stats panels */
-        .vitals-box {
-            position: absolute;
-            bottom: 20px; left: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 220px;
-        }
-
-        .bar-container {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .bar-label {
-            font-size: 0.7rem;
+            color: var(--gold-fine-wine);
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #d1d5db;
         }
 
-        .bar-track {
+        /* Resource Metric Bars */
+        .metric-group {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .metric-bar-container {
             width: 100%;
-            height: 6px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 3px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .bar-fill {
+        .metric-fill-vital {
             height: 100%;
             width: 100%;
-            background: #34d399;
-            transition: width 0.2s ease;
+            background: linear-gradient(90deg, var(--accent-crimson), #ff3344);
+            box-shadow: 0 0 10px var(--accent-glow);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .bar-fill.stamina { background: #3b82f6; }
-        .bar-fill.sanity { background: #a855f7; }
-
-        /* --- MOBILE GLASS CONTROLS INTERFACE (PORTRAIT OPTIMIZED) --- */
-        #mobile-controls-layout {
-            position: absolute;
-            bottom: 20px; right: 20px; left: 20px;
-            height: 220px;
-            display: none; /* Controlled dynamically via active hardware profiling */
-            pointer-events: none;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        .dpad-container {
-            width: 140px;
-            height: 140px;
-            position: relative;
-            pointer-events: auto;
-        }
-
-        .dpad-btn {
-            position: absolute;
-            width: 44px;
-            height: 44px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 8px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-        }
-
-        .dpad-btn:active { background: var(--accent-red); border-color: transparent; }
-        .dpad-up    { top: 0; left: 48px; }
-        .dpad-down  { bottom: 0; left: 48px; }
-        .dpad-left  { top: 48px; left: 0; }
-        .dpad-right { top: 48px; right: 0; }
-
-        .action-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            pointer-events: auto;
-        }
-
-        .circle-action-btn {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .circle-action-btn i { font-size: 1rem; margin-bottom: 2px; }
-        .circle-action-btn:active { background: var(--accent-red); border-color: transparent; }
-
-        /* --- GAME OVER / MODAL BREAKOUT SYSTEMS --- */
-        .modal-screen {
+        /* Boot Loading System Overlays */
+        #engine-boot-screen {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 7, 12, 0.85);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            background: #04060a;
             z-index: 1000;
-            display: none;
+            display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            transition: opacity 1s ease;
         }
 
-        .modal-box {
-            max-width: 420px;
-            width: 90%;
-            text-align: center;
+        .boot-terminal-box {
+            width: 85%;
+            max-width: 550px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
         }
 
-        .modal-box h2 {
-            font-size: 2rem;
-            color: #ef4444;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
+        .boot-title {
+            color: var(--gold-fine-wine);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
 
-        .modal-box p {
-            color: #9ca3af;
-            font-size: 0.95rem;
+        .boot-logs {
+            font-size: 0.8rem;
+            color: #4b5563;
+            height: 150px;
+            overflow-y: auto;
+            margin-bottom: 20px;
             line-height: 1.5;
-            margin-bottom: 25px;
         }
 
-        /* --- RESPONSIVE CONDITIONAL DESIGN MODES --- */
-        @media (max-width: 992px) {
-            #mobile-controls-layout { display: flex; }
-            .vitals-box { bottom: 180px; }
-            /* Enforce clean portrait footprint spacing metrics */
-            body { max-height: 100vh; }
+        .boot-action-btn {
+            padding: 12px 30px;
+            background: transparent;
+            border: 1px solid var(--gold-fine-wine);
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .boot-action-btn:hover {
+            background: var(--gold-fine-wine);
+            color: #000;
+            box-shadow: 0 0 20px rgba(196, 162, 103, 0.3);
         }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
+    <div id="engine-boot-screen">
+        <div class="boot-terminal-box">
+            <div class="boot-title">SYSTEM:// ORPHEUS_ENGINE_HYBRID_COREINIT</div>
+            <div class="boot-logs" id="terminal-logger">
+                [SYSTEM] Allocating WebGL Context Layers...<br>
+                [SYSTEM] Binding 2.5D Projection Pipelines...<br>
+                [SYSTEM] Ready to compile spatial parameters...
+            </div>
+            <button class="boot-action-btn" id="initialize-call-trigger">Awaken Reality</button>
+        </div>
+    </div>
+
+    <div id="viewport-container">
         
-        <div id="tv-intermission-overlay">
-            <div class="tv-wrapper">
-                <div class="tv-screen">
-                    <div class="tv-content" id="tv-terminal-display">
-                        </div>
-                </div>
-                <div class="tv-controls">
-                    <button class="tv-btn" id="tv-power-btn">INITIALIZE ARCHIVE</button>
-                </div>
+        <div class="glass-hud-panel top-left-status">
+            <div class="status-header">
+                <h1 id="hud-level-title">ZONE: PHASE LINE 0</h1>
+                <p id="hud-level-motto">VECTORS MATRIX INVERSION</p>
             </div>
-            <div class="ambient-chair-shadow"></div>
-        </div>
-
-        <div class="hud-layer">
-            <div class="top-hud-bar">
-                <div class="glass-panel level-card">
-                    <h1 id="hud-level-title">LEVEL 0</h1>
-                    <p id="hud-level-motto">THE LOBBY</p>
+            <div class="metric-group">
+                <div style="display:flex; justify-content:space-between; font-size:0.65rem; letter-spacing:1px; color:#9ca3af;">
+                    <span>HERO SYNCHRONICITY STABILITY</span>
+                    <span id="vital-percentage-lbl">100%</span>
                 </div>
-
-                <div class="minimap-disk-container">
-                    <canvas id="minimap-canvas" width="110" height="110"></canvas>
-                    <div class="radar-sweep"></div>
+                <div class="metric-bar-container">
+                    <div class="metric-fill-vital" id="vital-integrity-bar"></div>
                 </div>
-            </div>
-
-            <div class="glass-panel vitals-box">
-                <div class="bar-container">
-                    <div class="bar-label">Hydration / Stamina</div>
-                    <div class="bar-track"><div class="bar-fill" id="stamina-fill"></div></div>
-                </div>
-                <div class="bar-container">
-                    <div class="bar-label">Psych Sanity Core</div>
-                    <div class="bar-track"><div class="bar-fill sanity" id="sanity-fill"></div></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="mobile-controls-layout">
-            <div class="dpad-container">
-                <button class="dpad-btn dpad-up" id="m-up"><i class="fas fa-chevron-up"></i></button>
-                <button class="dpad-btn dpad-left" id="m-left"><i class="fas fa-chevron-left"></i></button>
-                <button class="dpad-btn dpad-right" id="m-right"><i class="fas fa-chevron-right"></i></button>
-                <button class="dpad-btn dpad-down" id="m-down"><i class="fas fa-chevron-down"></i></button>
-            </div>
-
-            <div class="action-container">
-                <button class="circle-action-btn" id="m-stair"><i class="fas fa-ladder-water"></i>STAIR</button>
-                <button class="circle-action-btn" id="m-jump"><i class="fas fa-compress"></i>JUMP</button>
-            </div>
-        </div>
-
-        <div class="modal-screen" id="game-state-modal">
-            <div class="glass-panel modal-box">
-                <h2 id="modal-title">REALITY RE-SYNCHRONIZATION</h2>
-                <p id="modal-desc">You clipped through structural boundary lines and desynchronized from default physical spaces.</p>
-                <button class="tv-btn" id="modal-action-btn">RE-ENTER CHAMBER</button>
             </div>
         </div>
 
     </div>
 
     <script>
-        // --- LEVEL MANIFEST DATA FRAMEWORKS ---
-        const LEVEL_DATABASE = [
-            {
-                id: 0,
-                title: "Level 0: The Lobby",
-                motto: "The Infinite Maze",
-                wallColor: 0xd6c594, // Moist beige-yellow
-                floorColor: 0x8a7a53, // Damp carpet
-                ceilColor: 0xeae6cf,
-                lightIntensity: 0.6,
-                fogColor: 0xd6c594,
-                tvRule: "<h2>Level 0: The Lobby</h2><p>REGULATIONS: This is the entry interface where orientation logic collapses. No entities are registered here, but acute sensory hallucinations loop rapidly.</p><p>SURVIVAL PARAMETERS: Maintain track routes. Reach the structural anomalous doorway on the edge bounds to shift vectors to Level 1.</p>"
-            },
-            {
-                id: 1,
-                title: "Level 1: The Habitable Zone",
-                motto: "Industrial Sanctuary",
-                wallColor: 0x5c5e61, // Rough concrete
-                floorColor: 0x3d3f42,
-                ceilColor: 0x4a4b4d,
-                lightIntensity: 0.4,
-                fogColor: 0x22252a,
-                tvRule: "<h2>Level 1: The Habitable Zone</h2><p>REGULATIONS: Industrial concrete vaults. Safe shelters established by M.E.G. forces are situated nearby. Watch out for 'Hounds' patrolling unlit areas.</p><p>SURVIVAL PARAMETERS: Search structural frames for survival outposts. Ascend using available stairwells to safely clear structural segments.</p>"
-            },
-            {
-                id: 2,
-                title: "Level 2: Pipe Dreams",
-                motto: "Thermal Punishment Vaults",
-                wallColor: 0x38231c, // Coroded iron hues
-                floorColor: 0x1f1613,
-                ceilColor: 0x2d1e19,
-                lightIntensity: 0.35,
-                fogColor: 0x1a0f0c,
-                tvRule: "<h2>Level 2: Pipe Dreams</h2><p>REGULATIONS: High-hazard conduits scaling up to 200°F. Hostile actions register extreme metrics here. Stamina values deplete twice as fast due to dehydration.</p><p>SURVIVAL PARAMETERS: Unlock target bulkhead terminal doors securely. Forcing security locks will recycle tracking status parameters.</p>"
-            },
-            {
-                id: 3,
-                title: "Level 3: Electrical Station",
-                motto: "Apex High-Voltage Grounds",
-                wallColor: 0x11161b, // Dark machinery steel
-                floorColor: 0x0a0d10,
-                ceilColor: 0x0f1318,
-                lightIntensity: 0.2,
-                fogColor: 0x05070a,
-                tvRule: "<h2>Level 3: Electrical Station</h2><p>REGULATIONS: Machine-heavy grid halls ringing with electric humming. Apex predators cross-traverse these coordinate boundaries constantly.</p><p>SURVIVAL PARAMETERS: Trace pipeline junctions closely. Avoid stepping inside sparking electrical ground fields to ensure heart safety.</p>"
-            },
-            {
-                id: 4,
-                title: "Level 4: Abandoned Office",
-                motto: "Corporate Trading Hub",
-                wallColor: 0xe2e8f0, // Clean 90s vinyl sheets
-                floorColor: 0x475569, // Office carpet blue-grey
-                ceilColor: 0xf8fafc,
-                lightIntensity: 0.85,
-                fogColor: 0xcbd5e1,
-                tvRule: "<h2>Level 4: Abandoned Office</h2><p>REGULATIONS: Formed by retro modular cubicle modules. Generally safe and clear of hostile threat groups. Caravan traders settle open outposts here.</p><p>SURVIVAL PARAMETERS: Locate the master exit terminal frame to successfully escape the Backrooms reality grid loop.</p>"
+        // --- MASTER APPLICATION GAME ENGINE SCOPE ---
+        const CoreEngine = {
+            // Environment Context Variables
+            scene: null,
+            camera: null,
+            renderer: null,
+            clock: null,
+            
+            // Structural Render Subsets
+            worldGroup: null,
+            actorGroup: null,
+            
+            // Assets Pipelines & Models Target Frame Tracking
+            heroModelURI: "resident-evil-2-remake-leon-kennedy.glb",
+            heroInstance: null,
+            heroMixer: null,
+            
+            // Engine Spatial Realtime Configurations
+            currentZone: 0,
+            isEngineRunning: false,
+            
+            // Global Input States Tracking
+            inputTracker: {
+                forward: false, backward: false, left: false, right: false,
+                climb: false, jump: false
             }
-        ];
-
-        // --- GLOBAL GAME CORE STATE CONTROLLER ---
-        const GameState = {
-            currentLevel: 0,
-            activeMode: 'intro', // 'intro', 'playing', 'gameover', 'victory'
-            stamina: 100,
-            sanity: 100,
-            player: {
-                x: 2,
-                z: 2,
-                y: 0,
-                angle: 0,
-                verticalVelocity: 0,
-                isJumping: false
-            },
-            keys: {},
-            mapGrid: [],
-            gridSize: 16,
-            entities: [],
-            decorations: []
         };
 
-        // --- SYSTEM CORE INITIALIZATIONS ---
-        let scene, camera, renderer, clock;
-        let wallGroup, dynamicGroup;
-        let minimapCanvas, minimapCtx;
-
-        function initializeEngine() {
-            const container = document.getElementById('game-container');
+        // --- PIPELINE RUNTIME LOGIC CONSTRUCTORS ---
+        function initEngineContext() {
+            const container = document.getElementById('viewport-container');
             
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 100);
+            // Standard WebGL Scene Initializations
+            CoreEngine.scene = new THREE.Scene();
+            CoreEngine.clock = new THREE.Clock();
+
+            // 2.5D / 3D Mixed Perspective Matrices Definition Formulation
+            CoreEngine.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
             
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            container.appendChild(renderer.domElement);
+            CoreEngine.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            CoreEngine.renderer.setSize(window.innerWidth, window.innerHeight);
+            CoreEngine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            CoreEngine.renderer.shadowMap.enabled = true;
+            CoreEngine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            CoreEngine.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            CoreEngine.renderer.toneMappingExposure = 1.0;
+            container.appendChild(CoreEngine.renderer.domElement);
 
-            clock = new THREE.Clock();
+            // Group Layout Instantiations
+            CoreEngine.worldGroup = new THREE.Group();
+            CoreEngine.actorGroup = new THREE.Group();
+            CoreEngine.scene.add(CoreEngine.worldGroup);
+            CoreEngine.scene.add(CoreEngine.actorGroup);
 
-            wallGroup = new THREE.Group();
-            dynamicGroup = new THREE.Group();
-            scene.add(wallGroup);
-            scene.add(dynamicGroup);
+            // Establish Cinematic Ambient and Direct Shadow Caster Lighting rigs
+            setupCinematicLightingEcosystem();
+            
+            // Initialize Hardware System Input Hooks
+            bindHardwareInputSystems();
 
-            minimapCanvas = document.getElementById('minimap-canvas');
-            minimapCtx = minimapCanvas.getContext('2d');
-
-            setupHardwareListeners();
-            loadLevelContext(0);
-            renderLoop();
+            // Run GLB Asset Ingestion Pipeline
+            ingestHeroModelAsset();
         }
 
-        // --- DYNAMIC LEVEL GENERATOR ENGINE ---
-        function loadLevelContext(levelIndex) {
-            GameState.currentLevel = levelIndex;
-            const data = LEVEL_DATABASE[levelIndex];
+        function setupCinematicLightingEcosystem() {
+            // Dark fine wine ambient lighting floor limits
+            const ambient = new THREE.AmbientLight(0x0a0f1d, 0.4);
+            CoreEngine.scene.add(ambient);
 
-            // Clear previous structural meshes safely
-            while(wallGroup.children.length > 0) { wallGroup.remove(wallGroup.children[0]); }
-            while(dynamicGroup.children.length > 0) { dynamicGroup.remove(dynamicGroup.children[0]); }
-            GameState.entities = [];
-            GameState.decorations = [];
+            // Primary Dark Fantasy Directional Cascade Shadow Caster
+            const dirLight = new THREE.DirectionalLight(0xc4a267, 0.85); // Gold-tinted ray
+            dirLight.position.set(25, 45, 20);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.bias = -0.0001;
+            CoreEngine.scene.add(dirLight);
 
-            // Apply global fog and environmental lighting properties
-            scene.background = new THREE.Color(data.wallColor);
-            scene.fog = new THREE.FogExp2(data.fogColor, 0.07);
-
-            const ambient = new THREE.AmbientLight(0xffffff, data.lightIntensity);
-            dynamicGroup.add(ambient);
-
-            // Rebuild Level Grid Array Map layout
-            generateProceduralGrid();
-            buildPhysicalLevelStructures(data);
-
-            // Reset player coordinates
-            GameState.player.x = 2.5;
-            GameState.player.z = 2.5;
-            GameState.player.y = 0;
-            GameState.stamina = 100;
-            GameState.sanity = 100;
-
-            // Interface text update bindings
-            document.getElementById('hud-level-title').innerText = `LEVEL ${data.id}`;
-            document.getElementById('hud-level-motto').innerText = data.motto;
-            
-            updateTVDisplay(data.tvRule, "BOOT UP SIMULATION");
+            // Foggy atmosphere density tracking
+            CoreEngine.scene.background = new THREE.Color(0x030509);
+            CoreEngine.scene.fog = new THREE.FogExp2(0x030509, 0.025);
         }
 
-        function generateProceduralGrid() {
-            const size = GameState.gridSize;
-            GameState.mapGrid = Array(size).fill().map(() => Array(size).fill(0));
+        // --- GLB MODEL INGESTION PIPELINE ---
+        function ingestHeroModelAsset() {
+            const logger = document.getElementById('terminal-logger');
+            logger.innerHTML += "<br>[PIPELINE] Initializing GLTF/GLB Ingestion Stream...";
 
-            // Generate solid perimeter boundary tracks
-            for(let i=0; i<size; i++) {
-                GameState.mapGrid[0][i] = 1;
-                GameState.mapGrid[size-1][i] = 1;
-                GameState.mapGrid[i][0] = 1;
-                GameState.mapGrid[i][size-1] = 1;
-            }
-
-            // Fill coordinates interior with random structural maze blocks
-            for(let r=2; r<size-2; r+=2) {
-                for(let c=2; c<size-2; c+=2) {
-                    GameState.mapGrid[r][c] = 1;
-                    const directions = [[0,1],[1,0],[0,-1],[-1,0]];
-                    const [dr, dc] = directions[Math.floor(Math.random() * directions.length)];
-                    GameState.mapGrid[r+dr][c+dc] = 1;
-                }
-            }
-
-            // Clear starting checkpoint corridor zone
-            GameState.mapGrid[1][1] = 0;
-            GameState.mapGrid[1][2] = 0;
-            GameState.mapGrid[2][1] = 0;
-            GameState.mapGrid[2][2] = 0;
-
-            // Place down staircase object structure context token (2)
-            GameState.mapGrid[size-3][size-2] = 2; 
-            // Place down anomalous level gateway structural exit point token (3)
-            GameState.mapGrid[size-2][size-3] = 3;
-        }
-
-        function buildPhysicalLevelStructures(data) {
-            const size = GameState.gridSize;
-            const wallGeo = new THREE.BoxGeometry(4, 4, 4);
-            const floorGeo = new THREE.PlaneGeometry(size*4, size*4);
-
-            // High Fine Wine Standard Materials configurations
-            const wallMat = new THREE.MeshStandardMaterial({ 
-                color: data.wallColor, 
-                roughness: 0.8, 
-                metalness: 0.1 
-            });
-            const floorMat = new THREE.MeshStandardMaterial({ 
-                color: data.floorColor, 
-                roughness: 0.9 
-            });
-            const ceilMat = new THREE.MeshStandardMaterial({ 
-                color: data.ceilColor, 
-                roughness: 0.7 
-            });
-
-            // Structural floor mesh positioning coordinates
-            const floorMesh = new THREE.Mesh(floorGeo, floorMat);
-            floorMesh.rotation.x = -Math.PI / 2;
-            floorMesh.position.set((size*4)/2 - 2, -2, (size*4)/2 - 2);
-            wallGroup.add(floorMesh);
-
-            // Ceiling framework component placement
-            const ceilMesh = new THREE.Mesh(floorGeo, ceilMat);
-            ceilMesh.rotation.x = Math.PI / 2;
-            ceilMesh.position.set((size*4)/2 - 2, 2, (size*4)/2 - 2);
-            wallGroup.add(ceilMesh);
-
-            // Parse grid coordinates mapping arrays to build geometric architecture
-            for(let r=0; r<size; r++) {
-                for(let c=0; c<size; c++) {
-                    const type = GameState.mapGrid[r][c];
-                    const px = c * 4;
-                    const pz = r * 4;
-
-                    if(type === 1) {
-                        const wall = new THREE.Mesh(wallGeo, wallMat);
-                        wall.position.set(px, 0, pz);
-                        wallGroup.add(wall);
-
-                        // Attach procedural light sockets randomly across Level 0/4 ceilings
-                        if(Math.random() < 0.15) {
-                            const pLight = new THREE.PointLight(0xfffee4, 0.8, 8);
-                            pLight.position.set(px, 1.8, pz);
-                            wallGroup.add(pLight);
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+                CoreEngine.heroModelURI,
+                function (gltf) {
+                    logger.innerHTML += "<br>[PIPELINE] File stream compiled. Parsing meshes...";
+                    
+                    CoreEngine.heroInstance = gltf.scene;
+                    
+                    // Traverse and inject high-end shadow maps safely over custom uploaded mesh structures
+                    CoreEngine.heroInstance.traverse(function (node) {
+                        if (node.isMesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                            // Optimize material parameters for fine-wine styling pipeline
+                            if(node.material) {
+                                node.material.roughness = 0.45;
+                                node.material.metalness = 0.2;
+                            }
                         }
-                    } else if(type === 2) {
-                        // Structural Staircase asset geometry generator block
-                        createStaircaseMesh(px, pz);
-                    } else if(type === 3) {
-                        // Level exit gateway structural framing model
-                        createPortalMesh(px, pz);
-                    } else {
-                        // Populate localized clutter assets inside empty floor spots dynamically
-                        if(Math.random() < 0.08) {
-                            spawnProceduralFurniture(px, pz);
-                        }
+                    });
+
+                    // Positioning baseline parameters
+                    CoreEngine.heroInstance.position.set(0, 0, 0);
+                    CoreEngine.heroInstance.scale.set(1.2, 1.2, 1.2);
+                    CoreEngine.actorGroup.add(CoreEngine.heroInstance);
+
+                    // Track animations mapping frames if loaded
+                    if(gltf.animations && gltf.animations.length > 0) {
+                        CoreEngine.heroMixer = new THREE.AnimationMixer(CoreEngine.heroInstance);
+                        // Optional fallback automatic idle action trigger loop
+                        const action = CoreEngine.heroMixer.clipAction(gltf.animations[0]);
+                        action.play();
                     }
-                }
-            }
 
-            // Spawn localized entity nodes across level grid lines
-            spawnLevelThreatEntities(size);
+                    logger.innerHTML += "<br><span style='color:#c4a267;'>[SUCCESS] HERO GLB LINK BOUND SECURELY. Ready to launch.</span>";
+                },
+                function (xhr) {
+                    let percent = Math.floor((xhr.loaded / xhr.total) * 100);
+                    if(isNaN(percent)) percent = "Streaming";
+                    logger.innerHTML += `<br>[PIPELINE] Reading data vectors: ${percent}%`;
+                    logger.scrollTop = logger.scrollHeight;
+                },
+                function (error) {
+                    logger.innerHTML += "<br><span style='color:#bf1725;'>[WARNING] GLB structural load path skipped. Generating high-fidelity procedural substitute fallback hero asset.</span>";
+                    generateFallbackProceduralHero();
+                }
+            );
         }
 
-        // --- METICULOUS PROCEDURAL GEOMETRY ASSET CONSTRUCTORS ---
-        function createStaircaseMesh(x, z) {
-            const stairGroup = new THREE.Group();
-            stairGroup.position.set(x, -2, z);
+        function generateFallbackProceduralHero() {
+            // High-fidelity procedural substitute capsule styling if external model mapping fails locally
+            const heroGroup = new THREE.Group();
             
-            const stepMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 });
-            for(let i=0; i<8; i++) {
-                const stepGeo = new THREE.BoxGeometry(4, 0.5, 0.5);
-                const step = new THREE.Mesh(stepGeo, stepMat);
-                step.position.set(0, (i * 0.5) + 0.25, (i * 0.5) - 1.75);
-                stairGroup.add(step);
-            }
-            wallGroup.add(stairGroup);
+            const bodyGeo = new THREE.CylinderGeometry(0.4, 0.3, 1.8, 16);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a2436, roughness: 0.5, metalness: 0.3 });
+            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+            bodyMesh.position.y = 0.9;
+            bodyMesh.castShadow = true;
+            bodyMesh.receiveShadow = true;
+            heroGroup.add(bodyMesh);
+
+            const crestGeo = new THREE.SphereGeometry(0.3, 16, 16);
+            const crestMat = new THREE.MeshStandardMaterial({ color: 0xbf1725, emissive: 0xbf1725, emissiveIntensity: 0.2 });
+            const crestMesh = new THREE.Mesh(crestGeo, crestMat);
+            crestMesh.position.y = 2.0;
+            heroGroup.add(crestMesh);
+
+            CoreEngine.actorGroup.add(heroGroup);
+            CoreEngine.heroInstance = heroGroup;
         }
 
-        function createPortalMesh(x, z) {
-            const portalGeo = new THREE.BoxGeometry(2, 3.5, 0.4);
-            const portalMat = new THREE.MeshStandardMaterial({ 
-                color: 0xef4444, 
-                emissive: 0xef4444, 
-                emissiveIntensity: 0.6 
-            });
-            const portal = new THREE.Mesh(portalGeo, portalMat);
-            portal.position.set(x, -0.25, z);
-            wallGroup.add(portal);
-        }
-
-        function spawnProceduralFurniture(x, z) {
-            const furnitureGroup = new THREE.Group();
-            furnitureGroup.position.set(x + (Math.random()*1 - 0.5), -2, z + (Math.random()*1 - 0.5));
-
-            const woodMat = new THREE.MeshStandardMaterial({ color: 0x452b17, roughness: 0.7 });
-            const itemType = Math.floor(Math.random() * 3);
-
-            if(itemType === 0) { // Modern Wardrobe Module Architecture
-                const bodyGeo = new THREE.BoxGeometry(1.2, 2.8, 1);
-                const body = new THREE.Mesh(bodyGeo, woodMat);
-                body.position.y = 1.4;
-                furnitureGroup.add(body);
-            } else if(itemType === 1) { // High Design Chair Asset Layout
-                const seatGeo = new THREE.BoxGeometry(0.9, 0.1, 0.9);
-                const seat = new THREE.Mesh(seatGeo, woodMat);
-                seat.position.y = 0.5;
-                
-                const backGeo = new THREE.BoxGeometry(0.1, 0.8, 0.9);
-                const back = new THREE.Mesh(backGeo, woodMat);
-                back.position.set(-0.4, 0.9, 0);
-                
-                furnitureGroup.add(seat, back);
-            } else { // Storage Shelf Clutter Stack
-                const frameGeo = new THREE.BoxGeometry(1.5, 2.2, 0.6);
-                const frame = new THREE.Mesh(frameGeo, woodMat);
-                frame.position.y = 1.1;
-                furnitureGroup.add(frame);
-            }
-
-            wallGroup.add(furnitureGroup);
-            GameState.decorations.push(furnitureGroup);
-        }
-
-        function spawnLevelThreatEntities(gridSize) {
-            // Instantiate 3 separate hostile body forms per sector frame
-            for(let i=0; i<3; i++) {
-                let rx = Math.floor(Math.random() * (gridSize - 4)) + 2;
-                let rz = Math.floor(Math.random() * (gridSize - 4)) + 2;
-                
-                if(GameState.mapGrid[rz][rx] === 0) {
-                    const entity = new THREE.Group();
-                    entity.position.set(rx * 4, -0.5, rz * 4);
-
-                    // Multi-shape stacked complex bodies to feel custom detailed rather than primitive boxes
-                    const coreGeo = new THREE.ConeGeometry(0.6, 2, 8);
-                    const coreMat = new THREE.MeshStandardMaterial({ 
-                        color: 0x1e1b4b, 
-                        emissive: 0xef4444, 
-                        emissiveIntensity: 0.3,
-                        roughness: 0.4
-                    });
-                    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-                    entity.add(coreMesh);
-
-                    const headGeo = new THREE.SphereGeometry(0.4, 8, 8);
-                    const headMesh = new THREE.Mesh(headGeo, coreMat);
-                    headMesh.position.y = 1.1;
-                    entity.add(headMesh);
-
-                    dynamicGroup.add(entity);
-                    GameState.entities.push({
-                        mesh: entity,
-                        baseX: rx * 4,
-                        baseZ: rz * 4,
-                        timeOffset: Math.random() * 100
-                    });
-                }
-            }
-        }
-
-        // --- HARDWARE / INPUT HANDLING ENGINE MAP ---
-        function setupHardwareListeners() {
-            // Desktop Keyboards Bindings Configurations
-            window.addEventListener('keydown', (e) => { GameState.keys[e.key] = true; });
-            window.addEventListener('keyup', (e) => { GameState.keys[e.key] = false; });
-
-            // Window Resizing Core Event Handlers
+        // --- HARDWARE BINDINGS ---
+        function bindHardwareInputSystems() {
+            window.addEventListener('keydown', (e) => { processKeyEvent(e.key, true); });
+            window.addEventListener('keyup', (e) => { processKeyEvent(e.key, false); });
+            
             window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-
-            // TV interface action button triggers
-            document.getElementById('tv-power-btn').addEventListener('click', () => {
-                if(GameState.activeMode === 'intro') {
-                    dismissIntermissionOverlay();
-                }
-            });
-
-            // Game over screen action system callbacks
-            document.getElementById('modal-action-btn').addEventListener('click', () => {
-                if(GameState.activeMode === 'gameover') {
-                    loadLevelContext(0);
-                    hideGameStateModal();
-                } else if(GameState.activeMode === 'victory') {
-                    loadLevelContext(0);
-                    hideGameStateModal();
-                }
-            });
-
-            // Mobile Glass Overlays Virtual Buttons Connectors
-            setupMobileVirtualInputEvent('m-up', 'ArrowUp');
-            setupMobileVirtualInputEvent('m-down', 'ArrowDown');
-            setupMobileVirtualInputEvent('m-left', 'ArrowLeft');
-            setupMobileVirtualInputEvent('m-right', 'ArrowRight');
-            setupMobileVirtualInputEvent('m-stair', 's');
-            setupMobileVirtualInputEvent('m-jump', 'j');
-        }
-
-        function setupMobileVirtualInputEvent(elementId, linkedKeyString) {
-            const btn = document.getElementById(elementId);
-            if(!btn) return;
-            
-            btn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                GameState.keys[linkedKeyString] = true;
-            });
-            btn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                GameState.keys[linkedKeyString] = false;
+                CoreEngine.camera.aspect = window.innerWidth / window.innerHeight;
+                CoreEngine.camera.updateProjectionMatrix();
+                CoreEngine.renderer.setSize(window.innerWidth, window.innerHeight);
             });
         }
 
-        // --- RUNTIME DISPLAY INTERFACE MODAL SYSTEMS ---
-        function updateTVDisplay(htmlMarkup, buttonTextLabel) {
-            GameState.activeMode = 'intro';
-            document.getElementById('tv-terminal-display').innerHTML = htmlMarkup;
-            document.getElementById('tv-power-btn').innerText = buttonTextLabel;
-            document.getElementById('tv-intermission-overlay').style.display = 'flex';
-            document.getElementById('tv-intermission-overlay').style.opacity = '1';
+        function processKeyEvent(keyString, isPressed) {
+            switch(keyString) {
+                case 'ArrowUp': CoreEngine.inputTracker.forward = isPressed; break;
+                case 'ArrowDown': CoreEngine.inputTracker.backward = isPressed; break;
+                case 'ArrowLeft': CoreEngine.inputTracker.left = isPressed; break;
+                case 'ArrowRight': CoreEngine.inputTracker.right = isPressed; break;
+                case 's': case 'S': CoreEngine.inputTracker.climb = isPressed; break;
+                case 'j': case 'J': CoreEngine.inputTracker.jump = isPressed; break;
+            }
         }
 
-        function dismissIntermissionOverlay() {
-            document.getElementById('tv-intermission-overlay').style.opacity = '0';
+        // --- REVOLUTIONARY GLOBAL PIPELINE TRANSITION EXECUTION ---
+        document.getElementById('initialize-call-trigger').addEventListener('click', () => {
+            document.getElementById('engine-boot-screen').style.opacity = '0';
             setTimeout(() => {
-                document.getElementById('tv-intermission-overlay').style.display = 'none';
-                GameState.activeMode = 'playing';
-            }, 800);
-        }
+                document.getElementById('engine-boot-screen').style.display = 'none';
+                CoreEngine.isEngineRunning = true;
+            }, 1000);
+        });
 
-        function showGameStateModal(titleText, bodyText, actionLabel) {
-            GameState.activeMode = 'gameover';
-            document.getElementById('modal-title').innerText = titleText;
-            document.getElementById('modal-desc').innerText = bodyText;
-            document.getElementById('modal-action-btn').innerText = actionLabel;
-            document.getElementById('game-state-modal').style.display = 'flex';
-        }
-
-        function hideGameStateModal() {
-            document.getElementById('game-state-modal').style.display = 'none';
-            GameState.activeMode = 'playing';
-        }
-
-        // --- ENGINE SIMULATION MAIN ROUTINE ---
-        function renderLoop() {
-            requestAnimationFrame(renderLoop);
-            
-            const delta = clock.getDelta();
-
-            if(GameState.activeMode === 'playing') {
-                processPlayerSimulation(delta);
-                processEntitiesSimulation(delta);
-                updateVitalsInterface();
-                drawMinimapTelemetry();
-            }
-
-            renderer.render(scene, camera);
-        }
-
-        // --- PLAYER CORE KINEMATICS SIMULATION ---
-        function processPlayerSimulation(delta) {
-            let speed = 4.5 * delta;
-            let rotSpeed = 2.2 * delta;
-
-            // Handle dehydration fatigue mechanics across Level 2 thermal zones
-            if(GameState.currentLevel === 2) {
-                GameState.stamina -= 1.5 * delta;
-            } else {
-                GameState.stamina -= 0.2 * delta;
-            }
-
-            if(GameState.stamina <= 0) { GameState.stamina = 0; speed *= 0.5; }
-
-            // Turn directions calculation handling via left/right arrows
-            if(GameState.keys['ArrowLeft'])  { GameState.player.angle += rotSpeed; }
-            if(GameState.keys['ArrowRight']) { GameState.player.angle -= rotSpeed; }
-
-            // Calculate directional velocities relative to current look orientation vector
-            let moveX = 0;
-            let moveZ = 0;
-
-            if(GameState.keys['ArrowUp']) {
-                moveX = Math.sin(GameState.player.angle) * speed;
-                moveZ = Math.cos(GameState.player.angle) * speed;
-            }
-            if(GameState.keys['ArrowDown']) {
-                moveX = -Math.sin(GameState.player.angle) * speed;
-                moveZ = -Math.cos(GameState.player.angle) * speed;
-            }
-
-            // Implement bounding wall checks
-            let targetX = GameState.player.x + moveX;
-            let targetZ = GameState.player.z + moveZ;
-
-            if(!checkGridCollision(targetX, GameState.player.z)) { GameState.player.x = targetX; }
-            if(!checkGridCollision(GameState.player.x, targetZ)) { GameState.player.z = targetZ; }
-
-            // Staircase Climb Operations Engine
-            if(GameState.keys['s'] || GameState.keys['S']) {
-                const currentCellType = GameState.mapGrid[Math.floor(GameState.player.z)][Math.floor(GameState.player.x)];
-                if(currentCellType === 2 && GameState.player.y < 2.0) {
-                    GameState.player.y += 2.0 * delta;
-                }
-            } else {
-                // Return smoothly to baseline gravity lines if not climbing stairs actively
-                if(!GameState.player.isJumping && GameState.player.y > 0) {
-                    GameState.player.y -= 3.0 * delta;
-                    if(GameState.player.y < 0) GameState.player.y = 0;
-                }
-            }
-
-            // Jump Physics Handler
-            if((GameState.keys['j'] || GameState.keys['J']) && !GameState.player.isJumping) {
-                GameState.player.isJumping = true;
-                GameState.player.verticalVelocity = 6.0;
-            }
-
-            if(GameState.player.isJumping) {
-                GameState.player.y += GameState.player.verticalVelocity * delta;
-                GameState.player.verticalVelocity -= 15.0 * delta; // Simulated Gravity Acceleration
-                if(GameState.player.y <= 0) {
-                    GameState.player.y = 0;
-                    GameState.player.isJumping = false;
-                    GameState.player.verticalVelocity = 0;
-                }
-            }
-
-            // Check if player reaches next portal transition trigger coordinates
-            const currentCell = GameState.mapGrid[Math.floor(GameState.player.z)][Math.floor(GameState.player.x)];
-            if(currentCell === 3) {
-                triggerLevelTransitionStep();
-            }
-
-            // Sync structural spatial values over camera spatial tracking frames
-            camera.position.set(GameState.player.x * 4, (GameState.player.y - 0.2), GameState.player.z * 4);
-            camera.rotation.set(0, GameState.player.angle + Math.PI, 0);
-        }
-
-        function checkGridCollision(x, z) {
-            const gridX = Math.floor(x);
-            const gridZ = Math.floor(z);
-            
-            if(gridX < 0 || gridX >= GameState.gridSize || gridZ < 0 || gridZ >= GameState.gridSize) return true;
-            return GameState.mapGrid[gridZ][gridX] === 1;
-        }
-
-        // --- ENEMY/ENTITY PATROL MOTION INTERFACE ---
-        function processEntitiesSimulation(delta) {
-            GameState.entities.forEach(ent => {
-                ent.timeOffset += delta * 1.5;
-                
-                // Patrolling coordinate loops based on custom harmonic sine functions
-                const offsetZ = Math.sin(ent.timeOffset) * 3.5;
-                ent.mesh.position.z = ent.baseZ + offsetZ;
-                
-                // Track dynamic look vectors to face travel trajectories smoothly
-                ent.mesh.rotation.y = Math.cos(ent.timeOffset) > 0 ? 0 : Math.PI;
-
-                // Evaluate radial proximity bounds with respect to current player tracking values
-                const dx = ent.mesh.position.x - (GameState.player.x * 4);
-                const dz = ent.mesh.position.z - (GameState.player.z * 4);
-                const distance = Math.sqrt(dx*dx + dz*dz);
-
-                if(distance < 3.0) {
-                    // Apply heavy damage scaling checks directly to sanity values
-                    GameState.sanity -= 35.0 * delta;
-                    if(GameState.sanity <= 0) {
-                        handlePlayerDeathSequence();
-                    }
-                }
-            });
-        }
-
-        function triggerLevelTransitionStep() {
-            const nextLevelIndex = GameState.currentLevel + 1;
-            if(nextLevelIndex < LEVEL_DATABASE.length) {
-                loadLevelContext(nextLevelIndex);
-            } else {
-                showGameStateModal(
-                    "CONSCIOUSNESS RESTORED", 
-                    "You successfully bypassed the modular structural iterations of the Backrooms space matrix grid layer. Reality connection stabilized.", 
-                    "RESTART PROTOCOL"
-                );
-                GameState.activeMode = 'victory';
-            }
-        }
-
-        function handlePlayerDeathSequence() {
-            showGameStateModal(
-                "PSYCH BREAKDOWN DETECTED", 
-                "Your sanity core dropped to critical parameters. You became permanently trapped within the structural layout files.", 
-                "RE-MATERIALIZE"
-            );
-        }
-
-        // --- TELEMETRY UI RENDERING ENGINES ---
-        function updateVitalsInterface() {
-            document.getElementById('stamina-fill').style.width = `${Math.max(0, GameState.stamina)}%`;
-            document.getElementById('sanity-fill').style.width = `${Math.max(0, GameState.sanity)}%`;
-        }
-
-        function drawMinimapTelemetry() {
-            const size = GameState.gridSize;
-            const cellSize = minimapCanvas.width / size;
-
-            minimapCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
-
-            // Print structural blocks to grid space representation array
-            for(let r=0; r<size; r++) {
-                for(let c=0; c<size; c++) {
-                    const type = GameState.mapGrid[r][c];
-                    if(type === 1) {
-                        minimapCtx.fillStyle = 'rgba(255, 255, 255, 0.12)';
-                        minimapCtx.fillRect(c*cellSize, r*cellSize, cellSize-1, cellSize-1);
-                    } else if(type === 2) {
-                        minimapCtx.fillStyle = '#3b82f6';
-                        minimapCtx.fillRect(c*cellSize, r*cellSize, cellSize-1, cellSize-1);
-                    } else if(type === 3) {
-                        minimapCtx.fillStyle = '#ef4444';
-                        minimapCtx.fillRect(c*cellSize, r*cellSize, cellSize-1, cellSize-1);
-                    }
-                }
-            }
-
-            // Draw current location blip coordinates representation map metrics
-            const pX = GameState.player.x * cellSize;
-            const pZ = GameState.player.z * cellSize;
-
-            minimapCtx.beginPath();
-            minimapCtx.arc(pX, pZ, 3.5, 0, Math.PI*2);
-            minimapCtx.fillStyle = '#ef4444';
-            minimapCtx.fill();
-
-            // Draw player directional field of view line indicator
-            minimapCtx.beginPath();
-            minimapCtx.moveTo(pX, pZ);
-            minimapCtx.lineTo(
-                pX + Math.sin(GameState.player.angle) * 10,
-                pZ + Math.cos(GameState.player.angle) * 10
-            );
-            minimapCtx.strokeStyle = '#ef4444';
-            minimapCtx.lineWidth = 1.5;
-            minimapCtx.stroke();
-        }
-
-        // Fire initialization engine on load frame termination
-        window.onload = initializeEngine;
+        // Initialize Engine Systems Framework Setup execution
+        window.onload = initEngineContext;
     </script>
 </body>
 </html>
